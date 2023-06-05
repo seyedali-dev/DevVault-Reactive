@@ -2,6 +2,7 @@ package com.dev.vault.service.module.mail;
 
 import com.dev.vault.helper.exception.DevVaultException;
 import com.dev.vault.helper.payload.email.Email;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailException;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 @Slf4j
+@Transactional
 public class MailService {
     private final JavaMailSender mailSender;
     private final MailContentBuilder contentBuilder;

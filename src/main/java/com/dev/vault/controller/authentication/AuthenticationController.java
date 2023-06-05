@@ -1,11 +1,10 @@
 package com.dev.vault.controller.authentication;
 
-import com.dev.vault.helper.payload.ApiResponse;
-import com.dev.vault.helper.payload.AuthenticationRequest;
-import com.dev.vault.helper.payload.AuthenticationResponse;
-import com.dev.vault.helper.payload.dto.RegisterRequest;
-import com.dev.vault.model.user.User;
-import com.dev.vault.service.module.user.AuthenticationService;
+import com.dev.vault.helper.payload.dto.ApiResponse;
+import com.dev.vault.helper.payload.auth.AuthenticationRequest;
+import com.dev.vault.helper.payload.auth.AuthenticationResponse;
+import com.dev.vault.helper.payload.auth.RegisterRequest;
+import com.dev.vault.service.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

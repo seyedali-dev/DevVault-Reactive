@@ -1,13 +1,10 @@
 package com.dev.vault.helper.mapper;
 
-import com.dev.vault.helper.payload.dto.RegisterRequest;
+import com.dev.vault.helper.payload.auth.RegisterRequest;
 import com.dev.vault.model.user.User;
-import com.dev.vault.model.user.enums.Roles;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
