@@ -1,6 +1,5 @@
-package com.dev.vault.helper.payload.dto;
+package com.dev.vault.helper.payload.auth;
 
-import com.dev.vault.model.user.enums.Interest;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -31,7 +30,6 @@ public class RegisterRequest {
     @Email
     private String email;
     private int age;
-    private Interest interest;
     private String education;
     private String major;
 }

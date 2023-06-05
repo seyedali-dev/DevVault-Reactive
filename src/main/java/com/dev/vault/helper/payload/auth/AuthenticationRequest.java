@@ -1,4 +1,4 @@
-package com.dev.vault.helper.payload;
+package com.dev.vault.helper.payload.auth;
 
 import lombok.*;
 

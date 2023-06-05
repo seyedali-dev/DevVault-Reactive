@@ -1,25 +1,28 @@
-package com.dev.vault.service.module.user.impl;
+package com.dev.vault.service.module.user;
 
 import com.dev.vault.config.jwt.JwtService;
+import com.dev.vault.helper.exception.AuthenticationFailedException;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.mapper.RegisterMapper;
-import com.dev.vault.helper.payload.AuthenticationRequest;
-import com.dev.vault.helper.payload.AuthenticationResponse;
-import com.dev.vault.helper.payload.dto.RegisterRequest;
+import com.dev.vault.helper.payload.auth.AuthenticationRequest;
+import com.dev.vault.helper.payload.auth.AuthenticationResponse;
+import com.dev.vault.helper.payload.auth.RegisterRequest;
 import com.dev.vault.helper.payload.email.Email;
 import com.dev.vault.model.user.User;
 import com.dev.vault.model.user.VerificationToken;
 import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.repository.user.VerificationTokenRepository;
+import com.dev.vault.service.AuthenticationService;
 import com.dev.vault.service.module.mail.MailService;
-import com.dev.vault.service.module.user.AuthenticationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +54,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.info("❌ This user already exists! provide unique email. ❌");
             throw new ResourceAlreadyExistsException("User", "Email", registerRequest.getEmail());
         }
-        User user = registerMapper.toUser(registerRequest);
+//        User user = registerMapper.toUser(registerRequest);
+        User user = modelMapper.map(registerRequest, User.class);
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRoles(TEAM_MEMBER);
         user.setRolesDescription("➡️ Default Role for newly created users :)");
 
@@ -107,5 +112,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .role(user.getRoles().name())
                 .roleDescription(user.getRolesDescription())
                 .build();
+    }
+
+    // get the logged-in user
+    @Override
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new AuthenticationFailedException("❌❌❌ User: '" + authentication.getName() + "' is not authorized! ❌❌❌"));
     }
 }
