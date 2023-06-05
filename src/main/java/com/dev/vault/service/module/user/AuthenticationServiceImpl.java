@@ -4,7 +4,6 @@ import com.dev.vault.config.jwt.JwtService;
 import com.dev.vault.helper.exception.AuthenticationFailedException;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
-import com.dev.vault.helper.mapper.RegisterMapper;
 import com.dev.vault.helper.payload.auth.AuthenticationRequest;
 import com.dev.vault.helper.payload.auth.AuthenticationResponse;
 import com.dev.vault.helper.payload.auth.RegisterRequest;
@@ -43,7 +42,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final MailService mailService;
     private final ModelMapper modelMapper;
     private final AuthenticationManager authenticationManager;
-    private final RegisterMapper registerMapper;
 
     // create a new user, and send verification account for activating him/her
     @Override

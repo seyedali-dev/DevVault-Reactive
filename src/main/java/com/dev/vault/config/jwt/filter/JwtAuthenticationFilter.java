@@ -2,7 +2,6 @@ package com.dev.vault.config.jwt.filter;
 
 import com.dev.vault.config.jwt.JwtService;
 import com.dev.vault.helper.exception.DevVaultException;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -46,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info("username extracted :: " + userEmail);
         } catch (ExpiredJwtException e) {
             log.info("JWT token has expired ❌");
-            throw new ExpiredJwtException(null, null,"JWT token has been expired ❌", e);
+            throw new ExpiredJwtException(null, null, "JWT token has been expired ❌", e);
         } catch (IllegalArgumentException e) {
             log.info("JwtAuthenticationFilter :: Invalid token request ❌");
             throw new DevVaultException("Invalid token request ❌");
