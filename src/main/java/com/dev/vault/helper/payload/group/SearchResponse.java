@@ -1,4 +1,4 @@
-package com.dev.vault.helper.payload.dto;
+package com.dev.vault.helper.payload.group;
 
 import lombok.*;
 
@@ -8,6 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class SearchResponse {
+    private Long projectId;
     private String projectName;
     private String leaderName;
     private String projectDescription;

@@ -29,11 +29,11 @@ public class ProjectMembers {
     private Project project;
     /* end of relationships */
 
-    private Roles roles;
+    private Roles role;
 
-    public ProjectMembers(User user, Project project, Roles roles) {
+    public ProjectMembers(User user, Project project, Roles role) {
         this.user = user;
         this.project = project;
-        this.roles = roles;
+        this.role = role;
     }
 }

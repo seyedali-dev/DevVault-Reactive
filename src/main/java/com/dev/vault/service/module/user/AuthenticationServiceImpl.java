@@ -14,7 +14,6 @@ import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.repository.user.VerificationTokenRepository;
 import com.dev.vault.service.AuthenticationService;
 import com.dev.vault.service.module.mail.MailService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -24,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
