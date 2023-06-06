@@ -1,12 +1,13 @@
 package com.dev.vault.service;
 
-import com.dev.vault.helper.payload.dto.SearchResponse;
+import com.dev.vault.helper.payload.group.SearchResponse;
 
 import java.util.List;
 
-public interface SearchProjectService {
+public interface SearchService {
     // list all the projects(groups)
     List<SearchResponse> listAllProjects();
 
+    // search for a group with matching names
     List<SearchResponse> searchForProjectOrGroup(String projectOrGroupName);
 }

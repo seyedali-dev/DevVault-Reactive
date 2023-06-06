@@ -1,7 +1,7 @@
 package com.dev.vault.service.module.group;
 
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
-import com.dev.vault.helper.payload.dto.ProjectDto;
+import com.dev.vault.helper.payload.group.ProjectDto;
 import com.dev.vault.model.group.Project;
 import com.dev.vault.model.group.ProjectMembers;
 import com.dev.vault.model.user.User;

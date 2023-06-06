@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Entity
-public class JoinRequest {
+public class JoinProject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long joinRequestId;
@@ -25,4 +25,10 @@ public class JoinRequest {
     /* end of relationships */
 
     private JoinStatus status;
+
+    public JoinProject(Project project, User user, JoinStatus status) {
+        this.project = project;
+        this.user = user;
+        this.status = status;
+    }
 }

@@ -1,4 +1,4 @@
-package com.dev.vault.helper.payload.dto;
+package com.dev.vault.helper.payload.group;
 
 import lombok.*;
 
