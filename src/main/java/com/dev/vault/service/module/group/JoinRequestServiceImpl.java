@@ -2,12 +2,16 @@ package com.dev.vault.service.module.group;
 
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
+import com.dev.vault.helper.payload.group.JoinProjectDto;
 import com.dev.vault.helper.payload.group.JoinResponse;
+import com.dev.vault.helper.payload.user.UserDto;
 import com.dev.vault.model.group.JoinProject;
 import com.dev.vault.model.group.Project;
+import com.dev.vault.model.group.ProjectMembers;
 import com.dev.vault.model.group.enums.JoinStatus;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.JoinProjectRepository;
+import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.group.ProjectRepository;
 import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.service.AuthenticationService;
@@ -17,10 +21,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.dev.vault.model.group.enums.JoinStatus.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class JoinRequestServiceImpl implements JoinRequestService {
+    private final ProjectMembersRepository projectMembersRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final JoinProjectRepository joinProjectRepository;
@@ -39,21 +50,68 @@ public class JoinRequestServiceImpl implements JoinRequestService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "Email", email));
 
-        joinProjectRepository.save(new JoinProject(project, user, JoinStatus.PENDING));
+        joinProjectRepository.save(new JoinProject(project, user, PENDING));
 
         return JoinResponse.builder()
                 .status("Join Request Sent successfully. Please wait until ProjectLeader approves your request :)")
-                .joinStatus(JoinStatus.PENDING)
+                .joinStatus(PENDING)
                 .build();
     }
 
+    // todo:: isMember is not correct
     // check if the user is already a member of the project or not
     private boolean isMember(Long projectId, String email) {
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project", "ProjectName", projectId.toString()));
-        return joinProjectRepository.findByProject_ProjectName(project.getProjectName())
-                .stream().anyMatch(
-                        projectMembers -> projectMembers.getUser().getEmail().equals(email)
-                );
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "ProjectId", projectId.toString()));
+        ProjectMembers member = projectMembersRepository.findByProject_ProjectNameAndProject_ProjectId(project.getProjectName(), projectId).get();
+        boolean equals = member.getUser().getEmail().equals(email);
+        log.info("--> is present?: " + equals);
+        return equals;
+    }
+
+    // get the list of join request by project id, and it's status (PENDING)
+    @Override
+    public List<JoinProjectDto> getJoinRequestsByProjectIdAndStatus(Long projectId, JoinStatus joinStatus) {
+        return joinProjectRepository.findByProject_ProjectIdAndStatus(projectId, joinStatus)
+                .stream().map(joinRequest -> JoinProjectDto.builder()
+                        .projectName(joinRequest.getProject().getProjectName())
+                        .joinRequestId(joinRequest.getJoinRequestId())
+                        .joinRequestUsersEmail(joinRequest.getUser().getEmail())
+                        .joinStatus(joinRequest.getStatus())
+                        .build()
+                ).collect(Collectors.toList());
+    }
+
+    // TODO: remove the data from JoinProject table after the status has changed
+    // update the status -> (APPROVED or REJECTED)
+    @Override
+    @Transactional
+    public JoinResponse updateJoinRequestStatus(Long joinRequestId, JoinStatus joinStatus) {
+        JoinProject request = joinProjectRepository.findById(joinRequestId)
+                .orElseThrow(() -> new ResourceNotFoundException("JoinProject", "JoinProjectId", joinRequestId.toString()));
+        request.setStatus(joinStatus);
+        joinProjectRepository.save(request);
+
+        JoinResponse joinResponse = new JoinResponse();
+        if (joinStatus.equals(APPROVED)) {
+            ProjectMembers projectMembers = new ProjectMembers(request.getUser(), request.getProject(), request.getUser().getRoles());
+            ProjectMembers save = projectMembersRepository.save(projectMembers);
+            log.info("👏🏻 member added with project_member_id: {}", save.getProjectMemberId());
+            log.info("👏🏻 attempting to delete the join_project request with id: {}", request.getJoinRequestId());
+            joinProjectRepository.delete(request);
+            log.info("👏🏻 is deleted?: {}", joinProjectRepository.findById(request.getJoinRequestId()).isEmpty());
+
+            joinResponse.setStatus("Congratulations! ProjectLeader approved you JoinRequest :)");
+            joinResponse.setJoinStatus(joinStatus);
+        } else if (joinStatus.equals(REJECTED)) {
+            joinProjectRepository.delete(request);
+            log.info("👏🏻 is deleted?: {}", joinProjectRepository.findById(request.getJoinRequestId()).isEmpty());
+
+            joinResponse.setStatus("Unfortunately, ProjectLeader has rejected your JoinRequest :(");
+            joinResponse.setJoinStatus(REJECTED);
+        } else
+            return null;
+
+        return joinResponse;
     }
 }

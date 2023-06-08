@@ -27,7 +27,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     private final AuthenticationService authenticationService;
 
     @Override
-    @Transactional
+    @Transactional // TODO: when someone creates a project, he/she gets another role of project_leader
     public ProjectDto createProjectOrGroup(ProjectDto projectDto) {
         Optional<Project> foundProject = projectRepository.findByProjectNameAllIgnoreCase(projectDto.getProjectName());
         if (foundProject.isPresent()) {
