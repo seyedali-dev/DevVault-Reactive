@@ -6,18 +6,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/proj_leader")
 @RequiredArgsConstructor
-//@PreAuthorize("hasAnyRole('PROJECT_LEADER', 'TEAM_MEMBER', 'GROUP_ADMIN')")
 public class ProjectManagementController {
     private final ProjectManagementService projectManagementService;
 
-    @PreAuthorize("hasRole('PROJECT_LEADER')")
+    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'TEAM_MEMBER', 'GROUP_ADMIN')")
     @PostMapping({"/create-project", "/create-group"})
     public ResponseEntity<?> createProjectOrGroup(@RequestBody ProjectDto projectDto) {
-        return new ResponseEntity<>(projectManagementService.createProjectOrGroup(projectDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(projectManagementService.createProject(projectDto), HttpStatus.CREATED);
     }
 }

@@ -11,34 +11,54 @@ import static com.dev.vault.model.group.enums.JoinStatus.*;
 
 @RestController
 @RequestMapping("/api/v1/join_request")
-@PreAuthorize("hasAnyRole('PROJECT_LEADER', 'TEAM_MEMBER', 'GROUP_ADMIN')")
-@RequiredArgsConstructor // TODO: every group's leader, should only access and manage, it's own groups members, not all the members.
-public class JoinRequestController {
+@RequiredArgsConstructor
+public class JoinRequestController { // TODO: every group's leader, should only access and manage, it's own groups members, not all the members.
 
     private final JoinRequestService joinRequestService;
 
-    // send a join request for a project(group)
+    /**
+     * Sends a join request for the specified project.
+     *
+     * @param projectId the ID of the project to send the join request to
+     * @return ResponseEntity containing the JoinResponse object returned by the service
+     */
+    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'GROUP_ADMIN','TEAM_MEMBER')")
     @PostMapping({"/{projectId}"})
     public ResponseEntity<JoinResponse> sendJoinRequest(@PathVariable Long projectId) {
         return ResponseEntity.ok(joinRequestService.sendJoinRequest(projectId));
     }
 
-    // get all the join requests by their status (PENDING)
-    @PreAuthorize("hasAnyAuthority('project_leader:read','group_admin:read')")
+    /**
+     * Retrieves all join requests for the specified project (group) with the specified status.
+     *
+     * @param projectId the ID of the project to retrieve join requests for
+     * @return ResponseEntity containing a List of JoinRequest objects with the specified status
+     */
+    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'GROUP_ADMIN')")
     @GetMapping("/requests/{projectId}")
     public ResponseEntity<?> getAllJoinRequestsByStatus(@PathVariable Long projectId) {
         return ResponseEntity.ok(joinRequestService.getJoinRequestsByProjectIdAndStatus(projectId, PENDING));
     }
 
-    // approve a join request
-    @PreAuthorize("hasAnyAuthority('project_leader:accept_join_request','group_admin:accept_join_request')")
+    /**
+     * Approves the specified join request.
+     *
+     * @param joinRequestId the ID of the join request to approve
+     * @return ResponseEntity containing the JoinRequest object after it has been updated
+     */
+    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'GROUP_ADMIN')")
     @PostMapping("/{joinRequestId}/approve")
     public ResponseEntity<?> approveJoinRequest(@PathVariable Long joinRequestId) {
         return ResponseEntity.ok(joinRequestService.updateJoinRequestStatus(joinRequestId, APPROVED));
     }
 
-    // reject a join request
-    @PreAuthorize("hasAnyAuthority('project_leader:accept_join_request','group_admin:accept_join_request')")
+    /**
+     * Rejects the specified join request.
+     *
+     * @param joinRequestId the ID of the join request to reject
+     * @return ResponseEntity containing the JoinRequest object after it has been updated
+     */
+    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'GROUP_ADMIN')")
     @PostMapping("/{joinRequestId}/reject")
     public ResponseEntity<?> rejectJoinRequest(@PathVariable Long joinRequestId) {
         return ResponseEntity.ok(joinRequestService.updateJoinRequestStatus(joinRequestId, REJECTED));
