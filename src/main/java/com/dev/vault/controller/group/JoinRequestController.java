@@ -12,7 +12,7 @@ import static com.dev.vault.model.group.enums.JoinStatus.*;
 @RestController
 @RequestMapping("/api/v1/join_request")
 @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'TEAM_MEMBER', 'GROUP_ADMIN')")
-@RequiredArgsConstructor
+@RequiredArgsConstructor // TODO: every group's leader, should only access and manage, it's own groups members, not all the members.
 public class JoinRequestController {
 
     private final JoinRequestService joinRequestService;

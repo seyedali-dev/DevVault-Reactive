@@ -95,19 +95,14 @@ public class JoinRequestServiceImpl implements JoinRequestService {
         JoinResponse joinResponse = new JoinResponse();
         if (joinStatus.equals(APPROVED)) {
             ProjectMembers projectMembers = new ProjectMembers(request.getUser(), request.getProject(), request.getUser().getRoles());
-            ProjectMembers save = projectMembersRepository.save(projectMembers);
-            log.info("👏🏻 member added with project_member_id: {}", save.getProjectMemberId());
-            log.info("👏🏻 attempting to delete the join_project request with id: {}", request.getJoinRequestId());
-            joinProjectRepository.delete(request);
-            log.info("👏🏻 is deleted?: {}", joinProjectRepository.findById(request.getJoinRequestId()).isEmpty());
 
-            joinResponse.setStatus("Congratulations! ProjectLeader approved you JoinRequest :)");
+            projectMembersRepository.save(projectMembers);
+            joinProjectRepository.delete(request);
+
             joinResponse.setJoinStatus(joinStatus);
         } else if (joinStatus.equals(REJECTED)) {
             joinProjectRepository.delete(request);
-            log.info("👏🏻 is deleted?: {}", joinProjectRepository.findById(request.getJoinRequestId()).isEmpty());
 
-            joinResponse.setStatus("Unfortunately, ProjectLeader has rejected your JoinRequest :(");
             joinResponse.setJoinStatus(REJECTED);
         } else
             return null;

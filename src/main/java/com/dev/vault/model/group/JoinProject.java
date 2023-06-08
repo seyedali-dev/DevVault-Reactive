@@ -17,10 +17,10 @@ public class JoinProject {
     private Long joinRequestId;
 
     /* relationships */
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Project project;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     private User user;
     /* end of relationships */
 
