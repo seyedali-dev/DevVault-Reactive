@@ -15,5 +15,5 @@ public interface ProjectMembersRepository extends JpaRepository<ProjectMembers, 
             ORDER BY p.user.roles""")
     List<ProjectMembers> findByProject(Project project);
 
-    Optional<ProjectMembers> findByProject_ProjectNameAndProject_ProjectId(String projectName, Long projectId);
+    Optional<ProjectMembers> findByProject_ProjectNameAndUser_Email(String projectName, String email);
 }

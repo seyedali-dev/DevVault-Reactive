@@ -20,7 +20,7 @@ import static org.springframework.http.HttpMethod.*;
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true) //TODO: when user request to a forbidden endpoint, instead of getting FORBIDDEN, we're getting UNAUTHORIZED
 public class SecurityConfig {
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;

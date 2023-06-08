@@ -4,7 +4,6 @@ import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.group.JoinProjectDto;
 import com.dev.vault.helper.payload.group.JoinResponse;
-import com.dev.vault.helper.payload.user.UserDto;
 import com.dev.vault.model.group.JoinProject;
 import com.dev.vault.model.group.Project;
 import com.dev.vault.model.group.ProjectMembers;
@@ -58,19 +57,21 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                 .build();
     }
 
-    // todo:: isMember is not correct
     // check if the user is already a member of the project or not
     private boolean isMember(Long projectId, String email) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", "ProjectId", projectId.toString()));
-        ProjectMembers member = projectMembersRepository.findByProject_ProjectNameAndProject_ProjectId(project.getProjectName(), projectId).get();
-        boolean equals = member.getUser().getEmail().equals(email);
-        log.info("--> is present?: " + equals);
-        return equals;
+
+        Optional<JoinProject> joinRequest = joinProjectRepository.findByProject_ProjectIdAndUser_Email(projectId, email);
+        if (joinRequest.isPresent())
+            throw new ResourceAlreadyExistsException("JoinProject", "JoinRequestId", joinRequest.get().getJoinRequestId().toString());
+
+        return projectMembersRepository.findByProject_ProjectNameAndUser_Email(project.getProjectName(), email).isPresent();
     }
 
     // get the list of join request by project id, and it's status (PENDING)
     @Override
+    @Transactional
     public List<JoinProjectDto> getJoinRequestsByProjectIdAndStatus(Long projectId, JoinStatus joinStatus) {
         return joinProjectRepository.findByProject_ProjectIdAndStatus(projectId, joinStatus)
                 .stream().map(joinRequest -> JoinProjectDto.builder()
@@ -82,7 +83,6 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                 ).collect(Collectors.toList());
     }
 
-    // TODO: remove the data from JoinProject table after the status has changed
     // update the status -> (APPROVED or REJECTED)
     @Override
     @Transactional
