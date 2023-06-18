@@ -10,6 +10,8 @@ import com.dev.vault.repository.group.ProjectRepository;
 import com.dev.vault.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,9 +26,25 @@ public class SearchServiceImpl implements SearchService {
     private final ProjectMembersRepository projectMembersRepository;
 
     // list all the projects(groups)
-    @Override
+    /*@Override
     public List<SearchResponse> listAllProjects() {
         return projectRepository.findAll().stream().map(project ->
+                SearchResponse.builder()
+                        .projectId(project.getProjectId())
+                        .projectName(project.getProjectName())
+                        .projectDescription(project.getDescription())
+                        .leaderName(project.getLeader().getUsername())
+                        .members(new ProjectMembersDto(getUserDtoList(project)))
+                        .build()
+        ).collect(Collectors.toList());
+    }*/
+    @Override
+    public List<SearchResponse> listAllProjects() {
+        List<Project> projects = projectRepository.findAll();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("🔐🔐🔐 User: {} accessed all projects", authentication.getName());
+        log.info("🔐🔐🔐 Projects that being accessed by {}; -> {}", authentication.getName(), projects);
+        return projects.stream().map(project ->
                 SearchResponse.builder()
                         .projectId(project.getProjectId())
                         .projectName(project.getProjectName())
