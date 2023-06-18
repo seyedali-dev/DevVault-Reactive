@@ -27,7 +27,7 @@ public class Roles {
             name = "roles_permissions",
             joinColumns = @JoinColumn(name = "role_id")
     )
-    @Column(name = "permission", nullable = false)
+    @Column(name = "permissions")
     @Enumerated(EnumType.STRING)
     private Set<Permissions> permissions = new HashSet<>();
 

@@ -14,6 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Builder
 @Entity
+@ToString
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

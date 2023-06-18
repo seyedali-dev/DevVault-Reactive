@@ -12,20 +12,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/search_project")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('PROJECT_LEADER', 'TEAM_MEMBER', 'GROUP_ADMIN') " +
-              "and hasAnyAuthority('team_member:read','project_leader:read','group_admin:read')")
+//@PreAuthorize("hasAnyRole('PROJECT_LEADER', 'TEAM_MEMBER', 'GROUP_ADMIN') " +
+//              "and hasAnyAuthority('team_member:read','project_leader:read','group_admin:read')")
+@PreAuthorize("hasAnyAuthority('team_member:read','project_leader:read','group_admin:read')")
 public class SearchController {
     private final SearchService searchService;
-
-    // finding a specific project
-    @GetMapping("/{projectOrGroupName}")
-    public ResponseEntity<List<SearchResponse>> searchForAProjectOrGroup(@PathVariable String projectOrGroupName) {
-        return ResponseEntity.ok(searchService.searchForProjectOrGroup(projectOrGroupName));
-    }
 
     // finding all projects
     @GetMapping
     public ResponseEntity<List<SearchResponse>> searchResultForAllProjects() {
         return ResponseEntity.ok(searchService.listAllProjects());
+    }
+
+    // finding a specific project
+    @GetMapping("/{projectOrGroupName}")
+    public ResponseEntity<List<SearchResponse>> searchForAProjectOrGroup(@PathVariable String projectOrGroupName) {
+        return ResponseEntity.ok(searchService.searchForProjectOrGroup(projectOrGroupName));
     }
 }
