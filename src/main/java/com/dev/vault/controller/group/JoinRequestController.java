@@ -9,10 +9,13 @@ import org.springframework.web.bind.annotation.*;
 
 import static com.dev.vault.model.group.enums.JoinStatus.*;
 
+/**
+ * REST controller for managing join requests.
+ */
 @RestController
 @RequestMapping("/api/v1/join_request")
 @RequiredArgsConstructor
-public class JoinRequestController { // TODO: every group's leader, should only access and manage, it's own groups members, not all the members.
+public class JoinRequestController {
 
     private final JoinRequestService joinRequestService;
 
@@ -22,7 +25,6 @@ public class JoinRequestController { // TODO: every group's leader, should only 
      * @param projectId the ID of the project to send the join request to
      * @return ResponseEntity containing the JoinResponse object returned by the service
      */
-    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'GROUP_ADMIN','TEAM_MEMBER')")
     @PostMapping({"/{projectId}"})
     public ResponseEntity<JoinResponse> sendJoinRequest(@PathVariable Long projectId) {
         return ResponseEntity.ok(joinRequestService.sendJoinRequest(projectId));
