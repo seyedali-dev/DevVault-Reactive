@@ -13,6 +13,7 @@ import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.group.ProjectRepository;
 import com.dev.vault.repository.group.UserProjectRoleRepository;
 import com.dev.vault.repository.user.RolesRepository;
+import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.service.AuthenticationService;
 import com.dev.vault.service.ProjectManagementService;
 import jakarta.transaction.Transactional;
@@ -23,10 +24,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+
+/**
+ * Service Implementation of Project Creation
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ProjectManagementServiceImpl implements ProjectManagementService {
+    private final UserRepository userRepository;
     private final RolesRepository rolesRepository;
     private final UserProjectRoleRepository userProjectRoleRepository;
     private final ProjectMembersRepository projectMembersRepository;
@@ -34,43 +40,13 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     private final ModelMapper modelMapper;
     private final AuthenticationService authenticationService;
 
-//    @Override
-//    @Transactional // TODO: when someone creates a project, he/she gets another role of project_leader
-//    public ProjectDto createProjectOrGroup(ProjectDto projectDto) {
-//        Optional<Project> foundProject = projectRepository.findByProjectNameAllIgnoreCase(projectDto.getProjectName());
-//        if (foundProject.isPresent()) {
-//            log.info("⚠️this project already exists! provide a unique name");
-//            throw new ResourceAlreadyExistsException("Project", "Project Name", foundProject.get().getProjectName());
-//        }
-//        User currentUser = authenticationService.getCurrentUser();
-//
-//        Project project = modelMapper.map(projectDto, Project.class);
-//        project.setLeader(currentUser);
-//        projectRepository.save(project);
-//
-//        ProjectMembers projectMembers = new ProjectMembers(
-//                currentUser,
-//                project,
-//                currentUser.getRoles()
-//                        .stream().map(Roles::getRole)
-//                        .toList()
-//        );
-//        projectMembersRepository.save(projectMembers);
-//
-//        return ProjectDto.builder()
-//                .projectName(project.getProjectName())
-//                .projectDescription(project.getDescription())
-//                .createdAt(project.getCreatedAt())
-//                .creationTime(project.getCreationTime())
-//                .build();
-//    }
-
     /**
-     * Creates a new project or group with the provided projectDto.
+     * Creates a new project with the provided projectDto.
      *
-     * @param projectDto the projectDto containing the project or group information
-     * @return a ProjectDto object with the project or group information
+     * @param projectDto the projectDto containing the project information like name and description
+     * @return a ProjectDto object with the project information
      * @throws ResourceAlreadyExistsException if a project with the same name already exists
+     * @throws ResourceNotFoundException      if the PROJECT_LEADER role is not found
      */
     @Override
     @Transactional
@@ -82,8 +58,16 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
             throw new ResourceAlreadyExistsException("Project", "Project Name", foundProject.get().getProjectName());
         }
 
+        // Get the PROJECT_LEADER role
+        Roles projectLeaderRole = rolesRepository.findByRole(Role.PROJECT_LEADER)
+                .orElseThrow(() -> new ResourceNotFoundException("Role", "RoleName", Role.PROJECT_LEADER.name()));
+
         // Get the current user
         User currentUser = authenticationService.getCurrentUser();
+
+        // Add the PROJECT_LEADER role to the current user and save to db
+        currentUser.getRoles().add(projectLeaderRole);
+        userRepository.save(currentUser);
 
         // Map the projectDto to a Project object and set the leader to the current user
         Project project = modelMapper.map(projectDto, Project.class);
@@ -97,9 +81,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
         projectMembersRepository.save(projectMembers);
 
         // Create a new UserProjectRole object for the current user and save it to the database
-        Roles role = rolesRepository.findByRole(Role.PROJECT_LEADER)
-                .orElseThrow(() -> new ResourceNotFoundException("Role", "RoleName", Role.PROJECT_LEADER.name()));
-        UserProjectRole userProjectRole = new UserProjectRole(currentUser, role, project);
+        UserProjectRole userProjectRole = new UserProjectRole(currentUser, projectLeaderRole, project);
         userProjectRoleRepository.save(userProjectRole);
 
         // Return a ProjectDto object with the project information

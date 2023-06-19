@@ -4,6 +4,4 @@ public enum JoinStatus {
     APPROVED,
     REJECTED,
     PENDING
-
-    ;
 }

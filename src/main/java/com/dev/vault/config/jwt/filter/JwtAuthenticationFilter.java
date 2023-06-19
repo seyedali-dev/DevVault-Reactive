@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String token;
         final String userEmail;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.info("JwtAuthenticationFilter :: Invalid token ❌❌❌");
+            log.info("❌❌❌ JwtAuthenticationFilter :: Invalid token ❌❌❌");
             filterChain.doFilter(request, response);
             return;
         }

@@ -14,7 +14,7 @@ import lombok.*;
 @Table(name = "user_project_role")
 public class UserProjectRole {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userProjectRoleId;
 
     /* relationships */

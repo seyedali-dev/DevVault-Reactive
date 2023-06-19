@@ -5,45 +5,41 @@ import com.dev.vault.helper.payload.group.ProjectMembersDto;
 import com.dev.vault.helper.payload.group.SearchResponse;
 import com.dev.vault.helper.payload.user.UserDto;
 import com.dev.vault.model.group.Project;
+import com.dev.vault.model.group.ProjectMembers;
+import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.group.ProjectRepository;
 import com.dev.vault.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service implementation for searching projects.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
+// TODO:: pagination
 public class SearchServiceImpl implements SearchService {
 
     private final ProjectRepository projectRepository;
     private final ProjectMembersRepository projectMembersRepository;
 
-    // list all the projects(groups)
-    /*@Override
-    public List<SearchResponse> listAllProjects() {
-        return projectRepository.findAll().stream().map(project ->
-                SearchResponse.builder()
-                        .projectId(project.getProjectId())
-                        .projectName(project.getProjectName())
-                        .projectDescription(project.getDescription())
-                        .leaderName(project.getLeader().getUsername())
-                        .members(new ProjectMembersDto(getUserDtoList(project)))
-                        .build()
-        ).collect(Collectors.toList());
-    }*/
+    /**
+     * Returns a list of all projects with their details.
+     *
+     * @return A list of SearchResponse objects containing project details.
+     */
     @Override
     public List<SearchResponse> listAllProjects() {
+        // Get all projects from the project repository
         List<Project> projects = projectRepository.findAll();
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("🔐🔐🔐 User: {} accessed all projects", authentication.getName());
-        log.info("🔐🔐🔐 Projects that being accessed by {}; -> {}", authentication.getName(), projects);
+        // Map each project to a SearchResponse object and collect them into a list
         return projects.stream().map(project ->
                 SearchResponse.builder()
                         .projectId(project.getProjectId())
@@ -52,17 +48,26 @@ public class SearchServiceImpl implements SearchService {
                         .leaderName(project.getLeader().getUsername())
                         .members(new ProjectMembersDto(getUserDtoList(project)))
                         .build()
-        ).collect(Collectors.toList());
+        ).toList();
     }
 
-    // search for a group or project based on their name
+    /**
+     * Searches for a project or group based on their name and returns their details.
+     *
+     * @param projectName The name of the project to search for.
+     * @return A list of SearchResponse objects containing project details.
+     * @throws ResourceNotFoundException If no project is found with the given name.
+     */
     @Override
-    public List<SearchResponse> searchForProjectOrGroup(String projectOrGroupName) {
-        List<Project> project = projectRepository.findByProjectNameContaining(projectOrGroupName);
+    public List<SearchResponse> searchForProject(String projectName) {
+        // Search for projects with names containing the given string
+        List<Project> project = projectRepository.findByProjectNameContaining(projectName);
 
+        // Throw an exception if no project is found
         if (project == null || project.isEmpty())
-            throw new ResourceNotFoundException("Project(group)", "ProjectName", projectOrGroupName);
+            throw new ResourceNotFoundException("Project(group)", "ProjectName", projectName);
 
+        // Map each project to a SearchResponse object and collect them into a list
         return project.stream()
                 .map(projects -> SearchResponse.builder()
                         .projectId(projects.getProjectId())
@@ -75,21 +80,30 @@ public class SearchServiceImpl implements SearchService {
                 .toList();
     }
 
-
-    // create a list of UserDto's for sending list of members to the response
+    /**
+     * Returns a list of UserDto objects for a given project.
+     *
+     * @param project The project to get the list of members for.
+     * @return A list of UserDto objects representing the members of the project.
+     */
     private List<UserDto> getUserDtoList(Project project) {
-        return projectMembersRepository.findByProject(project)
-                .stream().map(projectMembers ->
-                        UserDto.builder()
-                                .username(projectMembers.getUser().getUsername())
-                                .education(projectMembers.getUser().getEducation())
-                                .major(projectMembers.getUser().getMajor())
-                                .role(projectMembers.getUser().getRoles()
-                                        .stream().map(
-                                                roles -> roles.getRole().name())
-                                        .toList()
-                                )
-                                .build()
-                ).toList();
+        // Get all project members associated with the given project
+        List<ProjectMembers> members = projectMembersRepository.findByProject(project);
+
+        // Create a list of UserDto objects for the project members
+        ArrayList<UserDto> userDtos = new ArrayList<>();
+        for (ProjectMembers projectMembers : members) {
+            User user = projectMembers.getUser();
+            UserDto userDto = UserDto.builder()
+                    .username(user.getUsername())
+                    .major(user.getMajor())
+                    .education(user.getEducation())
+                    .role(user.getRoles()
+                            .stream().map(roles -> roles.getRole().name()).toList()
+                    )
+                    .build();
+            userDtos.add(userDto);
+        }
+        return userDtos;
     }
 }
