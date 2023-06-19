@@ -1,6 +1,5 @@
 package com.dev.vault.helper.payload.auth;
 
-import com.dev.vault.helper.payload.user.RoleDescription;
 import lombok.*;
 
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.List;
 public class AuthenticationResponse {
     private String username;
     private List<String> roles;
-    private List<RoleDescription> rolesDescription;
+    private List<String> rolesDescription;
     private String token;
 
     // constructor, getters, and setters

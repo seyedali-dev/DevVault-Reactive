@@ -28,9 +28,8 @@ public class ApplicationConfiguration {
             return new org.springframework.security.core.userdetails.User(
                     user.getEmail(),
                     user.getPassword(),
-                    user.getRoles()
-                            .stream().flatMap(r -> r.getPermissions()
-                                    .stream().map(permissions -> new SimpleGrantedAuthority(permissions.getPermission()))
+                    user.getRoles() //todo:: remember this mistake and make a note somewhere [not including "ROLE_" leads to forbidden 403]
+                            .stream().map(roles -> new SimpleGrantedAuthority("ROLE_" + roles.getRole().name())
                             ).toList()
             );
         };
