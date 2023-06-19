@@ -8,7 +8,6 @@ import com.dev.vault.helper.payload.auth.AuthenticationRequest;
 import com.dev.vault.helper.payload.auth.AuthenticationResponse;
 import com.dev.vault.helper.payload.auth.RegisterRequest;
 import com.dev.vault.helper.payload.email.Email;
-import com.dev.vault.helper.payload.user.RoleDescription;
 import com.dev.vault.model.user.Roles;
 import com.dev.vault.model.user.User;
 import com.dev.vault.model.user.VerificationToken;
@@ -63,14 +62,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.info("❌ This user already exists! provide unique email. ❌");
             throw new ResourceAlreadyExistsException("User", "Email", registerRequest.getEmail());
         }
+        // find the TEAM_MEMBER role and assign it to newly created user as default role
+        Roles teamMemberRole = rolesRepository.findByRole(Role.TEAM_MEMBER)
+                .orElseThrow(() -> new ResourceNotFoundException("Role", "RoleName", Role.TEAM_MEMBER.name()));
 
         // create a new user object and map the properties from the register request
         User user = modelMapper.map(registerRequest, User.class);
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-
-        // assign TEAM_MEMBER role to the newly created user
-        Roles teamMemberRole = new Roles(Role.TEAM_MEMBER, Role.TEAM_MEMBER.getPermissions());
-        rolesRepository.save(teamMemberRole);
         user.getRoles().add(teamMemberRole);
         user.setRolesDescription("➡️➡️Default role for user is TEAM_MEMBER");
 
@@ -87,7 +85,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 "Please click the url below to activate your account: " + ACCOUNT_VERIFICATION_AUTH_URL + token));
 
         log.info("➡️ generating JWT token...");
-
         // generate and return a JWT token for the newly created user
         String jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
@@ -96,12 +93,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .stream().map(roles -> roles.getRole().name())
                         .toList()
                 )
-                .rolesDescription(
-                        List.of(
-                                new RoleDescription("➡️➡️Default role for user is TEAM_MEMBER"),
-                                new RoleDescription("")
-                        )
-                )
+                .rolesDescription(List.of("➡️➡️Default role for user is TEAM_MEMBER"))
                 .token(jwtToken)
                 .build();
     }

@@ -31,11 +31,8 @@ public class ProjectMembers {
     private Project project;
     /* end of relationships */
 
-    private List<Role> role;
-
-    public ProjectMembers(User user, Project project, List<Role> role) {
+    public ProjectMembers(User user, Project project) {
         this.user = user;
         this.project = project;
-        this.role = role;
     }
 }

@@ -1,6 +1,5 @@
 package com.dev.vault.model.user;
 
-import com.dev.vault.model.user.enums.Permissions;
 import com.dev.vault.model.user.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,20 +21,12 @@ public class Roles {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @ElementCollection(targetClass = Permissions.class, fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "roles_permissions",
-            joinColumns = @JoinColumn(name = "role_id")
-    )
-    @Column(name = "permissions")
-    @Enumerated(EnumType.STRING)
-    private Set<Permissions> permissions = new HashSet<>();
-
+    /* relationships */
     @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
     private Set<User> users = new HashSet<>();
 
-    public Roles(Role role, Set<Permissions> permissions) {
+    public Roles(Role role) {
         this.role = role;
-        this.permissions = permissions;
     }
+    /* end of relationships */
 }
