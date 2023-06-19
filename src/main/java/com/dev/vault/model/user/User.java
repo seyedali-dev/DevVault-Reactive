@@ -76,8 +76,9 @@ public class User implements UserDetails {
         return true;
     }
 
-    @Override // todo: implement the security to bypass even if the user is not active, but he/she won't have any
-    // any access to any resources accept the login and search groups
+    @Override
+    // todo: implement the security to bypass even if the user is not active, but he/she won't have
+    //  any access to any resources accept the login and search groups
     public boolean isEnabled() {
         return this.isActive();
     }

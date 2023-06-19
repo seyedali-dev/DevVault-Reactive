@@ -129,7 +129,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                     ).collect(Collectors.toList());
         } else {
             // Throw an exception if the user is not the project leader or admin of the group
-            throw new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this group 👮🏻");
+            throw new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this project 👮🏻");
         }
     }
 
@@ -177,7 +177,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
             return joinResponse;
         } else {
             // Throw an exception if the user is not the project leader or admin of the group
-            throw new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this group 👮🏻");
+            throw new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this project 👮🏻");
         }
     }
 
