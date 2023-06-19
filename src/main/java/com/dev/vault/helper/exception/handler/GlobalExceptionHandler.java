@@ -1,9 +1,6 @@
 package com.dev.vault.helper.exception.handler;
 
-import com.dev.vault.helper.exception.AuthenticationFailedException;
-import com.dev.vault.helper.exception.DevVaultException;
-import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
-import com.dev.vault.helper.exception.ResourceNotFoundException;
+import com.dev.vault.helper.exception.*;
 import com.dev.vault.helper.payload.dto.ApiResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
@@ -52,5 +49,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ExpiredJwtException.class)
     public ResponseEntity<ApiResponse> expiredJwtExceptionHandler(ExpiredJwtException e) {
         return new ResponseEntity<>(new ApiResponse(e.getMessage(), false), HttpStatus.REQUEST_TIMEOUT);
+    }
+
+    @ExceptionHandler(NotLeaderOfProjectException.class)
+    public ResponseEntity<ApiResponse> notLeaderOfProjectExceptionHandler(NotLeaderOfProjectException e) {
+        return new ResponseEntity<>(new ApiResponse(e.getMessage(), false), HttpStatus.FORBIDDEN);
     }
 }
