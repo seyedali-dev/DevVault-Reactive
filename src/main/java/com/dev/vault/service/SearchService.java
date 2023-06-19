@@ -9,5 +9,5 @@ public interface SearchService {
     List<SearchResponse> listAllProjects();
 
     // search for a group with matching names
-    List<SearchResponse> searchForProjectOrGroup(String projectOrGroupName);
+    List<SearchResponse> searchForProject(String projectOrGroupName);
 }

@@ -19,27 +19,26 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         String errorMessage;
         switch (response.getStatus()) {
             case HttpServletResponse.SC_UNAUTHORIZED -> {
-                errorMessage = "UnAuthorized: Server⚠️";
+                errorMessage = "❌❌❌ UnAuthorized: Server ❌❌❌";
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, errorMessage);
             }
             case HttpServletResponse.SC_FORBIDDEN -> {
-                errorMessage = "Forbidden: Server ⚠️❗";
+                errorMessage = "❗⚠️ Forbidden: Server ⚠️❗";
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, errorMessage);
             }
             case HttpServletResponse.SC_NOT_FOUND -> {
-                errorMessage = "Not Found: Server ⁉️";
+                errorMessage = "⁉️ Not Found: Server ⁉️";
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, errorMessage);
             }
             case HttpServletResponse.SC_INTERNAL_SERVER_ERROR -> {
-                errorMessage = "Internal Server Error: Server 🪲";
+                errorMessage = "🪲 Internal Server Error: Server 🪲";
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorMessage);
             }
             default -> {
-                errorMessage = "Bad Request: Server 🤨😐😑😶🙄";
+                errorMessage = "🤨😐😑😶🙄 Bad Request: Server 🤨😐😑😶🙄";
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, errorMessage);
             }
         }
         log.info(errorMessage);
-        log.info("❌❌❌ JwtAuthenticationEntryPoint :: you are not authorized! ❌❌❌");
     }
 }

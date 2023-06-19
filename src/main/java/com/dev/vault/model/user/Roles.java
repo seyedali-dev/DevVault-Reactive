@@ -24,9 +24,5 @@ public class Roles {
     /* relationships */
     @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
     private Set<User> users = new HashSet<>();
-
-    public Roles(Role role) {
-        this.role = role;
-    }
     /* end of relationships */
 }

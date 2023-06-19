@@ -11,9 +11,9 @@ import java.util.Optional;
 
 public interface ProjectMembersRepository extends JpaRepository<ProjectMembers, Long> {
     @Query("""
-            SELECT p FROM ProjectMembers p
-            WHERE p.project =:project
-            ORDER BY p.user.roles""")
+             SELECT p FROM ProjectMembers p
+             WHERE p.project =:project
+            """)
     List<ProjectMembers> findByProject(Project project);
 
     Optional<ProjectMembers> findByProject_ProjectNameAndUser_Email(String projectName, String email);
