@@ -12,6 +12,9 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service implementation for Sending Email.
+ */
 @Service
 @AllArgsConstructor
 @Slf4j

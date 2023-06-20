@@ -34,15 +34,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Authentication implementation: Registration & Login.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class AuthenticationServiceImpl implements AuthenticationService {
+
     private final RolesRepository rolesRepository;
-
     private static final String ACCOUNT_VERIFICATION_AUTH_URL = "http://localhost:8080/api/auth/accountVerification/";
-
     private final VerificationTokenRepository verificationTokenRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -52,7 +54,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
 
-    // create a new user, and send verification account for activating him/her
+    /**
+     * Creates a new user with the provided information and sends an account verification email.
+     *
+     * @param registerRequest the request containing user registration information
+     * @return an AuthenticationResponse object containing the newly created user's information and a JWT token
+     */
     @Override
     public AuthenticationResponse registerUser(RegisterRequest registerRequest) {
         // check if user already exists in the database
@@ -62,6 +69,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.info("❌ This user already exists! provide unique email. ❌");
             throw new ResourceAlreadyExistsException("User", "Email", registerRequest.getEmail());
         }
+
         // find the TEAM_MEMBER role and assign it to newly created user as default role
         Roles teamMemberRole = rolesRepository.findByRole(Role.TEAM_MEMBER)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", "RoleName", Role.TEAM_MEMBER.name()));
@@ -98,14 +106,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
-    // generate a verification token for the user that has attempted to sign-up
+    /**
+     * Generates a verification token for the user that has attempted to sign-up.
+     *
+     * @param user the user to generate the verification token for
+     * @return the verification token as a string
+     */
     private String generateVerificationToken(User user) {
         VerificationToken verificationToken = new VerificationToken(user);
         verificationTokenRepository.save(verificationToken);
         return verificationToken.getToken();
     }
 
-    // verify the account and activate the user
+    /**
+     * Verifies the user's account and activates it.
+     *
+     * @param token the verification token
+     */
     @Override
     public void verifyAccount(String token) {
         // find the verification token in the database
@@ -120,7 +137,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.info("✅✅✅ User is now activated. ✅✅✅");
     }
 
-    // login and generate a JWT token
+    /**
+     * Authenticates the user's credentials and generates a JWT token.
+     *
+     * @param request the request containing the user's credentials
+     * @return an AuthenticationResponse object containing the user's information and a JWT token
+     */
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         // authenticate the user's credentials using the authentication manager
@@ -144,7 +166,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
-    // get the logged-in user
+    /**
+     * Retrieves the currently logged-in user.
+     *
+     * @return the logged-in user
+     */
     @Override
     public User getCurrentUser() {
         // get the email of the currently authenticated user from the security context

@@ -8,6 +8,9 @@ import lombok.*;
 
 import java.util.List;
 
+/**
+ * Entity for managing the relationship of members of a Project.
+ */
 @Getter
 @Setter
 @AllArgsConstructor
