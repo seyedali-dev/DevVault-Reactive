@@ -4,6 +4,7 @@ import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.payload.group.ProjectDto;
 import com.dev.vault.model.group.Project;
 import com.dev.vault.model.group.ProjectMembers;
+import com.dev.vault.model.user.Roles;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.group.ProjectRepository;
@@ -40,9 +41,15 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
         project.setLeader(currentUser);
         projectRepository.save(project);
 
-        ProjectMembers projectMembers = new ProjectMembers(currentUser, project, currentUser.getRoles());
+        ProjectMembers projectMembers = new ProjectMembers(
+                currentUser,
+                project,
+                currentUser.getRoles()
+                        .stream().map(Roles::getRole)
+                        .toList()
+        );
         projectMembersRepository.save(projectMembers);
-        
+
         return ProjectDto.builder()
                 .projectName(project.getProjectName())
                 .projectDescription(project.getDescription())

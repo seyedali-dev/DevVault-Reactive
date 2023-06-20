@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import static com.dev.vault.model.user.enums.Permissions.*;
 
 @RequiredArgsConstructor
-public enum Roles {
+public enum Role {
     PROJECT_LEADER(Set.of(
             PROJECT_LEADER_ACCEPT_JOIN_REQUEST, PROJECT_LEADER_DELETE_MEMBER, PROJECT_LEADER_READ, PROJECT_LEADER_CREATE_PROJECT,
             GROUP_ADMIN_ACCEPT_JOIN_REQUEST, GROUP_ADMIN_READ, GROUP_ADMIN_CREATE_PROJECT

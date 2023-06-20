@@ -8,6 +8,7 @@ import com.dev.vault.model.group.JoinProject;
 import com.dev.vault.model.group.Project;
 import com.dev.vault.model.group.ProjectMembers;
 import com.dev.vault.model.group.enums.JoinStatus;
+import com.dev.vault.model.user.Roles;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.JoinProjectRepository;
 import com.dev.vault.repository.group.ProjectMembersRepository;
@@ -94,7 +95,13 @@ public class JoinRequestServiceImpl implements JoinRequestService {
 
         JoinResponse joinResponse = new JoinResponse();
         if (joinStatus.equals(APPROVED)) {
-            ProjectMembers projectMembers = new ProjectMembers(request.getUser(), request.getProject(), request.getUser().getRoles());
+            ProjectMembers projectMembers = new ProjectMembers(
+                    request.getUser(),
+                    request.getProject(),
+                    request.getUser().getRoles()
+                            .stream().map(Roles::getRole)
+                            .toList()
+            );
 
             projectMembersRepository.save(projectMembers);
             joinProjectRepository.delete(request);

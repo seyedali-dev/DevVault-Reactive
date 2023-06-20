@@ -1,15 +1,15 @@
 package com.dev.vault.model.user;
 
 
-import com.dev.vault.model.user.enums.Roles;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
+import java.util.*;
 
 @Getter
 @Setter
@@ -33,12 +33,22 @@ public class User implements UserDetails {
     private String education;
     private String major;
 
-    private Roles roles;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Roles> roles = new HashSet<>();
     private String rolesDescription;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.authorities();
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        for (Roles eachRole : roles) {
+            authorities.add(new SimpleGrantedAuthority(eachRole.getRole().name()));
+        }
+        return authorities;
     }
 
     @Override
@@ -67,7 +77,7 @@ public class User implements UserDetails {
     }
 
     @Override // todo: implement the security to bypass even if the user is not active, but he/she won't have any
-              // any access to any resources accept the login and search groups
+    // any access to any resources accept the login and search groups
     public boolean isEnabled() {
         return this.isActive();
     }

@@ -1,10 +1,12 @@
 package com.dev.vault.model.group;
 
 import com.dev.vault.model.user.User;
-import com.dev.vault.model.user.enums.Roles;
+import com.dev.vault.model.user.enums.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -29,9 +31,9 @@ public class ProjectMembers {
     private Project project;
     /* end of relationships */
 
-    private Roles role;
+    private List<Role> role;
 
-    public ProjectMembers(User user, Project project, Roles role) {
+    public ProjectMembers(User user, Project project, List<Role> role) {
         this.user = user;
         this.project = project;
         this.role = role;

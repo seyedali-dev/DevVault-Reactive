@@ -66,7 +66,11 @@ public class SearchServiceImpl implements SearchService {
                                 .username(projectMembers.getUser().getUsername())
                                 .education(projectMembers.getUser().getEducation())
                                 .major(projectMembers.getUser().getMajor())
-                                .role(projectMembers.getUser().getRoles().name())
+                                .role(projectMembers.getUser().getRoles()
+                                        .stream().map(
+                                                roles -> roles.getRole().name())
+                                        .toList()
+                                )
                                 .build()
                 ).toList();
     }
