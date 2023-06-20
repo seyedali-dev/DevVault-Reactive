@@ -5,6 +5,10 @@ import com.dev.vault.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Entity for managing the relationship of a PROJECT_LEADER with a specific project.
+ * This class is used to check if a user is a project leader of a specific project, not other projects.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

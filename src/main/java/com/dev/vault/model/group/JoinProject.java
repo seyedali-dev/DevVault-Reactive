@@ -5,6 +5,9 @@ import com.dev.vault.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Entity for sending join request to a Project - PROJECT_LEADER.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

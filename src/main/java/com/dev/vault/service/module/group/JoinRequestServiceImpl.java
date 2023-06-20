@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 
 import static com.dev.vault.model.group.enums.JoinStatus.*;
 
+/**
+ * Service implementation of sending and managing Join Requests.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
