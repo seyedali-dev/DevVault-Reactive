@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.stream.Collectors;
+
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfiguration {
@@ -29,7 +31,8 @@ public class ApplicationConfiguration {
                     user.getEmail(),
                     user.getPassword(),
                     user.getRoles()
-                            .stream().map(roles -> new SimpleGrantedAuthority(roles.getRole().name())
+                            .stream().flatMap(r -> r.getPermissions()
+                                    .stream().map(permissions -> new SimpleGrantedAuthority(permissions.getPermission()))
                             ).toList()
             );
         };
