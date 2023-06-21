@@ -4,6 +4,7 @@ import com.dev.vault.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Random;
 import java.util.UUID;
 
 @Getter
@@ -35,10 +36,10 @@ public class JoinCoupon {
 
     private boolean used = false;
 
-    public JoinCoupon(User requestingUser, User leader, Project project) {
-        this.coupon = UUID.randomUUID().toString();
+    public JoinCoupon(User requestingUser, User leader, Project project, String coupon) {
         this.requestingUser = requestingUser;
         this.leader = leader;
         this.project = project;
+        this.coupon = coupon;
     }
 }
