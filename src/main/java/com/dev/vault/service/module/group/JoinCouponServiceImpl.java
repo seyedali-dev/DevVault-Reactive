@@ -55,7 +55,6 @@ public class JoinCouponServiceImpl implements JoinCouponService {
     @Override
     @Transactional
     public String generateOneTimeJoinCoupon(Long projectId, Long requestingUserId) {
-
         // Get the project with the given ID from the database
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", "ProjectID", projectId.toString()));
@@ -67,37 +66,34 @@ public class JoinCouponServiceImpl implements JoinCouponService {
         // Get the leader of the project
         User leader = project.getLeader();
 
-        // Verify that the current user is the leader or admin of the specific project
-        if (joinRequestService.isLeaderOrAdminOfProject(project)) {
-            // Get the current authenticated user
-            User currentUser = authenticationService.getCurrentUser();
-
-            // Check if the requesting user is the same as the current user, and if so, throw an exception
-            if (requestingUserId.equals(currentUser.getUserId())) {
-                List<Role> roles = authenticationService.getCurrentUser().getRoles()
-                        .stream()
-                        .map(Roles::getRole)
-                        .filter(role -> role.name().equals("PROJECT_LEADER") || role.name().equals("PROJECT_ADMIN"))
-                        .toList();
-                throw new ResourceAlreadyExistsException("You are already a member of this project (Roles: " + roles + ")...");
-            }
-
-            // Create a new join coupon object with the requesting user, leader, and project
-            String randomCoupon = generateRandomCoupon(project.getProjectName(), project.getMemberCount(), requestingUser);
-            JoinCoupon joinCoupon = new JoinCoupon(requestingUser, leader, project, randomCoupon);
-
-            // Check if a join coupon has already been generated for the requesting user and project, and if so, throw an exception
-            Optional<JoinCoupon> foundCoupon = joinCouponRepository.findByRequestingUserAndProject(requestingUser, project);
-            if (foundCoupon.isPresent())
-                throw new ResourceAlreadyExistsException("A coupon is already generated for: " + requestingUser.getUsername());
-
-            // Save the join coupon object to the database and return the generated coupon string
-            joinCouponRepository.save(joinCoupon);
-            return joinCoupon.getCoupon();
-        } else {
-            // Throw an exception if the current user is not the leader or admin of the specific project
+        // Check if the current user is the leader or admin of the specific project
+        if (!joinRequestService.isLeaderOrAdminOfProject(project)) {
             throw new NotLeaderOfProjectException("❌ You are not the leader or admin of this project ❌");
         }
+
+        // Get the current authenticated user and check if the requesting user is the same as the current user
+        User currentUser = authenticationService.getCurrentUser();
+        if (requestingUserId.equals(currentUser.getUserId())) {
+            List<Role> roles = currentUser.getRoles()
+                    .stream().map(Roles::getRole)
+                    .filter(role -> role.name().equals("PROJECT_LEADER") || role.name().equals("PROJECT_ADMIN"))
+                    .toList();
+            throw new ResourceAlreadyExistsException("You are already a member of this project (Roles: " + roles + ")...");
+        }
+
+        // Check if a join coupon has already been generated for the requesting user and project, and if so, throw an exception
+        Optional<JoinCoupon> foundCoupon = joinCouponRepository.findByRequestingUserAndProject(requestingUser, project);
+        if (foundCoupon.isPresent()) {
+            throw new ResourceAlreadyExistsException("A coupon is already generated for: " + requestingUser.getUsername());
+        }
+
+        // Create a new join coupon object with the requesting user, leader, and project
+        String randomCoupon = generateRandomCoupon(project.getProjectName(), project.getMemberCount(), requestingUser);
+        JoinCoupon joinCoupon = new JoinCoupon(requestingUser, leader, project, randomCoupon);
+
+        // Save the join coupon object to the database and return the generated coupon string
+        joinCouponRepository.save(joinCoupon);
+        return joinCoupon.getCoupon();
     }
 
     /**
@@ -110,7 +106,6 @@ public class JoinCouponServiceImpl implements JoinCouponService {
      * @throws ResourceNotFoundException if the project cannot be found in the database.
      */
     private String generateRandomCoupon(String projectName, int memberCount, User requestingUser) {
-
         // Get the project with the given name from the database
         Project project = projectRepository.findByProjectName(projectName)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", "ProjectID", projectName));
