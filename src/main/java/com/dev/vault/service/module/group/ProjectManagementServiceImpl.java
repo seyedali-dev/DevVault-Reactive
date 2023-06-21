@@ -72,6 +72,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
         // Map the projectDto to a Project object and set the leader to the current user
         Project project = modelMapper.map(projectDto, Project.class);
         project.setLeader(currentUser);
+        project.incrementMemberCount();
 
         // Save the project to the database
         projectRepository.save(project);

@@ -202,8 +202,13 @@ public class JoinRequestServiceImpl implements JoinRequestService {
             JoinResponse joinResponse = new JoinResponse();
             // Perform the necessary actions based on the new status
             if (joinStatus.equals(APPROVED)) {
-                // If the join request was approved, create a new ProjectMembers object and save it to the repository
+                // If the join request was approved, create a new ProjectMembers object and save it to the repository, then increment the number of members
                 ProjectMembers projectMembers = new ProjectMembers(request.getUser(), request.getProject());
+
+                Project project = projectMembers.getProject();
+                project.incrementMemberCount();
+
+                projectRepository.save(project);
                 projectMembersRepository.save(projectMembers);
 
                 joinResponse.setJoinStatus(joinStatus);
