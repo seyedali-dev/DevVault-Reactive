@@ -27,7 +27,7 @@ public class ProjectManagementController {
      * @param projectDto the project or group details to create
      * @return a ResponseEntity containing the created project or group and an HTTP status code of 201 (CREATED)
      */
-    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'TEAM_MEMBER', 'GROUP_ADMIN')")
+    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'TEAM_MEMBER', 'PROJECT_ADMIN')")
     @PostMapping({"/create-project", "/create-group"})
     public ResponseEntity<?> createProject(@RequestBody ProjectDto projectDto) {
         return new ResponseEntity<>(projectManagementService.createProject(projectDto), HttpStatus.CREATED);
