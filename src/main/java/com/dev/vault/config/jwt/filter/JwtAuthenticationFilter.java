@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String token;
         final String userEmail;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.info("❌❌❌ JwtAuthenticationFilter :: Invalid token ❌❌❌");
+            log.info("❌❌❌ Invalid token ❌❌❌");
             filterChain.doFilter(request, response);
             return;
         }
@@ -47,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info("JWT token has expired ❌");
             throw new ExpiredJwtException(null, null, "JWT token has been expired ❌", e);
         } catch (IllegalArgumentException e) {
-            log.info("JwtAuthenticationFilter :: Invalid token request ❌");
+            log.info("Invalid token request ❌");
             throw new DevVaultException("Invalid token request ❌");
         }
 
