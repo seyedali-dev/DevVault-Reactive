@@ -26,10 +26,14 @@ public class Project {
     private LocalDate createdAt;
     @CreationTimestamp
     private LocalTime creationTime;
+    private int memberCount;
 
     /* relationships */
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private User leader;
     /* end of relationships */
 
+    public int incrementMemberCount() {
+        return this.memberCount++;
+    }
 }
