@@ -1,6 +1,7 @@
 package com.dev.vault.model.user;
 
 
+import com.dev.vault.model.task.Task;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -33,6 +34,7 @@ public class User implements UserDetails {
     private String education;
     private String major;
 
+    /* relationships */
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
@@ -40,7 +42,10 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Roles> roles = new HashSet<>();
-    private String rolesDescription;
+
+    @OneToMany(mappedBy = "createdBy")
+    private List<Task> task = new ArrayList<>();
+    /* end of relationships */
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

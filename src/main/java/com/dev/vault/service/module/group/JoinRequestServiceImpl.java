@@ -177,57 +177,126 @@ public class JoinRequestServiceImpl implements JoinRequestService {
         }
     }
 
+//    /**
+//     * Approves or Rejects a user's project join request and performs the necessary actions based on the new status.
+//     * Only project leader and project admin are allowed.
+//     *
+//     * @param joinRequestId the ID of the join request to update
+//     * @param joinStatus    the new status of the join request (APPROVED or REJECTED)
+//     * @return JoinResponse indicating the result of the update operation
+//     * @throws ResourceNotFoundException   if the join request cannot be found
+//     * @throws NotLeaderOfProjectException if the user is not the project leader or admin of the group
+//     */
+//    @Override
+//    @Transactional
+//    public JoinResponse updateJoinRequestStatus(Long joinRequestId, JoinStatus joinStatus) {
+//        // Retrieve the join request from the repository
+//        JoinProjectRequest request = joinProjectRequestRepository.findById(joinRequestId)
+//                .orElseThrow(() -> new ResourceNotFoundException("JoinProjectRequest", "JoinProjectId", joinRequestId.toString()));
+//
+//        // Check if the current user is the project leader or project admin of the project associated with the join request
+//        if (isLeaderOrAdminOfProject(request.getProject())) {
+//            request.setStatus(joinStatus);
+//            joinProjectRequestRepository.save(request);
+//
+//            JoinResponse joinResponse = new JoinResponse();
+//            // Perform the necessary actions based on the new status
+//            if (joinStatus.equals(APPROVED)) {
+//                // If the join request was approved, create a new ProjectMembers object and save it to the repository, then increment the number of members
+//                ProjectMembers projectMembers = new ProjectMembers(request.getUser(), request.getProject());
+//
+//                Project project = projectMembers.getProject();
+//                project.incrementMemberCount();
+//
+//                projectRepository.save(project);
+//                projectMembersRepository.save(projectMembers);
+//
+//                joinResponse.setJoinStatus(joinStatus);
+//
+//                // Delete the join request from the repository
+//                joinProjectRequestRepository.delete(request);
+//            } else if (joinStatus.equals(REJECTED)) {
+//                // If the join request was rejected, delete it from the repository
+//                joinResponse.setJoinStatus(REJECTED);
+//                joinProjectRequestRepository.delete(request);
+//            } else {
+//                // If the join status is invalid, return null
+//                return null;
+//            }
+//            return joinResponse;
+//        } else {
+//            // Throw an exception if the user is not the project leader or admin of the group
+//            throw new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this project 👮🏻");
+//        }
+//    }
+
     /**
-     * Approves or Rejects a user's project join request and performs the necessary actions based on the new status.
-     * Only project leader and project admin are allowed.
+     * Updates the status of a join request with the given ID and join status (APPROVED, REJECTED).
      *
-     * @param joinRequestId the ID of the join request to update
-     * @param joinStatus    the new status of the join request (APPROVED or REJECTED)
-     * @return JoinResponse indicating the result of the update operation
-     * @throws ResourceNotFoundException   if the join request cannot be found
-     * @throws NotLeaderOfProjectException if the user is not the project leader or admin of the group
+     * @param joinRequestId The ID of the join request to update.
+     * @param joinStatus    The new status of the join request.
+     * @return A JoinResponse object with the updated join status.
+     * @throws ResourceNotFoundException   If the join request with the given ID is not found.
+     * @throws NotLeaderOfProjectException If the user is not the leader or admin of the project.
      */
     @Override
     @Transactional
     public JoinResponse updateJoinRequestStatus(Long joinRequestId, JoinStatus joinStatus) {
-        // Retrieve the join request from the repository
+        // Find the join request with the given ID
         JoinProjectRequest request = joinProjectRequestRepository.findById(joinRequestId)
                 .orElseThrow(() -> new ResourceNotFoundException("JoinProjectRequest", "JoinProjectId", joinRequestId.toString()));
 
-        // Check if the current user is the project leader or project admin of the project associated with the join request
-        if (isLeaderOrAdminOfProject(request.getProject())) {
-            request.setStatus(joinStatus);
-            joinProjectRequestRepository.save(request);
+        // Check if the user is the leader or admin of the project
+        if (!isLeaderOrAdminOfProject(request.getProject()))
+            throw new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this project 👮🏻");
 
-            JoinResponse joinResponse = new JoinResponse();
-            // Perform the necessary actions based on the new status
-            if (joinStatus.equals(APPROVED)) {
-                // If the join request was approved, create a new ProjectMembers object and save it to the repository, then increment the number of members
-                ProjectMembers projectMembers = new ProjectMembers(request.getUser(), request.getProject());
+        // Update the status of the join request
+        request.setStatus(joinStatus);
+        joinProjectRequestRepository.save(request);
 
-                Project project = projectMembers.getProject();
-                project.incrementMemberCount();
-
-                projectRepository.save(project);
-                projectMembersRepository.save(projectMembers);
-
-                joinResponse.setJoinStatus(joinStatus);
-
-                // Delete the join request from the repository
-                joinProjectRequestRepository.delete(request);
-            } else if (joinStatus.equals(REJECTED)) {
-                // If the join request was rejected, delete it from the repository
-                joinResponse.setJoinStatus(REJECTED);
-                joinProjectRequestRepository.delete(request);
-            } else {
-                // If the join status is invalid, return null
+        // Perform actions based on the new join status
+        switch (joinStatus) {
+            case APPROVED -> {
+                performJoinRequestApprovedActions(request);
+                return JoinResponse.builder().joinStatus(joinStatus).build();
+            }
+            case REJECTED -> {
+                performJoinRequestRejectedActions(request);
+                return JoinResponse.builder().joinStatus(joinStatus).build();
+            }
+            default -> {
                 return null;
             }
-            return joinResponse;
-        } else {
-            // Throw an exception if the user is not the project leader or admin of the group
-            throw new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this project 👮🏻");
         }
+    }
+
+    /**
+     * Performs actions when a join request is approved.
+     *
+     * @param request The join request that was approved.
+     */
+    private void performJoinRequestApprovedActions(JoinProjectRequest request) {
+        // Add the user to the project members
+        ProjectMembers projectMembers = new ProjectMembers(request.getUser(), request.getProject());
+        projectMembersRepository.save(projectMembers);
+
+        // Increment the member count of the project
+        Project project = projectMembers.getProject();
+        project.incrementMemberCount();
+        projectRepository.save(project);
+
+        // Delete the join request
+        joinProjectRequestRepository.delete(request);
+    }
+
+    /**
+     * Performs actions when a join request is rejected.
+     *
+     * @param request The join request that was rejected.
+     */
+    private void performJoinRequestRejectedActions(JoinProjectRequest request) {
+        // Delete the join request
+        joinProjectRequestRepository.delete(request);
     }
 
     /**
@@ -237,7 +306,6 @@ public class JoinRequestServiceImpl implements JoinRequestService {
      * @return true if the current user is the project leader or project admin of the project, false otherwise
      */
     public boolean isLeaderOrAdminOfProject(Project project) {
-
         // Get the current user from the authentication service
         User currentUser = authenticationService.getCurrentUser();
 

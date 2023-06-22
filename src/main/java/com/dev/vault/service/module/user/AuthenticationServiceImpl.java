@@ -78,7 +78,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = modelMapper.map(registerRequest, User.class);
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.getRoles().add(teamMemberRole);
-        user.setRolesDescription("➡️➡️Default role for user is TEAM_MEMBER");
 
         // save the user object to the database
         userRepository.save(user);

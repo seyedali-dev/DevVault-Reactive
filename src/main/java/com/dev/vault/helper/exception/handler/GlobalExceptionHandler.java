@@ -3,6 +3,7 @@ package com.dev.vault.helper.exception.handler;
 import com.dev.vault.helper.exception.*;
 import com.dev.vault.helper.payload.dto.ApiResponse;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -22,6 +23,17 @@ public class GlobalExceptionHandler {
             String defaultMessage = objectError.getDefaultMessage();
             String field = ((FieldError) objectError).getField();
             map.put(field, defaultMessage);
+        });
+        return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> constraintViolationExceptionHandler(ConstraintViolationException ex) {
+        Map<String, Object> map = new HashMap<>();
+        ex.getConstraintViolations().forEach(constraintViolation -> {
+            String message = constraintViolation.getMessage();
+            Object invalidValue = constraintViolation.getInvalidValue();
+            map.put(message, invalidValue.toString());
         });
         return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST);
     }
