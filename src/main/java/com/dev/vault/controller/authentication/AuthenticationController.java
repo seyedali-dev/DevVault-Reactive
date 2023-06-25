@@ -4,7 +4,7 @@ import com.dev.vault.helper.payload.dto.ApiResponse;
 import com.dev.vault.helper.payload.auth.AuthenticationRequest;
 import com.dev.vault.helper.payload.auth.AuthenticationResponse;
 import com.dev.vault.helper.payload.auth.RegisterRequest;
-import com.dev.vault.service.AuthenticationService;
+import com.dev.vault.service.interfaces.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

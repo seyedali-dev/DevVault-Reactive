@@ -9,6 +9,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @EnableAsync
 // TODO: Refactor the services. the codes are way too chunky and long.
+// TODO: There are a few places that have been using wrong exception signatures, refactor them and use proper exceptions
+//  (DevVaultException -> NotMemberOfProjectException)
 public class DevVaultApplication {
 
 	public static void main(String[] args) {

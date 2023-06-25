@@ -1,8 +1,7 @@
 package com.dev.vault.config;
 
-import com.dev.vault.helper.exception.ResourceNotFoundException;
+import com.dev.vault.util.repository.RepositoryUtils;
 import com.dev.vault.model.user.User;
-import com.dev.vault.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -19,13 +18,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfiguration {
-    private final UserRepository userRepository;
+    private final RepositoryUtils repositoryUtils;
 
     @Bean
     public UserDetailsService userDetailsService() {
         return email -> {
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new ResourceNotFoundException("User", "Email", email));
+            User user = repositoryUtils.findUserByEmailOrElseThrowNotFoundException(email);
             return new org.springframework.security.core.userdetails.User(
                     user.getEmail(),
                     user.getPassword(),

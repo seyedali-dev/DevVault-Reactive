@@ -1,4 +1,4 @@
-package com.dev.vault.service;
+package com.dev.vault.service.interfaces;
 
 import com.dev.vault.helper.payload.group.SearchResponse;
 

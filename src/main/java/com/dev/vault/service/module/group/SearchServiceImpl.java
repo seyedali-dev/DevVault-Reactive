@@ -9,14 +9,13 @@ import com.dev.vault.model.group.ProjectMembers;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.group.ProjectRepository;
-import com.dev.vault.service.SearchService;
+import com.dev.vault.service.interfaces.SearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Service implementation for searching projects.

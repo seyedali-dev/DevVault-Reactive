@@ -1,7 +1,7 @@
 package com.dev.vault.controller.group;
 
 import com.dev.vault.helper.payload.group.ProjectDto;
-import com.dev.vault.service.ProjectManagementService;
+import com.dev.vault.service.interfaces.ProjectManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

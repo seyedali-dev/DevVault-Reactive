@@ -8,6 +8,7 @@ import com.dev.vault.helper.payload.auth.AuthenticationRequest;
 import com.dev.vault.helper.payload.auth.AuthenticationResponse;
 import com.dev.vault.helper.payload.auth.RegisterRequest;
 import com.dev.vault.helper.payload.email.Email;
+import com.dev.vault.util.repository.RepositoryUtils;
 import com.dev.vault.model.user.Roles;
 import com.dev.vault.model.user.User;
 import com.dev.vault.model.user.VerificationToken;
@@ -15,11 +16,12 @@ import com.dev.vault.model.user.enums.Role;
 import com.dev.vault.repository.user.RolesRepository;
 import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.repository.user.VerificationTokenRepository;
-import com.dev.vault.service.AuthenticationService;
+import com.dev.vault.service.interfaces.AuthenticationService;
 import com.dev.vault.service.module.mail.MailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -43,8 +45,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    private final RolesRepository rolesRepository;
-    private static final String ACCOUNT_VERIFICATION_AUTH_URL = "http://localhost:8080/api/auth/accountVerification/";
+    @Value("${account.verification.auth.url}")
+    private static String ACCOUNT_VERIFICATION_AUTH_URL;
     private final VerificationTokenRepository verificationTokenRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -53,6 +55,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final ModelMapper modelMapper;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
+    private final RepositoryUtils repositoryUtils;
 
     /**
      * Creates a new user with the provided information and sends an account verification email.
@@ -71,8 +74,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         // find the TEAM_MEMBER role and assign it to newly created user as default role
-        Roles teamMemberRole = rolesRepository.findByRole(Role.TEAM_MEMBER)
-                .orElseThrow(() -> new ResourceNotFoundException("Role", "RoleName", Role.TEAM_MEMBER.name()));
+        Roles teamMemberRole = repositoryUtils.findRoleByRoleOrElseThrowNotFoundException(Role.TEAM_MEMBER);
 
         // create a new user object and map the properties from the register request
         User user = modelMapper.map(registerRequest, User.class);
@@ -145,14 +147,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         // authenticate the user's credentials using the authentication manager
-        Authentication authentication = authenticationManager.authenticate(
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
         // get the user object from the authentication object and generate a JWT token
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "Email", userDetails.getUsername()));
+        User user = repositoryUtils.findUserByEmailOrElseThrowNotFoundException(userDetails.getUsername());
         String jwtToken = jwtService.generateToken(user);
 
         // return the authentication response with the JWT token and user information

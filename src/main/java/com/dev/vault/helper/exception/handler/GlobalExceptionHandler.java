@@ -67,4 +67,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse> notLeaderOfProjectExceptionHandler(NotLeaderOfProjectException e) {
         return new ResponseEntity<>(new ApiResponse(e.getMessage(), false), HttpStatus.FORBIDDEN);
     }
+
+    @ExceptionHandler(NotMemberOfProjectException.class)
+    public ResponseEntity<ApiResponse> notMemberOfProjectExceptionHandler(NotMemberOfProjectException e) {
+        return new ResponseEntity<>(new ApiResponse(e.getMessage(), false), HttpStatus.FORBIDDEN);
+    }
 }

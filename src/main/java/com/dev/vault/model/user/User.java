@@ -43,7 +43,7 @@ public class User implements UserDetails {
     )
     private Set<Roles> roles = new HashSet<>();
 
-    @OneToMany(mappedBy = "createdBy")
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Task> task = new ArrayList<>();
     /* end of relationships */
 

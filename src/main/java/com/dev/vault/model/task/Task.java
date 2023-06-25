@@ -9,8 +9,8 @@ import jakarta.validation.constraints.FutureOrPresent;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -34,13 +34,13 @@ public class Task {
     private TaskPriority taskPriority;
 
     /* relationships */
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "tasks_users",
             joinColumns = @JoinColumn(name = "task_Id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> assignedTo = new ArrayList<>();
+    private Set<User> assignedUsers = new HashSet<>();
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "created_by")

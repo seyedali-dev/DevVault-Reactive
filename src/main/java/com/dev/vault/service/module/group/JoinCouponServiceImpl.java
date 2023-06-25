@@ -3,14 +3,16 @@ package com.dev.vault.service.module.group;
 import com.dev.vault.helper.exception.NotLeaderOfProjectException;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
+import com.dev.vault.util.project.ProjectUtils;
 import com.dev.vault.model.group.JoinCoupon;
 import com.dev.vault.model.group.Project;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.JoinCouponRepository;
 import com.dev.vault.repository.group.ProjectRepository;
 import com.dev.vault.repository.user.UserRepository;
-import com.dev.vault.service.AuthenticationService;
-import com.dev.vault.service.JoinCouponService;
+import com.dev.vault.service.interfaces.AuthenticationService;
+import com.dev.vault.service.interfaces.JoinCouponService;
+import com.dev.vault.util.repository.RepositoryUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,12 +29,11 @@ import java.util.Random;
 @Slf4j
 public class JoinCouponServiceImpl implements JoinCouponService {
 
-    // Dependencies
-    private final UserRepository userRepository;
     private final JoinCouponRepository joinCouponRepository;
     private final ProjectRepository projectRepository;
-    private final JoinRequestServiceImpl joinRequestService;
     private final AuthenticationService authenticationService;
+    private final ProjectUtils projectUtils;
+    private final RepositoryUtils repositoryUtils;
 
     /**
      * Generates a one-time join coupon for the specified project and requesting user.
@@ -48,15 +49,13 @@ public class JoinCouponServiceImpl implements JoinCouponService {
     @Transactional
     public String generateOneTimeJoinCoupon(Long projectId, Long requestingUserId) {
         // Get the project with the given ID from the database
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project", "ProjectID", projectId.toString()));
+        Project project = repositoryUtils.findProjectByIdOrElseThrowNoFoundException(projectId);
 
         // Get the requesting user (the user who is requesting to join the project)
-        User requestingUser = userRepository.findById(requestingUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "UserID", requestingUserId.toString()));
+        User requestingUser = repositoryUtils.findUserByIdOrElseThrowNoFoundException(requestingUserId);
 
         // Check if the current user is the leader or admin of the specific project
-        checkLeaderOrAdminOfProject(project);
+        checkLeaderOrAdminOfProject(project, authenticationService.getCurrentUser());
 
         // Check if a join coupon has already been generated for the requesting user and project, and if so, throw an exception
         checkJoinCouponAlreadyGenerated(requestingUser, project);
@@ -77,8 +76,8 @@ public class JoinCouponServiceImpl implements JoinCouponService {
      * @param project the project to check the leader or admin for
      * @throws NotLeaderOfProjectException if the current user is not the leader or admin of the specific project
      */
-    private void checkLeaderOrAdminOfProject(Project project) {
-        if (!joinRequestService.isLeaderOrAdminOfProject(project))
+    private void checkLeaderOrAdminOfProject(Project project, User user) {
+        if (!projectUtils.isLeaderOrAdminOfProject(project, user))
             throw new NotLeaderOfProjectException("❌ You are not the leader or admin of this project ❌");
     }
 

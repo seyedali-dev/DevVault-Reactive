@@ -1,7 +1,7 @@
 package com.dev.vault.controller.group;
 
 import com.dev.vault.helper.payload.group.SearchResponse;
-import com.dev.vault.service.SearchService;
+import com.dev.vault.service.interfaces.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
