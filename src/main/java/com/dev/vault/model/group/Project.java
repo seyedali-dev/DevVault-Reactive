@@ -17,7 +17,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Entity
-@ToString
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

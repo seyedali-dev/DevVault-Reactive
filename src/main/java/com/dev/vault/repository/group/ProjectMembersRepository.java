@@ -17,6 +17,4 @@ public interface ProjectMembersRepository extends JpaRepository<ProjectMembers, 
     List<ProjectMembers> findByProject(Project project);
 
     Optional<ProjectMembers> findByProject_ProjectNameAndUser_Email(String projectName, String email);
-
-    Optional<ProjectMembers> findByProjectAndUser(Project project, User user);
 }

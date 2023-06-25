@@ -1,8 +1,7 @@
 package com.dev.vault.controller.group;
 
-import com.dev.vault.service.JoinCouponService;
+import com.dev.vault.service.interfaces.JoinCouponService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

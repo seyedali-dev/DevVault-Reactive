@@ -3,6 +3,7 @@ package com.dev.vault.service.module.group;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.group.ProjectDto;
+import com.dev.vault.util.repository.RepositoryUtils;
 import com.dev.vault.model.group.Project;
 import com.dev.vault.model.group.ProjectMembers;
 import com.dev.vault.model.group.UserProjectRole;
@@ -12,10 +13,9 @@ import com.dev.vault.model.user.enums.Role;
 import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.group.ProjectRepository;
 import com.dev.vault.repository.group.UserProjectRoleRepository;
-import com.dev.vault.repository.user.RolesRepository;
 import com.dev.vault.repository.user.UserRepository;
-import com.dev.vault.service.AuthenticationService;
-import com.dev.vault.service.ProjectManagementService;
+import com.dev.vault.service.interfaces.AuthenticationService;
+import com.dev.vault.service.interfaces.ProjectManagementService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,12 +33,12 @@ import java.util.Optional;
 @Slf4j
 public class ProjectManagementServiceImpl implements ProjectManagementService {
     private final UserRepository userRepository;
-    private final RolesRepository rolesRepository;
     private final UserProjectRoleRepository userProjectRoleRepository;
     private final ProjectMembersRepository projectMembersRepository;
     private final ProjectRepository projectRepository;
     private final ModelMapper modelMapper;
     private final AuthenticationService authenticationService;
+    private final RepositoryUtils repositoryUtils;
 
     /**
      * Creates a new project with the provided projectDto.
@@ -59,8 +59,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
         }
 
         // Get the PROJECT_LEADER role
-        Roles projectLeaderRole = rolesRepository.findByRole(Role.PROJECT_LEADER)
-                .orElseThrow(() -> new ResourceNotFoundException("Role", "RoleName", Role.PROJECT_LEADER.name()));
+        Roles projectLeaderRole = repositoryUtils.findRoleByRoleOrElseThrowNotFoundException(Role.PROJECT_LEADER);
 
         // Get the current user
         User currentUser = authenticationService.getCurrentUser();

@@ -31,3 +31,9 @@ spring:
         auth: true
         starttls.enable: true
         ssl.trust: smtp.gmail.com
+
+#custom variables
+account:
+  verification:
+    auth:
+      url: "http://localhost:8080/api/auth/accountVerification/"
