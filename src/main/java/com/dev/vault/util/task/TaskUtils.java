@@ -5,6 +5,7 @@ import com.dev.vault.helper.payload.task.TaskResponse;
 import com.dev.vault.model.group.Project;
 import com.dev.vault.model.task.Task;
 import com.dev.vault.model.user.User;
+import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.task.TaskRepository;
 import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.util.project.ProjectUtils;
@@ -16,10 +17,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A utility class that provides helper methods for working with tasks.
- * This class contains method for checking if a task with the same name already exists in a project.
+ * This class contains method for checking if a task with the same name already exists in a project. //TODO
  */
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class TaskUtils {
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final ProjectUtils projectUtils;
+    private final ProjectMembersRepository projectMembersRepository;
     private final RepositoryUtils repositoryUtils;
 
     /**
@@ -56,7 +59,7 @@ public class TaskUtils {
             // Find the user by ID or throw a RecourseNotFoundException if it doesn't exist
             User user = repositoryUtils.findUserByIdOrElseThrowNoFoundException(userId);
 
-            // Check if the task is already assigned to the user, and add a response to the map if it is
+            // Check if the task is already assigned to the user skip ahead, and add a response to the map
             if (taskRepository.findByAssignedUsersAndTaskId(user, task.getTaskId()).isPresent()) {
                 assignUsersMap.put(user.getUsername(), "Fail: Task already assigned to user " + user.getUsername());
                 continue;
@@ -111,5 +114,27 @@ public class TaskUtils {
                 .taskStatus(task.getTaskStatus())
                 .dueDate(task.getDueDate())
                 .build();
+    }
+
+    /**
+     * Retrieves a set of users associated with a task and a project, and updates the assignUsersMap with the status of the assignment for each user.
+     *
+     * @param task           The task to assign.
+     * @param project        The project to which the task belongs.
+     * @param assignUsersMap The map to which the status of the assignment for each user will be added.
+     * @return A set of users associated with the task and the project.
+     */
+    public Set<User> getUsers(Task task, Project project, Map<String, String> assignUsersMap) {
+        return projectMembersRepository.findByProject(project)
+                .stream().map(projectMembers -> {
+                    User user = repositoryUtils.findUserByIdOrElseThrowNoFoundException(projectMembers.getUser().getUserId());
+                    // Check if the task is already assigned to the user, skip ahead and add a response to the map if it is
+                    if (taskRepository.findByAssignedUsersAndTaskId(user, task.getTaskId()).isPresent())
+                        assignUsersMap.put(user.getUsername(), "Fail: Task already assigned to user " + user.getUsername());
+                    else assignUsersMap.put(user.getUsername(), "Success");
+                    user.getTask().add(task);
+
+                    return userRepository.save(user);
+                }).collect(Collectors.toSet());
     }
 }

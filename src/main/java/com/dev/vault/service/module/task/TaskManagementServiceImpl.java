@@ -6,6 +6,7 @@ import com.dev.vault.helper.payload.task.TaskResponse;
 import com.dev.vault.model.group.Project;
 import com.dev.vault.model.task.Task;
 import com.dev.vault.model.user.User;
+import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.task.TaskRepository;
 import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.service.interfaces.AuthenticationService;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.dev.vault.model.task.enums.TaskStatus.IN_PROGRESS;
 
@@ -81,52 +83,5 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         taskRepository.save(task);
 
         return taskUtils.buildTaskResponse(task);
-    }
-
-    /**
-     * Assigns a task to a list of users.
-     *
-     * @param taskId     The ID of the task to assign.
-     * @param projectId  The ID of the project to which the task belongs.
-     * @param userIdList The list of user IDs to assign the task to.
-     * @return A {@link TaskResponse} containing information about the assigned task and its assigned users.
-     * @throws RecourseNotFoundException      If the task or project is not found.
-     * @throws DevVaultException              If the task does not belong to the project.
-     * @throws NotLeaderOfProjectException    If the current user is not a leader or admin of the project.
-     * @throws ResourceAlreadyExistsException If the task is already assigned to a user.
-     * @throws NotMemberOfProjectException    If the user is not a member of the project.
-     */
-    @Override
-    @Transactional
-    public TaskResponse assignTaskToUsers(Long taskId, Long projectId, List<Long> userIdList) {
-        // Find the task by ID or throw a RecourseNotFoundException if it doesn't exist
-        Task task = repositoryUtils.findTaskByIdOrElseThrowNotFoundException(taskId);
-        // Find the project by ID or throw a RecourseNotFoundException if it doesn't exist
-        Project project = repositoryUtils.findProjectByIdOrElseThrowNoFoundException(projectId);
-        // Check if the task belongs to the project or throw a DevVaultException if it doesn't
-        if (!task.getProject().getProjectId().equals(projectId))
-            throw new DevVaultException("Task with ID " + taskId + " does not belong to project with ID " + projectId);
-
-        // Get the current user
-        User currentUser = authenticationService.getCurrentUser();
-        // Check if the current user is a leader or admin of the project, or throw a NotLeaderOfProjectException if they're not
-        if (!projectUtils.isLeaderOrAdminOfProject(project, currentUser))
-            throw new NotLeaderOfProjectException("👮🏻You are not a leader or admin of this project👮🏻");
-
-        // Create a set to hold the assigned users and a map to hold the responses for each user
-        Set<User> assignedUsers = new HashSet<>();
-        Map<String, String> assignUsersMap = new HashMap<>();
-
-        // Loop through the list of user IDs
-        taskUtils.assignTaskToUserList(projectId, userIdList, task, project, assignedUsers, assignUsersMap);
-
-        // Build and return a TaskResponse with information about the assigned task and its assigned users
-        return taskUtils.buildTaskResponse(task, project, assignUsersMap);
-    }
-
-    @Override
-    public TaskResponse assignTaskToAllUsers(Long taskId, Long projectId, List<Long> userIdList) {
-        // TODO: stub created method
-        return null;
     }
 }
