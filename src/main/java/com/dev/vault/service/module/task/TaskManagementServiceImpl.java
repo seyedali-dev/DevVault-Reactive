@@ -89,60 +89,6 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     }
 
     /**
-     * Assigns a task to the specified users for a given project.
-     *
-     * @param projectId  the ID of the project to assign the task to
-     * @param taskId     the ID of the task to assign
-     * @param userIdList a list of user IDs to assign the task to
-     * @return the updated task object
-     * @throws ResourceNotFoundException   if the project or task cannot be found
-     * @throws NotLeaderOfProjectException if the requesting user is not leader or admin of the project
-     */
-//    @Override
-//    @Transactional
-//    public TaskResponse assignTaskToUsers(Long taskId, Long projectId, List<Long> userIdList) {
-//        Task task = repositoryUtils.findTaskByIdOrElseThrowNotFoundException(taskId);
-//        Project project = repositoryUtils.findProjectByIdOrElseThrowNoFoundException(projectId);
-//        if (!task.getProject().getProjectId().equals(projectId))
-//            throw new DevVaultException("Task with ID " + taskId + " does not belong to project with ID " + projectId);
-//        List<User> users = userRepository.findAllById(userIdList);
-//
-//        User currentUser = authenticationService.getCurrentUser();
-//        if (!projectUtils.isLeaderOrAdminOfProject(project, currentUser))
-//            throw new NotLeaderOfProjectException("👮🏻You are not a leader or admin of this project👮🏻");
-//
-//        Map<String, String> map = new HashMap<>();
-//        Set<User> assignUsers = new HashSet<>();
-//        TaskResponse taskResponse = TaskResponse.builder().build();
-//
-//        for (User user : users) {
-//            try {
-//                if (taskRepository.findByAssignedUsers(user).isPresent())
-//                    throw new ResourceAlreadyExistsException("Task", "AssignedUser", user.getUsername());
-//                if (!projectUtils.isMemberOfProject(project, user))
-//                    throw new NotMemberOfProjectException("Fail: User with userID: " + user.getUserId() + " is not a member of project with projectID: " + projectId);
-//                user.getTask().add(task);
-//                assignUsers.add(userRepository.save(user));
-//                map.put(user.getUsername(), "Success: Task assigned to User: " + user.getUsername());
-//                task.setAssignedUsers(assignUsers);
-//
-//                taskResponse.setTaskName(task.getTaskName());
-//                taskResponse.setTaskStatus(task.getTaskStatus());
-//                taskResponse.setDueDate(task.getDueDate());
-//                taskResponse.setProjectName(project.getProjectName());
-//                taskResponse.setAssignedUsers(map);
-//
-//                taskRepository.save(task);
-//            } catch (Exception e) {
-//                log.error("Error assigning task to user {}: {}", user.getUsername(), e.getMessage());
-//                map.put(user.getUsername(), e.getMessage());
-//                taskResponse.setAssignedUsers(map);
-//            }
-//        }
-//        return taskResponse;
-//    }
-
-    /**
      * Assigns a task to a list of users.
      *
      * @param taskId     The ID of the task to assign.

@@ -2,7 +2,6 @@ package com.dev.vault.repository.group;
 
 import com.dev.vault.model.group.Project;
 import com.dev.vault.model.group.ProjectMembers;
-import com.dev.vault.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

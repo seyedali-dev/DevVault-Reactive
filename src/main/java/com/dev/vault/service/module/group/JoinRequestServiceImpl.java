@@ -6,23 +6,25 @@ import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.group.JoinProjectDto;
 import com.dev.vault.helper.payload.group.JoinResponse;
+import com.dev.vault.model.group.JoinCoupon;
+import com.dev.vault.model.group.JoinProjectRequest;
+import com.dev.vault.model.group.Project;
+import com.dev.vault.model.group.ProjectMembers;
+import com.dev.vault.model.group.enums.JoinStatus;
+import com.dev.vault.model.user.User;
+import com.dev.vault.repository.group.JoinCouponRepository;
+import com.dev.vault.repository.group.JoinProjectRequestRepository;
+import com.dev.vault.repository.group.ProjectMembersRepository;
+import com.dev.vault.repository.group.ProjectRepository;
+import com.dev.vault.service.interfaces.AuthenticationService;
+import com.dev.vault.service.interfaces.JoinRequestService;
 import com.dev.vault.util.project.JoinRequestProjectUtilsImpl;
 import com.dev.vault.util.project.ProjectUtils;
 import com.dev.vault.util.project.ProjectUtilsImpl;
 import com.dev.vault.util.repository.RepositoryUtils;
-import com.dev.vault.model.group.*;
-import com.dev.vault.model.group.enums.JoinStatus;
-import com.dev.vault.model.user.User;
-import com.dev.vault.repository.group.*;
-import com.dev.vault.service.interfaces.AuthenticationService;
-import com.dev.vault.service.interfaces.JoinRequestService;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.dev.vault.model.group.enums.JoinStatus.*;
+import static com.dev.vault.model.group.enums.JoinStatus.PENDING;
 
 /**
  * Service implementation of sending and managing Join Project Requests.

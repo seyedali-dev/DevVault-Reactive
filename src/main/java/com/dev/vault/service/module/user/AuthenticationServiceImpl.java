@@ -13,7 +13,6 @@ import com.dev.vault.model.user.Roles;
 import com.dev.vault.model.user.User;
 import com.dev.vault.model.user.VerificationToken;
 import com.dev.vault.model.user.enums.Role;
-import com.dev.vault.repository.user.RolesRepository;
 import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.repository.user.VerificationTokenRepository;
 import com.dev.vault.service.interfaces.AuthenticationService;
