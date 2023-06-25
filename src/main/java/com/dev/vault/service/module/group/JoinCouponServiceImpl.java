@@ -9,7 +9,6 @@ import com.dev.vault.model.group.Project;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.JoinCouponRepository;
 import com.dev.vault.repository.group.ProjectRepository;
-import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.service.interfaces.AuthenticationService;
 import com.dev.vault.service.interfaces.JoinCouponService;
 import com.dev.vault.util.repository.RepositoryUtils;

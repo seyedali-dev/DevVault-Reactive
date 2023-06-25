@@ -3,7 +3,6 @@ package com.dev.vault.service.interfaces;
 import com.dev.vault.helper.payload.group.JoinProjectDto;
 import com.dev.vault.helper.payload.group.JoinResponse;
 import com.dev.vault.model.group.enums.JoinStatus;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
