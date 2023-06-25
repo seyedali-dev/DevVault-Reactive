@@ -97,4 +97,19 @@ public class TaskUtils {
         taskResponse.setAssignedUsers(map);
         return taskResponse;
     }
+
+    /**
+     * Builds a TaskResponse object with information about the newly created task.
+     *
+     * @param task the assigned task
+     * @return a TaskResponse object with information about the newly created task
+     */
+    public TaskResponse buildTaskResponse(Task task) {
+        return TaskResponse.builder()
+                .taskName(task.getTaskName())
+                .projectName(task.getProject().getProjectName())
+                .taskStatus(task.getTaskStatus())
+                .dueDate(task.getDueDate())
+                .build();
+    }
 }

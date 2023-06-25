@@ -3,7 +3,6 @@ package com.dev.vault.service.module.task;
 import com.dev.vault.helper.exception.*;
 import com.dev.vault.helper.payload.task.TaskRequest;
 import com.dev.vault.helper.payload.task.TaskResponse;
-import com.dev.vault.util.project.ProjectUtils;
 import com.dev.vault.model.group.Project;
 import com.dev.vault.model.task.Task;
 import com.dev.vault.model.user.User;
@@ -11,6 +10,7 @@ import com.dev.vault.repository.task.TaskRepository;
 import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.service.interfaces.AuthenticationService;
 import com.dev.vault.service.interfaces.TaskManagementService;
+import com.dev.vault.util.project.ProjectUtils;
 import com.dev.vault.util.repository.RepositoryUtils;
 import com.dev.vault.util.task.TaskUtils;
 import lombok.RequiredArgsConstructor;
@@ -80,12 +80,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         userRepository.save(user);
         taskRepository.save(task);
 
-        return TaskResponse.builder()
-                .taskName(task.getTaskName())
-                .projectName(task.getProject().getProjectName())
-                .taskStatus(task.getTaskStatus())
-                .dueDate(task.getDueDate())
-                .build();
+        return taskUtils.buildTaskResponse(task);
     }
 
     /**
