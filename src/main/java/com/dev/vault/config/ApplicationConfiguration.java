@@ -23,7 +23,7 @@ public class ApplicationConfiguration {
     @Bean
     public UserDetailsService userDetailsService() {
         return email -> {
-            User user = repositoryUtils.findUserByEmailOrElseThrowNotFoundException(email);
+            User user = repositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email);
             return new org.springframework.security.core.userdetails.User(
                     user.getEmail(),
                     user.getPassword(),

@@ -24,8 +24,8 @@ public class ProjectManagementController {
     /**
      * Endpoint for creating a new project.
      *
-     * @param projectDto the project or group details to create
-     * @return a ResponseEntity containing the created project or group and an HTTP status code of 201 (CREATED)
+     * @param projectDto the project details to create
+     * @return a ResponseEntity containing the created project and an HTTP status code of 201 (CREATED)
      */
     @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'TEAM_MEMBER', 'PROJECT_ADMIN')")
     @PostMapping({"/create-project", "/create-group"})

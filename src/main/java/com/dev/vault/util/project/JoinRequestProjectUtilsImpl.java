@@ -2,9 +2,9 @@ package com.dev.vault.util.project;
 
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
-import com.dev.vault.model.group.JoinProjectRequest;
-import com.dev.vault.model.group.Project;
-import com.dev.vault.model.group.ProjectMembers;
+import com.dev.vault.model.project.JoinProjectRequest;
+import com.dev.vault.model.project.Project;
+import com.dev.vault.model.project.ProjectMembers;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.JoinProjectRequestRepository;
 import com.dev.vault.repository.group.ProjectMembersRepository;

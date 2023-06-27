@@ -1,6 +1,6 @@
-package com.dev.vault.model.group;
+package com.dev.vault.model.project;
 
-import com.dev.vault.model.group.enums.JoinStatus;
+import com.dev.vault.model.project.enums.JoinStatus;
 import com.dev.vault.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;

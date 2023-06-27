@@ -1,12 +1,12 @@
-package com.dev.vault.model.group;
+package com.dev.vault.model.project;
 
 import com.dev.vault.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Random;
-import java.util.UUID;
-
+/**
+ * Entity for generating a JoinRequestCoupon for user's that want to make join request to a project.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

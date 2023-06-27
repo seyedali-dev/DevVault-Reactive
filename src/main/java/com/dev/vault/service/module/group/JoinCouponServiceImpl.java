@@ -4,8 +4,8 @@ import com.dev.vault.helper.exception.NotLeaderOfProjectException;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.util.project.ProjectUtils;
-import com.dev.vault.model.group.JoinCoupon;
-import com.dev.vault.model.group.Project;
+import com.dev.vault.model.project.JoinCoupon;
+import com.dev.vault.model.project.Project;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.JoinCouponRepository;
 import com.dev.vault.repository.group.ProjectRepository;
@@ -48,10 +48,10 @@ public class JoinCouponServiceImpl implements JoinCouponService {
     @Transactional
     public String generateOneTimeJoinCoupon(Long projectId, Long requestingUserId) {
         // Get the project with the given ID from the database
-        Project project = repositoryUtils.findProjectByIdOrElseThrowNoFoundException(projectId);
+        Project project = repositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
 
         // Get the requesting user (the user who is requesting to join the project)
-        User requestingUser = repositoryUtils.findUserByIdOrElseThrowNoFoundException(requestingUserId);
+        User requestingUser = repositoryUtils.findUserById_OrElseThrow_ResourceNoFoundException(requestingUserId);
 
         // Check if the current user is the leader or admin of the specific project
         checkLeaderOrAdminOfProject(project, authenticationService.getCurrentUser());

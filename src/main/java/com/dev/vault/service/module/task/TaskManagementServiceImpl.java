@@ -3,10 +3,9 @@ package com.dev.vault.service.module.task;
 import com.dev.vault.helper.exception.*;
 import com.dev.vault.helper.payload.task.TaskRequest;
 import com.dev.vault.helper.payload.task.TaskResponse;
-import com.dev.vault.model.group.Project;
+import com.dev.vault.model.project.Project;
 import com.dev.vault.model.task.Task;
 import com.dev.vault.model.user.User;
-import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.task.TaskRepository;
 import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.service.interfaces.AuthenticationService;
@@ -21,8 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.dev.vault.model.task.enums.TaskStatus.IN_PROGRESS;
 
@@ -54,7 +51,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     @Transactional
     public TaskResponse createNewTask(Long projectId, TaskRequest taskRequest) {
         // Find the project with the given ID
-        Project project = repositoryUtils.findProjectByIdOrElseThrowNoFoundException(projectId);
+        Project project = repositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
 
         User user = authenticationService.getCurrentUser();
 

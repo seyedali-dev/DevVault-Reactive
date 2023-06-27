@@ -73,7 +73,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         // find the TEAM_MEMBER role and assign it to newly created user as default role
-        Roles teamMemberRole = repositoryUtils.findRoleByRoleOrElseThrowNotFoundException(Role.TEAM_MEMBER);
+        Roles teamMemberRole = repositoryUtils.findRoleByRole_OrElseThrow_ResourceNotFoundException(Role.TEAM_MEMBER);
 
         // create a new user object and map the properties from the register request
         User user = modelMapper.map(registerRequest, User.class);
@@ -152,7 +152,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         // get the user object from the authentication object and generate a JWT token
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        User user = repositoryUtils.findUserByEmailOrElseThrowNotFoundException(userDetails.getUsername());
+        User user = repositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(userDetails.getUsername());
         String jwtToken = jwtService.generateToken(user);
 
         // return the authentication response with the JWT token and user information

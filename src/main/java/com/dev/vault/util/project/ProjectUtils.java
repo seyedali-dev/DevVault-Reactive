@@ -1,6 +1,6 @@
 package com.dev.vault.util.project;
 
-import com.dev.vault.model.group.Project;
+import com.dev.vault.model.project.Project;
 import com.dev.vault.model.user.User;
 
 public interface ProjectUtils {

@@ -1,8 +1,8 @@
 package com.dev.vault.util.project;
 
-import com.dev.vault.model.group.Project;
-import com.dev.vault.model.group.ProjectMembers;
-import com.dev.vault.model.group.UserProjectRole;
+import com.dev.vault.model.project.Project;
+import com.dev.vault.model.project.ProjectMembers;
+import com.dev.vault.model.project.UserProjectRole;
 import com.dev.vault.model.user.Roles;
 import com.dev.vault.model.user.User;
 import com.dev.vault.model.user.enums.Role;

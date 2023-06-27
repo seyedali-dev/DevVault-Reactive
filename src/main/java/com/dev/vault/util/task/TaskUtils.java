@@ -2,7 +2,7 @@ package com.dev.vault.util.task;
 
 import com.dev.vault.helper.payload.task.TaskRequest;
 import com.dev.vault.helper.payload.task.TaskResponse;
-import com.dev.vault.model.group.Project;
+import com.dev.vault.model.project.Project;
 import com.dev.vault.model.task.Task;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.ProjectMembersRepository;
@@ -57,7 +57,7 @@ public class TaskUtils {
     public void assignTaskToUserList(Long projectId, List<Long> userIdList, Task task, Project project, Set<User> assignedUsers, Map<String, String> assignUsersMap) {
         for (Long userId : userIdList) {
             // Find the user by ID or throw a RecourseNotFoundException if it doesn't exist
-            User user = repositoryUtils.findUserByIdOrElseThrowNoFoundException(userId);
+            User user = repositoryUtils.findUserById_OrElseThrow_ResourceNoFoundException(userId);
 
             // Check if the task is already assigned to the user skip ahead, and add a response to the map
             if (taskRepository.findByAssignedUsersAndTaskId(user, task.getTaskId()).isPresent()) {
@@ -127,7 +127,7 @@ public class TaskUtils {
     public Set<User> getUsers(Task task, Project project, Map<String, String> assignUsersMap) {
         return projectMembersRepository.findByProject(project)
                 .stream().map(projectMembers -> {
-                    User user = repositoryUtils.findUserByIdOrElseThrowNoFoundException(projectMembers.getUser().getUserId());
+                    User user = repositoryUtils.findUserById_OrElseThrow_ResourceNoFoundException(projectMembers.getUser().getUserId());
                     // Check if the task is already assigned to the user, skip ahead and add a response to the map if it is
                     if (taskRepository.findByAssignedUsersAndTaskId(user, task.getTaskId()).isPresent())
                         assignUsersMap.put(user.getUsername(), "Fail: Task already assigned to user " + user.getUsername());

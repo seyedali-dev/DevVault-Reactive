@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import static com.dev.vault.model.group.enums.JoinStatus.*;
+import static com.dev.vault.model.project.enums.JoinStatus.*;
 
 /**
  * REST controller for managing join project requests.
@@ -32,7 +32,7 @@ public class JoinRequestController {
     }
 
     /**
-     * Retrieves all join project requests for the specified project (group) with the specified status.
+     * Retrieves all join project requests for the specified project with the specified status.
      *
      * @param projectId the ID of the project to retrieve join requests for
      * @return ResponseEntity containing a List of JoinRequest objects with the specified status
