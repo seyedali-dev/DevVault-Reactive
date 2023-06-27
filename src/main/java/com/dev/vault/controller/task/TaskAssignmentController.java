@@ -50,33 +50,14 @@ public class TaskAssignmentController {
     }
 
     /**
-     * Assigns a task to a team of users.
-     *
-     * @param taskId    the ID of the task to assign
-     * @param projectId the ID of the project the task belongs to
-     * @param teamId    the ID of the team to assign the task to
-     * @return a ResponseEntity containing a TaskResponse object and an HTTP status code
-     */ //TODO
-    @PostMapping("/assignTask/team")
-    public ResponseEntity<TaskResponse> assignTaskToTeam(
-            @RequestParam("taskId") Long taskId,
-            @RequestParam("projectId") Long projectId,
-            @RequestParam("teamId") Long teamId
-    ) {
-//        TaskResponse taskResponse = taskService.assignTaskToTeam(taskId, projectId, teamId);
-//        return ResponseEntity.ok(taskResponse);
-        return null;
-    }
-
-    /**
      * Unassigns a task from a specific user.
      *
      * @param taskId    the ID of the task to unassign
      * @param projectId the ID of the project the task belongs to
      * @param userId    the ID of the user to unassign the task from
      * @return a ResponseEntity with an OK HTTP status code
-     */ //TODO
-    @DeleteMapping("/unassignTask")
+     */
+    @DeleteMapping("/unassignTask") //TODO
     public ResponseEntity<Void> unassignTaskFromUser(
             @RequestParam("taskId") Long taskId,
             @RequestParam("projectId") Long projectId,
@@ -93,30 +74,11 @@ public class TaskAssignmentController {
      * @param taskId    the ID of the task to unassign
      * @param projectId the ID of the project the task belongs to
      * @return a ResponseEntity with an OK HTTP status code
-     */ //TODO
-    @DeleteMapping("/unassignTask/all")
+     */
+    @DeleteMapping("/unassignTask/all") //TODO
     public ResponseEntity<Void> unassignTaskFromAllUsersInProject(
             @RequestParam("taskId") Long taskId,
             @RequestParam("projectId") Long projectId
-    ) {
-//        taskService.unassignTaskFromUser(taskId, projectId, userId);
-//        return ResponseEntity.ok().build();
-        return null;
-    }
-
-    /**
-     * Unassigns a task from a specific team in a project.
-     *
-     * @param taskId    the ID of the task to unassign
-     * @param projectId the ID of the project the task belongs to
-     * @param teamId    the ID of the user to unassign the task from
-     * @return a ResponseEntity with an OK HTTP status code
-     */ //TODO
-    @DeleteMapping("/unassignTask/team")
-    public ResponseEntity<Void> unassignTaskFromTeam(
-            @RequestParam("taskId") Long taskId,
-            @RequestParam("projectId") Long projectId,
-            @RequestParam("teamId") Long teamId
     ) {
 //        taskService.unassignTaskFromUser(taskId, projectId, userId);
 //        return ResponseEntity.ok().build();

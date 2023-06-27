@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 /**
- * Service implementation for task assignment.
+ * Service implementation for task assignments.
  */
 @Service
 @RequiredArgsConstructor

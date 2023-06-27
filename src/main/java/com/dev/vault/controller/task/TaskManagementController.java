@@ -43,8 +43,8 @@ public class TaskManagementController {
      * @param taskId      the ID of the task to update
      * @param taskRequest the request object containing the updated details of the task
      * @return a ResponseEntity containing a TaskResponse object and an HTTP status code
-     */ //TODO
-    @PutMapping("/updateTask/{taskId}")
+     */
+    @PutMapping("/updateTask/{taskId}") //TODO
     public ResponseEntity<TaskResponse> updateTask(
             @PathVariable Long taskId,
             @RequestBody TaskRequest taskRequest
@@ -59,8 +59,8 @@ public class TaskManagementController {
      *
      * @param taskId the ID of the task to retrieve
      * @return a ResponseEntity containing a TaskResponse object and an HTTP status code
-     */ //TODO
-    @GetMapping("/task/{taskId}")
+     */
+    @GetMapping("/task/{taskId}") //TODO
     public ResponseEntity<TaskResponse> getTaskDetails(@PathVariable Long taskId) {
 //        TaskResponse taskResponse = taskService.getTaskDetails(taskId);
 //        return ResponseEntity.ok(taskResponse);
@@ -73,7 +73,7 @@ public class TaskManagementController {
      * @param taskId the ID of the task to delete
      * @return a ResponseEntity with an OK HTTP status code
      */
-    @DeleteMapping("/deleteTask/{taskId}")
+    @DeleteMapping("/deleteTask/{taskId}") //TODO
     public ResponseEntity<Void> deleteTask(@PathVariable Long taskId) {
 //        taskService.deleteTask(taskId);
 //        return ResponseEntity.ok().build();
@@ -88,8 +88,8 @@ public class TaskManagementController {
      * @param projectId  the ID of the project to search for tasks in
      * @param assignedTo the ID of the user the tasks are assigned to
      * @return a ResponseEntity containing a list of TaskResponse objects and an HTTP status code
-     */ //TODO
-    @GetMapping("/searchTasks")
+     */
+    @GetMapping("/searchTasks") //TODO
     public ResponseEntity<List<TaskResponse>> searchTasks(
             @RequestParam(value = "status", required = false) TaskStatus status,
             @RequestParam(value = "priority", required = false) TaskPriority priority,
@@ -110,9 +110,8 @@ public class TaskManagementController {
      * @param projectId  the ID of the project to export tasks for
      * @param assignedTo the ID of the user the tasks are assigned to
      * @return a ResponseEntity containing the exported file and an HTTP status code
-     * @paramHere's the continuation of the seventh method:
-     */ //TODO
-    @GetMapping("/exportTasks")
+     */
+    @GetMapping("/exportTasks") //TODO
     public ResponseEntity<?> exportTasks(
             @RequestParam(value = "format") String format,
             @RequestParam(value = "status", required = false) TaskStatus status,
