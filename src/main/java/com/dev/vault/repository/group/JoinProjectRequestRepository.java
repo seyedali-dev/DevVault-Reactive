@@ -1,7 +1,7 @@
 package com.dev.vault.repository.group;
 
-import com.dev.vault.model.group.JoinProjectRequest;
-import com.dev.vault.model.group.enums.JoinStatus;
+import com.dev.vault.model.project.JoinProjectRequest;
+import com.dev.vault.model.project.enums.JoinStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

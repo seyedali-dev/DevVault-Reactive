@@ -4,8 +4,8 @@ import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.group.ProjectMembersDto;
 import com.dev.vault.helper.payload.group.SearchResponse;
 import com.dev.vault.helper.payload.user.UserDto;
-import com.dev.vault.model.group.Project;
-import com.dev.vault.model.group.ProjectMembers;
+import com.dev.vault.model.project.Project;
+import com.dev.vault.model.project.ProjectMembers;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.group.ProjectRepository;
@@ -51,7 +51,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     /**
-     * Searches for a project or group based on their name and returns their details.
+     * Searches for a project based on their name and returns their details.
      *
      * @param projectName The name of the project to search for.
      * @return A list of SearchResponse objects containing project details.
@@ -64,7 +64,7 @@ public class SearchServiceImpl implements SearchService {
 
         // Throw an exception if no project is found
         if (project == null || project.isEmpty())
-            throw new ResourceNotFoundException("Project(group)", "ProjectName", projectName);
+            throw new ResourceNotFoundException("Project", "ProjectName", projectName);
 
         // Map each project to a SearchResponse object and collect them into a list
         return project.stream()

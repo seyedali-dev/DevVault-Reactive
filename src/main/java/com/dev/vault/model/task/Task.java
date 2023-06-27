@@ -1,6 +1,6 @@
 package com.dev.vault.model.task;
 
-import com.dev.vault.model.group.Project;
+import com.dev.vault.model.project.Project;
 import com.dev.vault.model.task.enums.TaskPriority;
 import com.dev.vault.model.task.enums.TaskStatus;
 import com.dev.vault.model.user.User;

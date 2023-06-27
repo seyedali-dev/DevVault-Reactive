@@ -1,6 +1,5 @@
 package com.dev.vault.model.user;
 
-
 import com.dev.vault.model.task.Task;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

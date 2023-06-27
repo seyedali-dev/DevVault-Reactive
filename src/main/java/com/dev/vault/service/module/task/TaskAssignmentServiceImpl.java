@@ -5,7 +5,7 @@ import com.dev.vault.helper.exception.NotLeaderOfProjectException;
 import com.dev.vault.helper.exception.NotMemberOfProjectException;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.payload.task.TaskResponse;
-import com.dev.vault.model.group.Project;
+import com.dev.vault.model.project.Project;
 import com.dev.vault.model.task.Task;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.task.TaskRepository;
@@ -49,10 +49,10 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
      * @throws NotMemberOfProjectException    If the user is not a member of the project.
      */
     @Override
-    @Transactional
+    @Transactional // todo: update the teams in db too
     public TaskResponse assignTaskToUsers(Long taskId, Long projectId, List<Long> userIdList) {
-        Task task = repositoryUtils.findTaskByIdOrElseThrowNotFoundException(taskId);
-        Project project = repositoryUtils.findProjectByIdOrElseThrowNoFoundException(projectId);
+        Task task = repositoryUtils.findTaskById_OrElseThrow_ResourceNotFoundException(taskId);
+        Project project = repositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
         // Check if the task belongs to the project or throw a DevVaultException if it doesn't
         if (!task.getProject().getProjectId().equals(projectId))
             throw new DevVaultException("Task with ID " + taskId + " does not belong to project with ID " + projectId);
@@ -80,10 +80,11 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
      * @throws NotLeaderOfProjectException If the current user is not a leader or admin of the project.
      * @throws NotMemberOfProjectException If the user is not a member of the project.
      */
-    @Override
+    @Override // todo: update the teams in db too
+    @Transactional
     public TaskResponse assignTaskToAllUsersInProject(Long taskId, Long projectId) {
-        Task task = repositoryUtils.findTaskByIdOrElseThrowNotFoundException(taskId);
-        Project project = repositoryUtils.findProjectByIdOrElseThrowNoFoundException(projectId);
+        Task task = repositoryUtils.findTaskById_OrElseThrow_ResourceNotFoundException(taskId);
+        Project project = repositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
         // Check if the task belongs to the project or throw a DevVaultException if it doesn't
         if (!task.getProject().getProjectId().equals(projectId))
             throw new DevVaultException("Task with ID " + taskId + " does not belong to project with ID " + projectId);

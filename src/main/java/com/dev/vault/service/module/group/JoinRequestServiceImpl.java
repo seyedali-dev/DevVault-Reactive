@@ -6,11 +6,11 @@ import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.group.JoinProjectDto;
 import com.dev.vault.helper.payload.group.JoinResponse;
-import com.dev.vault.model.group.JoinCoupon;
-import com.dev.vault.model.group.JoinProjectRequest;
-import com.dev.vault.model.group.Project;
-import com.dev.vault.model.group.ProjectMembers;
-import com.dev.vault.model.group.enums.JoinStatus;
+import com.dev.vault.model.project.JoinCoupon;
+import com.dev.vault.model.project.JoinProjectRequest;
+import com.dev.vault.model.project.Project;
+import com.dev.vault.model.project.ProjectMembers;
+import com.dev.vault.model.project.enums.JoinStatus;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.JoinCouponRepository;
 import com.dev.vault.repository.group.JoinProjectRequestRepository;
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.dev.vault.model.group.enums.JoinStatus.PENDING;
+import static com.dev.vault.model.project.enums.JoinStatus.PENDING;
 
 /**
  * Service implementation of sending and managing Join Project Requests.
@@ -81,8 +81,8 @@ public class JoinRequestServiceImpl implements JoinRequestService {
         String email = authenticationService.getCurrentUser().getEmail();
 
         // Retrieve the project and user from the repositories
-        Project project = repositoryUtils.findProjectByIdOrElseThrowNoFoundException(projectId);
-        User user = repositoryUtils.findUserByEmailOrElseThrowNotFoundException(email);
+        Project project = repositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
+        User user = repositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email);
 
         // Check if the user is already a member of the project or has already sent a join project request for the project
         if (joinProjectUtils.isMemberOfProject(project, user))
@@ -123,7 +123,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
      */
     private boolean isCouponValid(Project project, String joinCoupon) {
         // Retrieve the project from the repository
-        repositoryUtils.findProjectByIdOrElseThrowNoFoundException(project.getProjectId());
+        repositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(project.getProjectId());
 
         // Check if the JoinRequestCoupon exists and if it is for the specific project and is for the requesting user (current user is requesting)
         User currentUser = authenticationService.getCurrentUser();
@@ -153,7 +153,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
     @Override
     @Transactional
     public List<JoinProjectDto> getJoinRequestsByProjectIdAndStatus(Long projectId, JoinStatus joinStatus) {
-        Project project = repositoryUtils.findProjectByIdOrElseThrowNoFoundException(projectId);
+        Project project = repositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
 
         // Check if the current user is the project leader or project admin of the project associated with the join request
         if (projectUtils.isLeaderOrAdminOfProject(project, authenticationService.getCurrentUser())) {
@@ -167,7 +167,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                             .build()
                     ).collect(Collectors.toList());
         } else {
-            // Throw an exception if the user is not the project leader or admin of the group
+            // Throw an exception if the user is not the project leader or admin of the project
             throw new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this project 👮🏻");
         }
     }

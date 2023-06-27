@@ -1,7 +1,7 @@
 package com.dev.vault.util.repository;
 
 import com.dev.vault.helper.exception.ResourceNotFoundException;
-import com.dev.vault.model.group.Project;
+import com.dev.vault.model.project.Project;
 import com.dev.vault.model.task.Task;
 import com.dev.vault.model.user.Roles;
 import com.dev.vault.model.user.User;
@@ -23,27 +23,27 @@ public class RepositoryUtils {
     private final RolesRepository rolesRepository;
     private final ProjectRepository projectRepository;
 
-    public User findUserByEmailOrElseThrowNotFoundException(String email) {
+    public User findUserByEmail_OrElseThrow_ResourceNotFoundException(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "Email", email));
     }
 
-    public Roles findRoleByRoleOrElseThrowNotFoundException(Role role) {
+    public Roles findRoleByRole_OrElseThrow_ResourceNotFoundException(Role role) {
         return rolesRepository.findByRole(role)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", "RoleName", role.name()));
     }
 
-    public Project findProjectByIdOrElseThrowNoFoundException(Long projectId) {
+    public Project findProjectById_OrElseThrow_ResourceNoFoundException(Long projectId) {
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", "ProjectID", projectId.toString()));
     }
 
-    public User findUserByIdOrElseThrowNoFoundException(Long userId) {
+    public User findUserById_OrElseThrow_ResourceNoFoundException(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "UserID", userId.toString()));
     }
 
-    public Task findTaskByIdOrElseThrowNotFoundException(Long taskId) {
+    public Task findTaskById_OrElseThrow_ResourceNotFoundException(Long taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task", "TaskID", taskId.toString()));
     }
