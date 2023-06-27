@@ -1,6 +1,6 @@
 package com.dev.vault.helper.payload.group;
 
-import com.dev.vault.model.group.enums.JoinStatus;
+import com.dev.vault.model.project.enums.JoinStatus;
 import lombok.*;
 
 @Getter

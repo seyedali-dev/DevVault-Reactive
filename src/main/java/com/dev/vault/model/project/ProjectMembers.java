@@ -1,12 +1,9 @@
-package com.dev.vault.model.group;
+package com.dev.vault.model.project;
 
 import com.dev.vault.model.user.User;
-import com.dev.vault.model.user.enums.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.List;
 
 /**
  * Entity for managing the relationship of members of a Project.
@@ -16,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity // manager the relationships between group and its members
+@Entity
 @Table(name = "project_members")
 public class ProjectMembers {
     @Id

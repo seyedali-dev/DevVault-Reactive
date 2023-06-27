@@ -4,9 +4,9 @@ import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.group.ProjectDto;
 import com.dev.vault.util.repository.RepositoryUtils;
-import com.dev.vault.model.group.Project;
-import com.dev.vault.model.group.ProjectMembers;
-import com.dev.vault.model.group.UserProjectRole;
+import com.dev.vault.model.project.Project;
+import com.dev.vault.model.project.ProjectMembers;
+import com.dev.vault.model.project.UserProjectRole;
 import com.dev.vault.model.user.Roles;
 import com.dev.vault.model.user.User;
 import com.dev.vault.model.user.enums.Role;
@@ -59,7 +59,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
         }
 
         // Get the PROJECT_LEADER role
-        Roles projectLeaderRole = repositoryUtils.findRoleByRoleOrElseThrowNotFoundException(Role.PROJECT_LEADER);
+        Roles projectLeaderRole = repositoryUtils.findRoleByRole_OrElseThrow_ResourceNotFoundException(Role.PROJECT_LEADER);
 
         // Get the current user
         User currentUser = authenticationService.getCurrentUser();

@@ -1,4 +1,4 @@
-package com.dev.vault.model.group;
+package com.dev.vault.model.project;
 
 import com.dev.vault.model.task.Task;
 import com.dev.vault.model.user.User;

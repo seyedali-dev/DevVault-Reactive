@@ -35,7 +35,7 @@ public class SearchController {
     /**
      * Returns a list of projects that match the provided projectOrGroupName.
      *
-     * @param projectOrGroupName the name of the project or group to search for
+     * @param projectOrGroupName the name of the project to search for
      * @return a ResponseEntity containing a list of SearchResponse objects
      */
     @GetMapping("/{projectOrGroupName}")
