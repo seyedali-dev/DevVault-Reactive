@@ -1,4 +1,4 @@
-package com.dev.vault.service.interfaces;
+package com.dev.vault.service.interfaces.project;
 
 import com.dev.vault.helper.payload.group.ProjectDto;
 

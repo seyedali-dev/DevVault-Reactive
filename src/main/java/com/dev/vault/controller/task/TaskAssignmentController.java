@@ -1,7 +1,7 @@
 package com.dev.vault.controller.task;
 
 import com.dev.vault.helper.payload.task.TaskResponse;
-import com.dev.vault.service.interfaces.TaskAssignmentService;
+import com.dev.vault.service.interfaces.task.TaskAssignmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

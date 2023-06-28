@@ -1,5 +1,8 @@
 package com.dev.vault.util.task;
 
+import com.dev.vault.helper.exception.DevVaultException;
+import com.dev.vault.helper.exception.NotLeaderOfProjectException;
+import com.dev.vault.helper.exception.NotMemberOfProjectException;
 import com.dev.vault.helper.payload.task.TaskRequest;
 import com.dev.vault.helper.payload.task.TaskResponse;
 import com.dev.vault.model.project.Project;
@@ -8,6 +11,7 @@ import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.task.TaskRepository;
 import com.dev.vault.repository.user.UserRepository;
+import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.util.project.ProjectUtils;
 import com.dev.vault.util.repository.RepositoryUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +32,7 @@ public class TaskUtils {
     private final ProjectUtils projectUtils;
     private final ProjectMembersRepository projectMembersRepository;
     private final RepositoryUtils repositoryUtils;
+    private final AuthenticationService authenticationService;
 
     /**
      * Checks if a task with the same name already exists in the project
@@ -49,7 +54,7 @@ public class TaskUtils {
      * @param task       the task to assign
      * @param project    the project the task belongs to
      */
-    public void assignTaskToUserList(Long projectId, List<Long> userIdList, Task task, Project project, Map<String , String> statusResponseMap) {
+    public void assignTaskToUserList(Long projectId, List<Long> userIdList, Task task, Project project, Map<String, String> statusResponseMap) {
         for (Long userId : userIdList) {
             // Find the user by ID or throw a RecourseNotFoundException if it doesn't exist
             User user = repositoryUtils.findUserById_OrElseThrow_ResourceNoFoundException(userId);
@@ -95,6 +100,16 @@ public class TaskUtils {
         taskResponse.setProjectName(project.getProjectName());
         taskResponse.setAssignedUsers(map);
         return taskResponse;
+    }
+
+    public void validateTaskAndProject(Task task, Project project, User user) {
+        // Check if the task belongs to the project or throw a DevVaultException if it doesn't
+        if (!task.getProject().getProjectId().equals(project.getProjectId()))
+            throw new DevVaultException("Task with ID " + task.getTaskId() + " does not belong to project with ID " + project.getProjectId());
+        if (!projectUtils.isMemberOfProject(project, user))
+            throw new NotMemberOfProjectException("You are not a member of this project");
+        if (!projectUtils.isLeaderOrAdminOfProject(project, user))
+            throw new NotLeaderOfProjectException("👮🏻You are not the leader or admin of this project👮🏻");
     }
 
     /**

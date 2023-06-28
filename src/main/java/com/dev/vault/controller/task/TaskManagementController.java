@@ -4,7 +4,7 @@ import com.dev.vault.helper.payload.task.TaskRequest;
 import com.dev.vault.helper.payload.task.TaskResponse;
 import com.dev.vault.model.task.enums.TaskPriority;
 import com.dev.vault.model.task.enums.TaskStatus;
-import com.dev.vault.service.interfaces.TaskManagementService;
+import com.dev.vault.service.interfaces.task.TaskManagementService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

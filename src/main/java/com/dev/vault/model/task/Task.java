@@ -25,13 +25,14 @@ public class Task {
 
     private String taskName;
     private String description;
-    @FutureOrPresent
     private LocalDateTime dueDate;
     private LocalDateTime createdAt;
+    private LocalDateTime completionDate;
     @Enumerated(EnumType.STRING)
     private TaskStatus taskStatus;
     @Enumerated(EnumType.STRING)
     private TaskPriority taskPriority;
+    private boolean hasOverdue;
 
     /* relationships */
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

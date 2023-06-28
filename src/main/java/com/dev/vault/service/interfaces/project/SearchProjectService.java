@@ -1,11 +1,11 @@
-package com.dev.vault.service.interfaces;
+package com.dev.vault.service.interfaces.project;
 
 import com.dev.vault.helper.payload.group.SearchResponse;
 
 import java.util.List;
 
-public interface SearchService {
-    // list all the projects(groups)
+public interface SearchProjectService {
+    // list all the projects
     List<SearchResponse> listAllProjects();
 
     // search for a project with matching names

@@ -15,7 +15,7 @@ import com.dev.vault.model.user.VerificationToken;
 import com.dev.vault.model.user.enums.Role;
 import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.repository.user.VerificationTokenRepository;
-import com.dev.vault.service.interfaces.AuthenticationService;
+import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.service.module.mail.MailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.dev.vault.service.interfaces;
+package com.dev.vault.service.interfaces.task;
 
 import com.dev.vault.helper.exception.DevVaultException;
 import com.dev.vault.helper.exception.NotLeaderOfProjectException;

@@ -9,8 +9,8 @@ import com.dev.vault.model.project.Project;
 import com.dev.vault.model.task.Task;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.task.TaskRepository;
-import com.dev.vault.service.interfaces.AuthenticationService;
-import com.dev.vault.service.interfaces.TaskAssignmentService;
+import com.dev.vault.service.interfaces.task.TaskAssignmentService;
+import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.util.project.ProjectUtils;
 import com.dev.vault.util.repository.RepositoryUtils;
 import com.dev.vault.util.task.TaskUtils;
@@ -86,15 +86,10 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
     public TaskResponse assignTaskToAllUsersInProject(Long taskId, Long projectId) {
         Task task = repositoryUtils.findTaskById_OrElseThrow_ResourceNotFoundException(taskId);
         Project project = repositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
-        // Check if the task belongs to the project or throw a DevVaultException if it doesn't
-        if (!task.getProject().getProjectId().equals(projectId))
-            throw new DevVaultException("Task with ID " + taskId + " does not belong to project with ID " + projectId);
-
         User currentUser = authenticationService.getCurrentUser();
-        if (!projectUtils.isMemberOfProject(project, currentUser))
-            throw new NotMemberOfProjectException("You are not a member of this project");
-        if (!projectUtils.isLeaderOrAdminOfProject(project, currentUser))
-            throw new NotLeaderOfProjectException("👮🏻You are not the leader or admin of this project👮🏻");
+
+        // Validate task and project
+        taskUtils.validateTaskAndProject(task, project, currentUser);
 
         // Create a responseMap to hold the responses for each user
         Map<String, String> responseMap = new HashMap<>();
@@ -110,16 +105,16 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
 
     @Override
     public void unAssignTaskFromUser(Long taskId, Long projectId, Long userId) {
-
+        //TODO
     }
 
     @Override
     public void unAssignTaskFromUsers(Long taskId, Long projectId, List<Long> userIdList) {
-
+        //TODO
     }
 
     @Override
     public void unassignTaskFromAllUsersInProject(Long taskId, Long projectId) {
-
+        //TODO
     }
 }

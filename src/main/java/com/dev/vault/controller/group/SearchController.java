@@ -1,7 +1,7 @@
 package com.dev.vault.controller.group;
 
 import com.dev.vault.helper.payload.group.SearchResponse;
-import com.dev.vault.service.interfaces.SearchService;
+import com.dev.vault.service.interfaces.project.SearchProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'TEAM_MEMBER', 'PROJECT_ADMIN')")
 public class SearchController {
-    private final SearchService searchService;
+    private final SearchProjectService searchProjectService;
 
     /**
      * Returns a list of all projects.
@@ -29,7 +29,7 @@ public class SearchController {
      */
     @GetMapping
     public ResponseEntity<List<SearchResponse>> searchResultForAllProjects() {
-        return ResponseEntity.ok(searchService.listAllProjects());
+        return ResponseEntity.ok(searchProjectService.listAllProjects());
     }
 
     /**
@@ -40,6 +40,6 @@ public class SearchController {
      */
     @GetMapping("/{projectOrGroupName}")
     public ResponseEntity<List<SearchResponse>> searchForAProjectOrGroup(@PathVariable String projectOrGroupName) {
-        return ResponseEntity.ok(searchService.searchForProject(projectOrGroupName));
+        return ResponseEntity.ok(searchProjectService.searchForProject(projectOrGroupName));
     }
 }
