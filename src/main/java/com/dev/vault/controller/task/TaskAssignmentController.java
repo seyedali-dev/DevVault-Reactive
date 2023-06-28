@@ -69,6 +69,25 @@ public class TaskAssignmentController {
     }
 
     /**
+     * Unassigns a task from a list of users.
+     *
+     * @param taskId    the ID of the task to unassign
+     * @param projectId the ID of the project the task belongs to
+     * @param userIdList    the IDs of the users to unassign the task from
+     * @return a ResponseEntity with an OK HTTP status code
+     */
+    @DeleteMapping("/unassignTask/multiple/users") //TODO
+    public ResponseEntity<Void> unassignTaskFromUsers(
+            @RequestParam("taskId") Long taskId,
+            @RequestParam("projectId") Long projectId,
+            @RequestBody List<Long> userIdList
+    ) {
+//        taskService.unassignTaskFromUser(taskId, projectId, userId);
+//        return ResponseEntity.ok().build();
+        return null;
+    }
+
+    /**
      * Unassigns a task from a all users in a project.
      *
      * @param taskId    the ID of the task to unassign
