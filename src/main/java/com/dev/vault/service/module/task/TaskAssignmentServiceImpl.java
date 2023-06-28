@@ -19,7 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Service implementation for task assignments.
@@ -49,7 +52,7 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
      * @throws NotMemberOfProjectException    If the user is not a member of the project.
      */
     @Override
-    @Transactional // todo: update the teams in db too
+    @Transactional
     public TaskResponse assignTaskToUsers(Long taskId, Long projectId, List<Long> userIdList) {
         Task task = repositoryUtils.findTaskById_OrElseThrow_ResourceNotFoundException(taskId);
         Project project = repositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
@@ -61,13 +64,11 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
         if (!projectUtils.isLeaderOrAdminOfProject(project, currentUser))
             throw new NotLeaderOfProjectException("👮🏻You are not a leader or admin of this project👮🏻");
 
-        // Create a set to hold the assigned users and a map to hold the responses for each user
-        Set<User> assignedUsers = new HashSet<>();
-        Map<String, String> assignUsersMap = new HashMap<>();
+        Map<String, String> statusResponseMap = new HashMap<>();
 
         // Loop through the list of user IDs and assign the task to them
-        taskUtils.assignTaskToUserList(projectId, userIdList, task, project, assignedUsers, assignUsersMap);
-        return taskUtils.buildTaskResponse(task, project, assignUsersMap);
+        taskUtils.assignTaskToUserList(projectId, userIdList, task, project, statusResponseMap);
+        return taskUtils.buildTaskResponse(task, project, statusResponseMap);
     }
 
     /**
@@ -80,7 +81,7 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
      * @throws NotLeaderOfProjectException If the current user is not a leader or admin of the project.
      * @throws NotMemberOfProjectException If the user is not a member of the project.
      */
-    @Override // todo: update the teams in db too
+    @Override
     @Transactional
     public TaskResponse assignTaskToAllUsersInProject(Long taskId, Long projectId) {
         Task task = repositoryUtils.findTaskById_OrElseThrow_ResourceNotFoundException(taskId);
@@ -105,5 +106,20 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
 
         // Build and return a TaskResponse with information about the assigned task and its assigned users
         return taskUtils.buildTaskResponse(task, project, responseMap);
+    }
+
+    @Override
+    public void unAssignTaskFromUser(Long taskId, Long projectId, Long userId) {
+
+    }
+
+    @Override
+    public void unAssignTaskFromUsers(Long taskId, Long projectId, List<Long> userIdList) {
+
+    }
+
+    @Override
+    public void unassignTaskFromAllUsersInProject(Long taskId, Long projectId) {
+
     }
 }

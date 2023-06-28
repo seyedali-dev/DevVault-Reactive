@@ -13,10 +13,7 @@ import com.dev.vault.util.repository.RepositoryUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -47,39 +44,38 @@ public class TaskUtils {
     /**
      * Loops through the list of user IDs and assigns the task to each user.
      *
-     * @param projectId      the ID of the project the task belongs to
-     * @param userIdList     the list of user IDs to assign the task to
-     * @param task           the task to assign
-     * @param project        the project the task belongs to
-     * @param assignedUsers  the set to hold the assigned users
-     * @param assignUsersMap the map to hold the responses for each user
+     * @param projectId  the ID of the project the task belongs to
+     * @param userIdList the list of user IDs to assign the task to
+     * @param task       the task to assign
+     * @param project    the project the task belongs to
      */
-    public void assignTaskToUserList(Long projectId, List<Long> userIdList, Task task, Project project, Set<User> assignedUsers, Map<String, String> assignUsersMap) {
+    public void assignTaskToUserList(Long projectId, List<Long> userIdList, Task task, Project project, Map<String , String> statusResponseMap) {
         for (Long userId : userIdList) {
             // Find the user by ID or throw a RecourseNotFoundException if it doesn't exist
             User user = repositoryUtils.findUserById_OrElseThrow_ResourceNoFoundException(userId);
 
-            // Check if the task is already assigned to the user skip ahead, and add a response to the map
-            if (taskRepository.findByAssignedUsersAndTaskId(user, task.getTaskId()).isPresent()) {
-                assignUsersMap.put(user.getUsername(), "Fail: Task already assigned to user " + user.getUsername());
+            // Check if the user is a member of the project, and add a response to the map if they're not
+            if (!projectUtils.isMemberOfProject(project, user)) {
+                statusResponseMap.put(user.getUsername(), "Fail: User with ID " + userId + " is not a member of project with ID " + projectId);
                 continue;
             }
 
-            // Check if the user is a member of the project, and add a response to the map if they're not
-            if (!projectUtils.isMemberOfProject(project, user)) {
-                assignUsersMap.put(user.getUsername(), "Fail: User with ID " + userId + " is not a member of project with ID " + projectId);
+            // Check if the task is already assigned to the user skip ahead, and add a response to the map
+            if (taskRepository.findByAssignedUsersAndTaskId(user, task.getTaskId()).isPresent()) {
+                statusResponseMap.put(user.getUsername(), "Fail: Task already assigned to user " + user.getUsername());
                 continue;
             }
 
             // Assign the task to the user, add the user to the assigned users set, and add a response to the map
             user.getTask().add(task);
             User savedUser = userRepository.save(user);
-            assignedUsers.add(savedUser);
-            assignUsersMap.put(savedUser.getUsername(), "Success: Task assigned to user " + savedUser.getUsername());
+            task.getAssignedUsers().add(savedUser);
+            statusResponseMap.put(savedUser.getUsername(), "Success: Task assigned to user " + savedUser.getUsername());
 
             // Set the assigned users for the task and save the task
-            task.setAssignedUsers(assignedUsers);
+            task.setAssignedUsers(task.getAssignedUsers());
             taskRepository.save(task);
+
         }
     }
 
@@ -117,21 +113,21 @@ public class TaskUtils {
     }
 
     /**
-     * Retrieves a set of users associated with a task and a project, and updates the assignUsersMap with the status of the assignment for each user.
+     * Retrieves a set of users associated with a task and a project, and updates the statusResponseMap with the status of the assignment for each user.
      *
-     * @param task           The task to assign.
-     * @param project        The project to which the task belongs.
-     * @param assignUsersMap The map to which the status of the assignment for each user will be added.
+     * @param task              The task to assign.
+     * @param project           The project to which the task belongs.
+     * @param statusResponseMap The map to which the status of the assignment for each user will be added.
      * @return A set of users associated with the task and the project.
      */
-    public Set<User> getUsers(Task task, Project project, Map<String, String> assignUsersMap) {
+    public Set<User> getUsers(Task task, Project project, Map<String, String> statusResponseMap) {
         return projectMembersRepository.findByProject(project)
                 .stream().map(projectMembers -> {
                     User user = repositoryUtils.findUserById_OrElseThrow_ResourceNoFoundException(projectMembers.getUser().getUserId());
                     // Check if the task is already assigned to the user, skip ahead and add a response to the map if it is
                     if (taskRepository.findByAssignedUsersAndTaskId(user, task.getTaskId()).isPresent())
-                        assignUsersMap.put(user.getUsername(), "Fail: Task already assigned to user " + user.getUsername());
-                    else assignUsersMap.put(user.getUsername(), "Success");
+                        statusResponseMap.put(user.getUsername(), "Fail: Task already assigned to user " + user.getUsername());
+                    else statusResponseMap.put(user.getUsername(), "Success");
                     user.getTask().add(task);
 
                     return userRepository.save(user);
