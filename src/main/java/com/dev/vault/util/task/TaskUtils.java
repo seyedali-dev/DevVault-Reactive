@@ -102,12 +102,24 @@ public class TaskUtils {
         return taskResponse;
     }
 
+    /**
+     * Validates whether the task belongs to the project and whether the user is a member and leader/admin of the project.
+     *
+     * @param task    the task to validate
+     * @param project the project to validate against
+     * @param user    the user to validate
+     * @throws DevVaultException           if the task does not belong to the project
+     * @throws NotMemberOfProjectException if the user is not a member of the project
+     * @throws NotLeaderOfProjectException if the user is not the leader or admin of the project
+     */
     public void validateTaskAndProject(Task task, Project project, User user) {
         // Check if the task belongs to the project or throw a DevVaultException if it doesn't
         if (!task.getProject().getProjectId().equals(project.getProjectId()))
             throw new DevVaultException("Task with ID " + task.getTaskId() + " does not belong to project with ID " + project.getProjectId());
+        // Check if the user is a member of the project or throw a NotMemberOfProjectException if they aren't
         if (!projectUtils.isMemberOfProject(project, user))
             throw new NotMemberOfProjectException("You are not a member of this project");
+        // Check if the user is the leader or admin of the project or throw a NotLeaderOfProjectException if they aren't
         if (!projectUtils.isLeaderOrAdminOfProject(project, user))
             throw new NotLeaderOfProjectException("👮🏻You are not the leader or admin of this project👮🏻");
     }
@@ -148,4 +160,11 @@ public class TaskUtils {
                     return userRepository.save(user);
                 }).collect(Collectors.toSet());
     }
+
+//    public List<Task> overDueTasks(Project project) {
+//        ArrayList<Task> overDueTasks = new ArrayList<>();
+//        for (Task task : project.getTasks()) {
+//            if (task.is)
+//        }
+//    }
 }
