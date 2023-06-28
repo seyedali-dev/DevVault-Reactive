@@ -1,7 +1,7 @@
 package com.dev.vault.controller.group;
 
 import com.dev.vault.helper.payload.group.JoinResponse;
-import com.dev.vault.service.interfaces.JoinRequestService;
+import com.dev.vault.service.interfaces.project.JoinRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

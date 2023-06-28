@@ -9,7 +9,7 @@ import com.dev.vault.model.project.ProjectMembers;
 import com.dev.vault.model.user.User;
 import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.group.ProjectRepository;
-import com.dev.vault.service.interfaces.SearchService;
+import com.dev.vault.service.interfaces.project.SearchProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 // TODO:: pagination
-public class SearchServiceImpl implements SearchService {
+public class SearchProjectServiceImpl implements SearchProjectService {
 
     private final ProjectRepository projectRepository;
     private final ProjectMembersRepository projectMembersRepository;
