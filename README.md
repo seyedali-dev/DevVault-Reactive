@@ -1,76 +1,98 @@
-## DevVault - Spring Boot Project Manager 🚀
+# 🚀 DevVault
 
-A powerful project management application called DevVault, built with Spring Boot and inspired by Trello. Manage your projects, tasks, and team members with ease, while enjoying role-based functionalities and secure authentication.
+DevVault is a project management application built with Spring Boot. It allows users to create projects, add members to projects, create tasks within projects, and assign tasks to project members. The application also supports user authentication and authorization using JWT tokens.
 
-### Table of Contents
+## Table of Contents
 
-- [Features](#features)
-- [Technologies](#technologies)
-- [Setup](#setup)
-- [Contributing](#contributing)
-- [License](#license)
-- [Future Plans](#future-plans)
+- [Features](#-features)
+- [Technologies Used](#-technologies-used)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Authentication](#-authentication)
+- [Projects](#-projects)
+- [Tasks](#-tasks)
+- [Comments](#-comments)
+- [Contributing](#-contributing)
+- [License](#-license)
 
-## Features
+## 🛠️ Technologies Used
 
-- Create and manage projects like Trello
-- Role-based functionalities:
-  - `PROJECT_LEADER`: Manage projects, assign tasks, and oversee team members
-  - `PROJECT_ADMIN`: Manage tasks, assign team members, and moderate chats
-  - `TEAM_MEMBER`: Collaborate on tasks and communicate with other team members
-- JWT token security for authentication and authorization
-- Mark tasks as done with a simple click (to be implemented)
-- Group and private chatting for seamless communication (to be implemented)
-- Real-time updates with WebSockets (to be implemented)
-- Reactive programming with Spring WebFlux (to be implemented)
-- Front-end (to be implemented)
+- Java 11
+- Spring Boot
+- Spring Security
+- JWT
+- Hibernate
+- Maven
 
-## Technologies
+## 🎉 Features
 
-- Spring Boot: A powerful framework for building Java-based applications
-- JWT: Secure authentication and authorization with JSON Web Tokens
-- Spring Data JPA: Simplify database access and management
-- MySQL: A reliable and widely-used relational database
-- Spring WebFlux (to be implemented): Reactive programming with Spring
-- WebSocket (to be implemented): Real-time communication between clients and servers
-- Role-based authentication and authorization: Manage user permissions based on their roles
+- User Registration and Login with JWT
+- Project Creation
+- Adding Members to Project
+- Task Creation in Project
+- Assigning Task to Members of Project
+- Project Roles: Project Leader, Project Admin, Team Member
+- CRUD Operations on Projects
+- Commenting on Projects and Tasks
+- Task Completion Tracking
 
-## Setup
+--> More features like Real-time notification, Reactive WebFlux, Integrating external tools like Jira, etc ... are for future plans and will be implemented as I learn them!
+
+## 🚀 Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine.
+
+### Prerequisites
+
+To run this project, you will need to have the following installed:
+
+- Java 11 or higher
+- Maven
+
+### Installation
 
 1. Clone the repository:
 
-```bash
-git clone https://github.com/sayedxali/DevVault.git
+```
+git clone https://github.com/your-username/devvault.git
 ```
 
-2. Navigate to the project directory:
+2. Build the application:
 
-```bash
-cd DevVault
 ```
-
-3. Build the project with Maven:
-
-```bash
+cd devvault
 mvn clean install
 ```
 
-4. Run the application:
+3. Run the application:
 
-```bash
-mvn spring-boot:run
+```
+java -jar target/devvault-0.0.1-SNAPSHOT.jar
 ```
 
 The application will be available at `http://localhost:8080`.
 
-## Contributing
+## 🔒 Authentication
 
-As a beginner in Git and GitHub, I'm learning alongside the development of this project. Contributions are welcome! If you have ideas or suggestions, feel free to open an issue or submit a pull request.
+Users can register and login to the application using JWT tokens. To register, a user must provide a username, email, and password. To login, the user must provide their email and password. The application will respond with a JWT token that the user can use to authenticate subsequent requests.
 
-## License
+## 🚧 Projects
 
-This project is licensed under myself 😁.
+Users can create projects and become project leaders. They can also add other users to the project and specify their roles as project admins or team members. CRUD operations are available for projects, allowing project leaders to update or delete projects as needed.
 
-## Future Plans
+## 📝 Tasks
 
-After completing the development of DevVault as a _monolithic application_, I plan to transition it to a **microservices architecture**. This will allow for better scalability and maintainability, as well as provide an opportunity to learn more about microservices and their implementation.
+Within a project, users can create tasks and assign them to project members. Tasks can be marked as completed when they are finished. Users can also comment on tasks, which will only be visible to other users who have been assigned the same task.
+
+## 💬 Comments
+
+Users can also leave comments on projects, which will be visible to all members of the project. This can be used to discuss project-related issues or provide updates on the project's progress.
+
+## 🤝 Contributing
+
+Contributions to DevVault are welcome! If you find a bug or have a feature request, please open an issue on the GitHub repository. If you'd like to contribute code, please fork the repository and submit a pull request with your changes.
+
+## 📄 License
+
+DevVault is licensed under the MIT License. See the `LICENSE` file for more information.
