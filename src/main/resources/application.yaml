@@ -37,3 +37,5 @@ account:
   verification:
     auth:
       url: "http://localhost:8080/api/auth/accountVerification/"
+token:
+  prefix: "Bearer "

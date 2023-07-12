@@ -121,6 +121,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
      * @throws DevVaultException         if the JoinRequestCoupon has been used or has exceeded its maximum usage count
      * @throws ResourceNotFoundException if the JoinRequestCoupon cannot be found
      */
+    @SuppressWarnings("SameReturnValue")
     private boolean isCouponValid(Project project, String joinCoupon) {
         // Retrieve the project from the repository
         repositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(project.getProjectId());

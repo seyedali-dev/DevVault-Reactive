@@ -44,6 +44,7 @@ public class TaskManagementController {
      * @param taskRequest the request object containing the updated details of the task
      * @return a ResponseEntity containing a TaskResponse object and an HTTP status code
      */
+    @SuppressWarnings("CommentedOutCode")
     @PutMapping("/updateTask/{taskId}") //TODO
     public ResponseEntity<TaskResponse> updateTask(
             @PathVariable Long taskId,
@@ -60,6 +61,7 @@ public class TaskManagementController {
      * @param taskId the ID of the task to retrieve
      * @return a ResponseEntity containing a TaskResponse object and an HTTP status code
      */
+    @SuppressWarnings("CommentedOutCode")
     @GetMapping("/task/{taskId}") //TODO
     public ResponseEntity<TaskResponse> getTaskDetails(@PathVariable Long taskId) {
 //        TaskResponse taskResponse = taskService.getTaskDetails(taskId);
@@ -73,6 +75,7 @@ public class TaskManagementController {
      * @param taskId the ID of the task to delete
      * @return a ResponseEntity with an OK HTTP status code
      */
+    @SuppressWarnings("CommentedOutCode")
     @DeleteMapping("/deleteTask/{taskId}") //TODO
     public ResponseEntity<Void> deleteTask(@PathVariable Long taskId) {
 //        taskService.deleteTask(taskId);
@@ -89,6 +92,7 @@ public class TaskManagementController {
      * @param assignedTo the ID of the user the tasks are assigned to
      * @return a ResponseEntity containing a list of TaskResponse objects and an HTTP status code
      */
+    @SuppressWarnings("CommentedOutCode")
     @GetMapping("/searchTasks") //TODO
     public ResponseEntity<List<TaskResponse>> searchTasks(
             @RequestParam(value = "status", required = false) TaskStatus status,

@@ -1,6 +1,7 @@
 package com.dev.vault.model.user;
 
 import com.dev.vault.model.task.Task;
+import com.dev.vault.model.user.jwt.JwtToken;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -44,6 +45,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Task> task = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<JwtToken> jwtTokens;
     /* end of relationships */
 
     @Override

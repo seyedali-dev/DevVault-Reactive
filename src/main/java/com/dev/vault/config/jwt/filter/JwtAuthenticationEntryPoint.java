@@ -1,6 +1,5 @@
 package com.dev.vault.config.jwt.filter;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +13,8 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        log.info("➡️ JwtAuthenticationEntryPoint commenced...");
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
+        log.warn("➡️ JwtAuthenticationEntryPoint commenced...");
         String errorMessage;
         switch (response.getStatus()) {
             case HttpServletResponse.SC_UNAUTHORIZED -> {
@@ -39,6 +38,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, errorMessage);
             }
         }
-        log.info(errorMessage);
+        log.error(errorMessage);
     }
 }

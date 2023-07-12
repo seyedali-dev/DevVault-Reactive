@@ -5,7 +5,6 @@ import com.dev.vault.model.task.enums.TaskPriority;
 import com.dev.vault.model.task.enums.TaskStatus;
 import com.dev.vault.model.user.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.FutureOrPresent;
 import lombok.*;
 
 import java.time.LocalDateTime;
