@@ -51,6 +51,7 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
      * @throws ResourceAlreadyExistsException If the task is already assigned to a user.
      * @throws NotMemberOfProjectException    If the user is not a member of the project.
      */
+    @SuppressWarnings("JavadocReference")
     @Override
     @Transactional
     public TaskResponse assignTaskToUsers(Long taskId, Long projectId, List<Long> userIdList) {
@@ -81,6 +82,7 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
      * @throws NotLeaderOfProjectException If the current user is not a leader or admin of the project.
      * @throws NotMemberOfProjectException If the user is not a member of the project.
      */
+    @SuppressWarnings("JavadocReference")
     @Override
     @Transactional
     public TaskResponse assignTaskToAllUsersInProject(Long taskId, Long projectId) {

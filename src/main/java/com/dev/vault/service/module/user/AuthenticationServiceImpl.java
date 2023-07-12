@@ -8,7 +8,6 @@ import com.dev.vault.helper.payload.auth.AuthenticationRequest;
 import com.dev.vault.helper.payload.auth.AuthenticationResponse;
 import com.dev.vault.helper.payload.auth.RegisterRequest;
 import com.dev.vault.helper.payload.email.Email;
-import com.dev.vault.util.repository.RepositoryUtils;
 import com.dev.vault.model.user.Roles;
 import com.dev.vault.model.user.User;
 import com.dev.vault.model.user.VerificationToken;
@@ -17,6 +16,8 @@ import com.dev.vault.repository.user.UserRepository;
 import com.dev.vault.repository.user.VerificationTokenRepository;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.service.module.mail.MailService;
+import com.dev.vault.util.repository.RepositoryUtils;
+import com.dev.vault.util.user.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -45,7 +46,8 @@ import java.util.stream.Collectors;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Value("${account.verification.auth.url}")
-    private static String ACCOUNT_VERIFICATION_AUTH_URL;
+    private String ACCOUNT_VERIFICATION_AUTH_URL;
+
     private final VerificationTokenRepository verificationTokenRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -55,12 +57,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final RepositoryUtils repositoryUtils;
+    private final AuthenticationUtils authenticationUtils;
 
     /**
-     * Creates a new user with the provided information and sends an account verification email.
+     * Registers a new user, assigns the <code>TEAM_MEMBER</code> role, saves the user to the database,
+     * generates a verification token, sends an activation email, generates a JWT token,
+     * saves the JWT token, and returns an {@link AuthenticationResponse AuthenticationResponse} object with the JWT token and user information.
      *
-     * @param registerRequest the request containing user registration information
-     * @return an AuthenticationResponse object containing the newly created user's information and a JWT token
+     * @param registerRequest the {@link RegisterRequest RegisterRequest} object containing the user's registration information
+     * @return an {@link AuthenticationResponse AuthenticationResponse} object containing the JWT token and user information
+     * @throws ResourceAlreadyExistsException if the user already exists in the database
      */
     @Override
     public AuthenticationResponse registerUser(RegisterRequest registerRequest) {
@@ -81,20 +87,24 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.getRoles().add(teamMemberRole);
 
         // save the user object to the database
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
         log.info("✅ User saved to db, attempting to send activation email...");
 
         // generate a verification token and send an email with the activation link
-        String token = generateVerificationToken(user);
+        String verificationToken = authenticationUtils.generateVerificationToken(user);
         mailService.sendEmail(new Email(
                 "Please Activate Your Account",
                 user.getEmail(),
                 "Thank you for signing up to our app! " +
-                "Please click the url below to activate your account: " + ACCOUNT_VERIFICATION_AUTH_URL + token));
+                "Please click the url below to activate your account: " + ACCOUNT_VERIFICATION_AUTH_URL + verificationToken));
 
         log.info("➡️ generating JWT token...");
         // generate and return a JWT token for the newly created user
         String jwtToken = jwtService.generateToken(user);
+
+        // save the generated token
+        authenticationUtils.buildAndSaveJwtToken(savedUser, jwtToken);
+
         return AuthenticationResponse.builder()
                 .username(user.getUsername())
                 .roles(user.getRoles()
@@ -104,18 +114,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .rolesDescription(List.of("➡️➡️Default role for user is TEAM_MEMBER"))
                 .token(jwtToken)
                 .build();
-    }
-
-    /**
-     * Generates a verification token for the user that has attempted to sign-up.
-     *
-     * @param user the user to generate the verification token for
-     * @return the verification token as a string
-     */
-    private String generateVerificationToken(User user) {
-        VerificationToken verificationToken = new VerificationToken(user);
-        verificationTokenRepository.save(verificationToken);
-        return verificationToken.getToken();
     }
 
     /**
@@ -139,23 +137,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     /**
      * Authenticates the user's credentials and generates a JWT token.
+     * Revokes all existing tokens for the user and saves the new token.
      *
-     * @param request the request containing the user's credentials
-     * @return an AuthenticationResponse object containing the user's information and a JWT token
+     * @param request the authentication request containing the user's email and password
+     * @return an AuthenticationResponse object containing the JWT token and user information
      */
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        // authenticate the user's credentials using the authentication manager
+        // Authenticate the user's credentials using the authentication manager
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        // get the user object from the authentication object and generate a JWT token
+        // Get the user object from the authentication object and generate a JWT token
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         User user = repositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(userDetails.getUsername());
         String jwtToken = jwtService.generateToken(user);
 
-        // return the authentication response with the JWT token and user information
+        // Revoke all the saved tokens for the user and save the generated token
+        authenticationUtils.revokeAllUserTokens(user);
+        authenticationUtils.buildAndSaveJwtToken(user, jwtToken);
+
+        // Return the authentication response with the JWT token and user information
         return AuthenticationResponse.builder()
                 .username(user.getUsername())
                 .roles(user.getRoles()
