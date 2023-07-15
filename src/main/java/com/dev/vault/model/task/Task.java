@@ -4,8 +4,9 @@ import com.dev.vault.model.project.Project;
 import com.dev.vault.model.task.enums.TaskPriority;
 import com.dev.vault.model.task.enums.TaskStatus;
 import com.dev.vault.model.user.User;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -16,10 +17,8 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
 public class Task {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long taskId;
 
     private String taskName;
@@ -27,27 +26,18 @@ public class Task {
     private LocalDateTime dueDate;
     private LocalDateTime createdAt;
     private LocalDateTime completionDate;
-    @Enumerated(EnumType.STRING)
     private TaskStatus taskStatus;
-    @Enumerated(EnumType.STRING)
     private TaskPriority taskPriority;
     private boolean hasOverdue;
 
     /* relationships */
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "tasks_users",
-            joinColumns = @JoinColumn(name = "task_Id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @Transient
     private Set<User> assignedUsers = new HashSet<>();
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "created_by")
+    @Transient
     private User createdBy;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "project_id")
+    @Transient
     private Project project;
     /* end of relationships */
 }

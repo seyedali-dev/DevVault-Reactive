@@ -2,8 +2,9 @@ package com.dev.vault.model.project;
 
 import com.dev.vault.model.project.enums.JoinStatus;
 import com.dev.vault.model.user.User;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 
 /**
  * Entity for sending join project request to a Project - PROJECT_LEADER.
@@ -13,17 +14,15 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
 public class JoinProjectRequest {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long joinRequestId;
 
     /* relationships */
-    @ManyToOne(fetch = FetchType.EAGER)
+    @Transient
     private Project project;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @Transient
     private User user;
     /* end of relationships */
 

@@ -2,10 +2,9 @@ package com.dev.vault.model.user;
 
 import com.dev.vault.model.task.Task;
 import com.dev.vault.model.user.jwt.JwtToken;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,17 +16,12 @@ import java.util.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
     private String username;
     private String password;
-    @NotNull
-    @NotBlank
-    @Column(unique = true)
     private String email;
     private boolean active = false;
     private int age;
@@ -35,18 +29,13 @@ public class User implements UserDetails {
     private String major;
 
     /* relationships */
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "users_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
+    @Transient
     private Set<Roles> roles = new HashSet<>();
 
-    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @Transient
     private List<Task> task = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
+    @Transient
     private List<JwtToken> jwtTokens;
     /* end of relationships */
 
