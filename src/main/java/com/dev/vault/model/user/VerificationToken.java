@@ -1,11 +1,10 @@
 package com.dev.vault.model.user;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.Id;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -14,19 +13,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-@Entity
 public class VerificationToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long tokenId;
 
     private String token;
-    @CreationTimestamp
     private Instant createdAt;
     // TODO: create a expiry date functionality like for 3 hours
 
     /*relationship*/
-    @OneToOne
     private User user;
     /*end of relationship*/
 

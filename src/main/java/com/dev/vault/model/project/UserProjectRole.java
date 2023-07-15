@@ -2,8 +2,9 @@ package com.dev.vault.model.project;
 
 import com.dev.vault.model.user.Roles;
 import com.dev.vault.model.user.User;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 
 /**
  * Entity for managing the relationship of a PROJECT_LEADER with a specific project.
@@ -14,24 +15,18 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
-@Table(name = "user_project_role")
 public class UserProjectRole {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userProjectRoleId;
 
     /* relationships */
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @Transient
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
+    @Transient
     private Roles role;
 
-    @ManyToOne
-    @JoinColumn(name = "project_id")
+    @Transient
     private Project project;
     /* end of relationships */
 

@@ -1,8 +1,9 @@
 package com.dev.vault.model.project;
 
 import com.dev.vault.model.user.User;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 
 /**
  * Entity for generating a JoinRequestCoupon for user's that want to make join request to a project.
@@ -12,25 +13,19 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
-@Table(name = "join_coupon")
 public class JoinCoupon {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long couponId;
     private String coupon;
 
     /* relationships */
-    @ManyToOne
-    @JoinColumn(name = "requesting_user_id")
+    @Transient
     private User requestingUser;
 
-    @ManyToOne
-    @JoinColumn(name = "leader_id")
+    @Transient
     private User leader;
 
-    @ManyToOne
-    @JoinColumn(name = "project_id")
+    @Transient
     private Project project;
     /* end of relationships */
 
