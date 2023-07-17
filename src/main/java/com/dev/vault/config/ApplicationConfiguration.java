@@ -1,17 +1,12 @@
 package com.dev.vault.config;
 
-import com.dev.vault.model.user.User;
-import com.dev.vault.util.repository.RepositoryUtils;
+import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -19,38 +14,30 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class ApplicationConfiguration {
 
-    private final RepositoryUtils repositoryUtils;
+    private final ReactiveRepositoryUtils reactiveRepositoryUtils;
 
+    /**
+     * Returns a ReactiveUserDetailsService bean that retrieves user details from the database.
+     *
+     * @return a ReactiveUserDetailsService bean
+     */
     @Bean
-    public UserDetailsService userDetailsService() {
-        return email -> {
-            User user = repositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email);
-            return new org.springframework.security.core.userdetails.User(
-                    user.getEmail(),
-                    user.getPassword(),
-                    user.getRoles() //todo:: remember this mistake and make a note somewhere [not including "ROLE_" leads to forbidden 403]
-                            .stream().map(roles -> new SimpleGrantedAuthority("ROLE_" + roles.getRole().name())
-                            ).toList()
-            );
-        };
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService());
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
+    public ReactiveUserDetailsService reactiveUserDetailsService() {
+        return email -> reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email)
+                .map(user -> new org.springframework.security.core.userdetails.User(
+                                user.getUsername(),
+                                user.getPassword(),
+                                user.getRoles()
+                                        .stream() //TODO:: remember this mistake and make a note somewhere [not including "ROLE_" leads to forbidden 403]
+                                        .map(roles -> new SimpleGrantedAuthority("ROLE_" + roles.getRole().name()))
+                                        .toList()
+                        )
+                );
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
     }
 
     @Bean

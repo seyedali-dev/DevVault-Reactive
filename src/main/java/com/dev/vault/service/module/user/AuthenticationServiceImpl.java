@@ -1,39 +1,28 @@
 package com.dev.vault.service.module.user;
 
 import com.dev.vault.config.jwt.JwtService;
-import com.dev.vault.helper.exception.AuthenticationFailedException;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
-import com.dev.vault.helper.payload.auth.AuthenticationRequest;
-import com.dev.vault.helper.payload.auth.AuthenticationResponse;
-import com.dev.vault.helper.payload.auth.RegisterRequest;
-import com.dev.vault.helper.payload.email.Email;
-import com.dev.vault.model.user.Roles;
-import com.dev.vault.model.user.User;
-import com.dev.vault.model.user.VerificationToken;
-import com.dev.vault.model.user.enums.Role;
-import com.dev.vault.repository.user.UserRepository;
-import com.dev.vault.repository.user.VerificationTokenRepository;
+import com.dev.vault.helper.payload.request.auth.AuthenticationRequest;
+import com.dev.vault.helper.payload.request.auth.AuthenticationResponse;
+import com.dev.vault.helper.payload.request.auth.RegisterRequest;
+import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.entity.user.VerificationToken;
+import com.dev.vault.repository.user.UserReactiveRepository;
+import com.dev.vault.repository.user.VerificationTokenReactiveRepository;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
-import com.dev.vault.service.module.mail.MailService;
-import com.dev.vault.util.repository.RepositoryUtils;
+import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import com.dev.vault.util.user.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -44,20 +33,14 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional
 public class AuthenticationServiceImpl implements AuthenticationService {
+    private final VerificationTokenReactiveRepository verificationTokenReactiveRepository;
 
-    @Value("${account.verification.auth.url}")
-    private String ACCOUNT_VERIFICATION_AUTH_URL;
-
-    private final VerificationTokenRepository verificationTokenRepository;
-    private final UserRepository userRepository;
-    private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;
-    private final MailService mailService;
-    private final ModelMapper modelMapper;
-    private final AuthenticationManager authenticationManager;
-    private final UserDetailsService userDetailsService;
-    private final RepositoryUtils repositoryUtils;
+    private final UserReactiveRepository userReactiveRepository;
     private final AuthenticationUtils authenticationUtils;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final ReactiveRepositoryUtils reactiveRepositoryUtils;
+
 
     /**
      * Registers a new user, assigns the <code>TEAM_MEMBER</code> role, saves the user to the database,
@@ -68,53 +51,128 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @return an {@link AuthenticationResponse AuthenticationResponse} object containing the JWT token and user information
      * @throws ResourceAlreadyExistsException if the user already exists in the database
      */
-    @Override
-    public AuthenticationResponse registerUser(RegisterRequest registerRequest) {
+    //my implementation
+    /*@Override
+    public Mono<AuthenticationResponse> registerUser(RegisterRequest registerRequest) {
         // check if user already exists in the database
-        Optional<User> foundUser = userRepository.findByEmail(registerRequest.getEmail());
+        return userReactiveRepository.findByEmail(registerRequest.getEmail())
+                .hasElement()
+                .flatMap(foundUser -> {
+                    if (foundUser) {
+                        log.info("❌ This user already exists! provide unique email. ❌");
+                        return Mono.error(new ResourceAlreadyExistsException("User", "Email", registerRequest.getEmail()));
+                    } else {
+                        // find the TEAM_MEMBER role and assign it to newly created user as default role
+                        Mono<Roles> teamMemberRole = repositoryUtils.findRoleByRole_OrElseThrow_ResourceNotFoundException(TEAM_MEMBER)
+                                .switchIfEmpty(Mono.just(new Roles()))
+                                .flatMap(rolesReactiveRepository::save);
 
-        if (foundUser.isPresent()) {
-            log.info("❌ This user already exists! provide unique email. ❌");
-            throw new ResourceAlreadyExistsException("User", "Email", registerRequest.getEmail());
-        }
+                        // create a new user object and map the properties from the register request
+                        User user = modelMapper.map(registerRequest, User.class);
+                        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+                        user.setActive(false);
 
-        // find the TEAM_MEMBER role and assign it to newly created user as default role
-        Roles teamMemberRole = repositoryUtils.findRoleByRole_OrElseThrow_ResourceNotFoundException(Role.TEAM_MEMBER);
+                        // save the user object to the database
+                        Mono<User> savedUserMono = userReactiveRepository.save(user);
+                        log.info("✅ User saved to db, attempting to send activation email...");
 
-        // create a new user object and map the properties from the register request
-        User user = modelMapper.map(registerRequest, User.class);
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.getRoles().add(teamMemberRole);
+                        return Mono.zip(teamMemberRole, savedUserMono)
+                                .flatMap(tuple -> {
+                                    Roles roles = tuple.getT1();
+                                    User savedUser = tuple.getT2();
+                                    savedUser.getRoles().add(roles);
 
-        // save the user object to the database
-        User savedUser = userRepository.save(user);
-        log.info("✅ User saved to db, attempting to send activation email...");
+                                    // generate a verification token and send an email with the activation link
+                                    String verificationToken = authenticationUtils.generateVerificationToken(user);
+                                    mailService.sendEmail(new Email(
+                                            "Please Activate Your Account",
+                                            user.getEmail(),
+                                            "Thank you for signing up to our app! " +
+                                            "Please click the url below to activate your account: " + ACCOUNT_VERIFICATION_AUTH_URL + verificationToken));
 
-        // generate a verification token and send an email with the activation link
-        String verificationToken = authenticationUtils.generateVerificationToken(user);
-        mailService.sendEmail(new Email(
-                "Please Activate Your Account",
-                user.getEmail(),
-                "Thank you for signing up to our app! " +
-                "Please click the url below to activate your account: " + ACCOUNT_VERIFICATION_AUTH_URL + verificationToken));
+                                    log.info("➡️ generating JWT token...");
+                                    // generate and return a JWT token for the newly created user
+                                    String jwtToken = jwtService.generateToken(user);
 
-        log.info("➡️ generating JWT token...");
-        // generate and return a JWT token for the newly created user
-        String jwtToken = jwtService.generateToken(user);
+                                    // save the generated token
+                                    return authenticationUtils.buildAndSaveJwtToken(savedUser, jwtToken)
+                                            .flatMap(savedJwtToken ->
+                                                    Mono.just(
+                                                            AuthenticationResponse.builder()
+                                                                    .username(savedUser.getUsername())
+                                                                    .roles(savedUser.getRoles()
+                                                                            .stream().map(Roles::getRole)
+                                                                            .map(Enum::name)
+                                                                            .toList()
+                                                                    )
+                                                                    .rolesDescription(List.of("➡️➡️Default role for user is TEAM_MEMBER"))
+                                                                    .token(jwtToken)
+                                                                    .build()
+                                                    )
+                                            );
+                                });
+                    }
+                });
+    }*/
 
-        // save the generated token
-        authenticationUtils.buildAndSaveJwtToken(savedUser, jwtToken);
+    //chatgpt implementation with the use of transform
+    /*public Mono<AuthenticationResponse> registerUser(RegisterRequest registerRequest) {
+    Mono<Boolean> userExistsMono = userReactiveRepository.findByEmail(registerRequest.getEmail())
+            .hasElement();
 
-        return AuthenticationResponse.builder()
-                .username(user.getUsername())
-                .roles(user.getRoles()
-                        .stream().map(roles -> roles.getRole().name())
-                        .toList()
-                )
-                .rolesDescription(List.of("➡️➡️Default role for user is TEAM_MEMBER"))
-                .token(jwtToken)
-                .build();
+    Mono<AuthenticationResponse> responseMono = Mono.just(registerRequest)
+            .transform(this::createNewUser)
+            .onErrorResume(ResourceAlreadyExistsException.class,
+                    error -> Mono.error(new ResponseStatusException(HttpStatus.CONFLICT, error.getMessage())));
+
+    return Mono.zip(userExistsMono, responseMono)
+            .flatMap(tuple -> {
+                Boolean userExists = tuple.getT1();
+                AuthenticationResponse response = tuple.getT2();
+
+                if (userExists) {
+                    return Mono.error(new ResponseStatusException(HttpStatus.CONFLICT, "User already exists"));
+                } else {
+                    return Mono.just(response);
+                }
+            });
+}
+
+private Mono<AuthenticationResponse> createNewUser(Mono<RegisterRequest> requestMono) {
+    return requestMono.flatMap(registerRequest -> {
+        return repositoryUtils.findRoleByRole_OrElseThrow_ResourceNotFoundException(TEAM_MEMBER)
+                .switchIfEmpty(Mono.just(new Roles()))
+                .flatMap(rolesReactiveRepository::save)
+                .flatMap(teamMemberRole -> {
+                    User user = createUserFromRequest(registerRequest);
+                    Mono<User> savedUserMono = saveUser(user);
+
+                    return Mono.zip(Mono.just(teamMemberRole), savedUserMono)
+                            .flatMap(tuple -> {
+                                Roles roles = tuple.getT1();
+                                User savedUser = tuple.getT2();
+                                savedUser.getRoles().add(roles);
+
+                                return sendVerificationEmail(savedUser, registerRequest)
+                                        .flatMap(jwtToken -> buildAuthenticationResponse(savedUser, jwtToken));
+                            });
+                });
+    });
+}*/
+    @Override
+    public Mono<AuthenticationResponse> registerUser(RegisterRequest registerRequest) {
+        return userReactiveRepository.findByEmail(registerRequest.getEmail())
+                .hasElement()
+                .flatMap(userExist -> {
+                            if (userExist) {
+                                log.info("❌ This user already exists! provide unique email. ❌");
+                                return Mono.error(new ResourceAlreadyExistsException("User", "Email", registerRequest.getEmail()));
+                            } else
+                                return authenticationUtils.createNewUser(registerRequest);
+                        }
+                );
     }
+
 
     /**
      * Verifies the user's account and activates it.
@@ -124,49 +182,56 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public void verifyAccount(String token) {
         // find the verification token in the database
-        VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
-                .orElseThrow(() -> new ResourceNotFoundException("Verification token", "token", token));
+        Mono<VerificationToken> verificationTokenMono = verificationTokenReactiveRepository.findByToken(token)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Verification token", "token", token)));
 
         // set the user's active status to true and save the changes to the database
-        User user = verificationToken.getUser();
-        user.setActive(true);
-        userRepository.save(user);
+        verificationTokenMono.flatMap(verificationToken -> {
+            User user = verificationToken.getUser();
+            user.setActive(true);
 
-        log.info("✅✅✅ User is now activated. ✅✅✅");
+            return userReactiveRepository.save(user);
+        }).then(Mono.fromRunnable(() ->
+                log.info("✅✅✅ User is now activated. ✅✅✅"))
+        );
     }
+
 
     /**
      * Authenticates the user's credentials and generates a JWT token.
      * Revokes all existing tokens for the user and saves the new token.
      *
-     * @param request the authentication request containing the user's email and password
+     * @param authenticationRequest the authentication request containing the user's email and password
      * @return an AuthenticationResponse object containing the JWT token and user information
      */
     @Override
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        // Authenticate the user's credentials using the authentication manager
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+    public Mono<AuthenticationResponse> authenticate(AuthenticationRequest authenticationRequest) {
+        return reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(authenticationRequest.getEmail())
+                .filter(userDetails ->
+                        passwordEncoder.matches(
+                                authenticationRequest.getPassword(),
+                                userDetails.getPassword()
+                        )
+                )
+                // Get the user object from the authentication object and generate a JWT token
+                .map(userDetails -> {
+                    String generatedJwtToken = jwtService.generateToken(userDetails);
 
-        // Get the user object from the authentication object and generate a JWT token
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        User user = repositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(userDetails.getUsername());
-        String jwtToken = jwtService.generateToken(user);
+                    // Revoke all the saved tokens for the user and save the generated token
+                    authenticationUtils.revokeAllUserTokens(userDetails);
+                    authenticationUtils.buildAndSaveJwtToken(userDetails, generatedJwtToken);
 
-        // Revoke all the saved tokens for the user and save the generated token
-        authenticationUtils.revokeAllUserTokens(user);
-        authenticationUtils.buildAndSaveJwtToken(user, jwtToken);
-
-        // Return the authentication response with the JWT token and user information
-        return AuthenticationResponse.builder()
-                .username(user.getUsername())
-                .roles(user.getRoles()
-                        .stream().map(roles -> roles.getRole().name())
-                        .collect(Collectors.toList()))
-                .token(jwtToken)
-                .build();
+                    // Return the authentication response with the JWT token and user information
+                    return AuthenticationResponse.builder()
+                            .username(userDetails.getUsername())
+                            .roles(userDetails.getRoles()
+                                    .stream().map(roles -> roles.getRole().name())
+                                    .collect(Collectors.toList()))
+                            .token(generatedJwtToken)
+                            .build();
+                }).switchIfEmpty(Mono.error(new AuthenticationCredentialsNotFoundException("You are not authenticated!")));
     }
+
 
     /**
      * Retrieves the currently logged-in user.
@@ -174,14 +239,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @return the logged-in user
      */
     @Override
-    public User getCurrentUser() {
-        // get the email of the currently authenticated user from the security context
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
+    public Mono<User> getCurrentUser() {
+        // get the email of the currently authenticated user from the reactive security context
+        return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .flatMap(authentication -> {
+                            String email = authentication.getName();
 
-        // find the user object in the database using the email
-        Optional<User> foundUser = userRepository.findByEmail(email);
-
-        return foundUser.orElseThrow(() -> new AuthenticationFailedException("❌❌❌ User: '" + email + "' is not authorized! ❌❌❌"));
+                            // find the user object in the database using the email
+                            return reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email);
+                        }
+                );
     }
+
 }

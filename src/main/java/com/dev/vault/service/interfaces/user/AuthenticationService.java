@@ -1,13 +1,14 @@
 package com.dev.vault.service.interfaces.user;
 
-import com.dev.vault.helper.payload.auth.AuthenticationRequest;
-import com.dev.vault.helper.payload.auth.AuthenticationResponse;
-import com.dev.vault.helper.payload.auth.RegisterRequest;
-import com.dev.vault.model.user.User;
+import com.dev.vault.helper.payload.request.auth.AuthenticationRequest;
+import com.dev.vault.helper.payload.request.auth.AuthenticationResponse;
+import com.dev.vault.helper.payload.request.auth.RegisterRequest;
+import com.dev.vault.model.entity.user.User;
+import reactor.core.publisher.Mono;
 
 public interface AuthenticationService {
-    AuthenticationResponse registerUser(RegisterRequest request);
+    Mono<AuthenticationResponse> registerUser(RegisterRequest request);
     void verifyAccount(String token);
-    AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest);
-    User getCurrentUser();
+    Mono<AuthenticationResponse> authenticate(AuthenticationRequest authenticationRequest);
+    Mono<User> getCurrentUser();
 }

@@ -1,25 +1,28 @@
 package com.dev.vault.controller.authentication;
 
-import com.dev.vault.helper.payload.dto.ApiResponse;
-import com.dev.vault.helper.payload.auth.AuthenticationRequest;
-import com.dev.vault.helper.payload.auth.AuthenticationResponse;
-import com.dev.vault.helper.payload.auth.RegisterRequest;
+import com.dev.vault.helper.payload.request.auth.AuthenticationRequest;
+import com.dev.vault.helper.payload.request.auth.AuthenticationResponse;
+import com.dev.vault.helper.payload.request.auth.RegisterRequest;
+import com.dev.vault.helper.payload.response.ApiResponse;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+
+import static org.springframework.http.HttpStatus.CREATED;
 
 /**
  * The AuthenticationController class is REST controller that handles the authentication and authorization of users.
  * It contains methods for registering a new user, verifying a user's account, and authenticating a user.
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthenticationController {
-    private AuthenticationService authenticationService;
+
+    private final AuthenticationService authenticationService;
 
     /**
      * The register method registers a new user with the system.
@@ -30,8 +33,9 @@ public class AuthenticationController {
      * @return The AuthenticationResponse object containing the user's authentication token.
      */
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid RegisterRequest registerRequest) {
-        return new ResponseEntity<>(authenticationService.registerUser(registerRequest), HttpStatus.CREATED);
+    public Mono<ResponseEntity<AuthenticationResponse>> register(@RequestBody @Valid RegisterRequest registerRequest) {
+        return authenticationService.registerUser(registerRequest)
+                .map(authenticationResponse -> ResponseEntity.status(CREATED).body(authenticationResponse));
     }
 
     /**
@@ -43,9 +47,9 @@ public class AuthenticationController {
      * @return The ApiResponse object containing the result of the verification.
      */
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.POST}, value = "/accountVerification/{token}")
-    public ResponseEntity<ApiResponse> verifyAccount(@PathVariable String token) {
+    public Mono<ResponseEntity<ApiResponse>> verifyAccount(@PathVariable String token) {
         authenticationService.verifyAccount(token);
-        return new ResponseEntity<>(new ApiResponse("account activated successfully", true), HttpStatus.OK);
+        return Mono.just(ResponseEntity.ok(new ApiResponse("account activated successfully", true)));
     }
 
     /**
@@ -57,7 +61,8 @@ public class AuthenticationController {
      * @return The AuthenticationResponse object containing the user's authentication token.
      */
     @PostMapping({"/login", "/authenticate"})
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest authenticationRequest) {
-        return ResponseEntity.ok(authenticationService.authenticate(authenticationRequest));
+    public Mono<ResponseEntity<AuthenticationResponse>> authenticate(@RequestBody AuthenticationRequest authenticationRequest) {
+        return authenticationService.authenticate(authenticationRequest)
+                .map(ResponseEntity::ok);
     }
 }

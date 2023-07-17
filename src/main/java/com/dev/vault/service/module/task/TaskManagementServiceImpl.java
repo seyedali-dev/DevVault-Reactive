@@ -1,19 +1,20 @@
+/*
 package com.dev.vault.service.module.task;
 
 import com.dev.vault.helper.exception.DevVaultException;
 import com.dev.vault.helper.exception.NotLeaderOfProjectException;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
-import com.dev.vault.helper.payload.task.TaskRequest;
-import com.dev.vault.helper.payload.task.TaskResponse;
-import com.dev.vault.model.project.Project;
-import com.dev.vault.model.task.Task;
-import com.dev.vault.model.user.User;
+import com.dev.vault.helper.payload.request.task.TaskRequest;
+import com.dev.vault.helper.payload.response.task.TaskResponse;
+import com.dev.vault.model.entity.project.Project;
+import com.dev.vault.model.entity.task.Task;
+import com.dev.vault.model.entity.user.User;
 import com.dev.vault.repository.task.TaskRepository;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.service.interfaces.task.TaskManagementService;
 import com.dev.vault.util.project.ProjectUtils;
-import com.dev.vault.util.repository.RepositoryUtils;
+import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import com.dev.vault.util.task.TaskUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +24,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static com.dev.vault.model.task.enums.TaskStatus.IN_PROGRESS;
+import static com.dev.vault.model.entity.enums.task.TaskStatus.IN_PROGRESS;
 
+*/
 /**
  * Service implementation for task management.
- */
+ *//*
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -37,9 +40,10 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     private final AuthenticationService authenticationService;
     private final ProjectUtils projectUtils;
     private final TaskUtils taskUtils;
-    private final RepositoryUtils repositoryUtils;
+    private final ReactiveRepositoryUtils reactiveRepositoryUtils;
 
-    /**
+    */
+/**
      * Creates a new task for a given project.
      *
      * @param projectId   the ID of the project to create the task for
@@ -47,11 +51,12 @@ public class TaskManagementServiceImpl implements TaskManagementService {
      * @return a TaskResponse object containing the details of the created task
      * @throws ResourceNotFoundException      if the project with the given ID is not found
      * @throws ResourceAlreadyExistsException if a task with the same name already exists in the project
-     */
+     *//*
+
     @Override
     @Transactional
     public TaskResponse createNewTask(Long projectId, TaskRequest taskRequest) {
-        Project project = repositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
+        Project project = reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
         User currentUser = authenticationService.getCurrentUser();
 
         // Check if a task with the same name already exists in the project
@@ -77,3 +82,4 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         return taskUtils.buildTaskResponse(task);
     }
 }
+*/

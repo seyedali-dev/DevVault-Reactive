@@ -1,7 +1,7 @@
 package com.dev.vault.helper.exception.handler;
 
 import com.dev.vault.helper.exception.*;
-import com.dev.vault.helper.payload.dto.ApiResponse;
+import com.dev.vault.helper.payload.response.ApiResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;

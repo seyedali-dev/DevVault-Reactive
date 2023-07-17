@@ -2,24 +2,16 @@ spring:
   application:
     name: DevVault
 
-#    database
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/dev_vault
-    username: root
-    password: root
 
-#    hibernate
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
-#        format_sql: true
-#        show-sql: true
+  #database
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/dev_vault
+      username: root
+      password: root
 
-#     mail properties
+
+  #mail properties
   mail:
     host: smtp.gmail.com
     port: 587
@@ -27,10 +19,12 @@ spring:
     password: ${PASSWORD}
     protocol: smtp
     properties.mail.smtp:
-        tls: true
-        auth: true
-        starttls.enable: true
-        ssl.trust: smtp.gmail.com
+      tls: true
+      auth: true
+      starttls.enable: true
+      ssl.trust: smtp.gmail.com
+
+
 
 #custom variables
 account:

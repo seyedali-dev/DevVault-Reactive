@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.dev.vault</groupId>
-	<artifactId>DevVault</artifactId>
+	<artifactId>DevVault-Reactive</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>DevVault</name>
+	<name>DevVault-Reactive</name>
 	<description>personal project for managing team and projects. still learning some
 		technologies while also building and improving this project step by step.</description>
 	<properties>
