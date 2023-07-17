@@ -1,6 +1,6 @@
 package com.dev.vault.service.interfaces.project;
 
-import com.dev.vault.helper.payload.group.SearchResponse;
+import com.dev.vault.helper.payload.response.project.SearchResponse;
 
 import java.util.List;
 

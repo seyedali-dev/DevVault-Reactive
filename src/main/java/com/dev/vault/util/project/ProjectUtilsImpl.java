@@ -1,11 +1,11 @@
 package com.dev.vault.util.project;
 
-import com.dev.vault.model.project.Project;
-import com.dev.vault.model.project.ProjectMembers;
-import com.dev.vault.model.project.UserProjectRole;
-import com.dev.vault.model.user.Roles;
-import com.dev.vault.model.user.User;
-import com.dev.vault.model.user.enums.Role;
+import com.dev.vault.model.entity.project.Project;
+import com.dev.vault.model.entity.project.ProjectMembers;
+import com.dev.vault.model.entity.project.UserProjectRole;
+import com.dev.vault.model.entity.user.Roles;
+import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.enums.Role;
 import com.dev.vault.repository.group.ProjectMembersRepository;
 import com.dev.vault.repository.group.UserProjectRoleRepository;
 import lombok.RequiredArgsConstructor;

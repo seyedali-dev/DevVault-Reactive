@@ -1,7 +1,7 @@
 package com.dev.vault.repository.group;
 
-import com.dev.vault.model.project.Project;
-import com.dev.vault.model.project.ProjectMembers;
+import com.dev.vault.model.entity.project.Project;
+import com.dev.vault.model.entity.project.ProjectMembers;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 
 import java.util.List;

@@ -1,8 +1,8 @@
 package com.dev.vault.repository.task;
 
-import com.dev.vault.model.project.Project;
-import com.dev.vault.model.task.Task;
-import com.dev.vault.model.user.User;
+import com.dev.vault.model.entity.project.Project;
+import com.dev.vault.model.entity.task.Task;
+import com.dev.vault.model.entity.user.User;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 
 import java.util.Optional;

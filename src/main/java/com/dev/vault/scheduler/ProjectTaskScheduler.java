@@ -1,18 +1,9 @@
 package com.dev.vault.scheduler;
 
-import com.dev.vault.model.task.Task;
-import com.dev.vault.model.task.enums.TaskStatus;
 import com.dev.vault.repository.task.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static com.dev.vault.model.task.enums.TaskStatus.IN_PROGRESS;
-import static com.dev.vault.model.task.enums.TaskStatus.OVERDUE;
 
 /**
  * This class schedules the marking of overdue tasks and sends notifications.<br>
@@ -51,7 +42,7 @@ public class ProjectTaskScheduler {
      * <p>
      * Use the appropriate scheduling pattern to suit your needs.<br>
      */
-    @Scheduled(fixedRateString = "PT10M")
+    /*@Scheduled(fixedRateString = "PT10M")
     public void markTaskOverDue() {
         List<Task> tasks = taskRepository.findAll();
         for (Task task : tasks) {
@@ -76,7 +67,7 @@ public class ProjectTaskScheduler {
                 taskRepository.save(task);
             }
         }
-    }
+    }*/
 
     //TODO: REMINDER SYSTEM FOR TASKS THAT ARE APPROACHING THERE DUE DATE.
 }

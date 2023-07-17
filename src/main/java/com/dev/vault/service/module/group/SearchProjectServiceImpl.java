@@ -1,14 +1,15 @@
-package com.dev.vault.service.module.group;
+/*
+package com.dev.vault.service.module.project;
 
 import com.dev.vault.helper.exception.ResourceNotFoundException;
-import com.dev.vault.helper.payload.group.ProjectMembersDto;
-import com.dev.vault.helper.payload.group.SearchResponse;
-import com.dev.vault.helper.payload.user.UserDto;
-import com.dev.vault.model.project.Project;
-import com.dev.vault.model.project.ProjectMembers;
-import com.dev.vault.model.user.User;
-import com.dev.vault.repository.group.ProjectMembersRepository;
-import com.dev.vault.repository.group.ProjectRepository;
+import com.dev.vault.helper.payload.request.project.ProjectMembersDto;
+import com.dev.vault.helper.payload.response.project.SearchResponse;
+import com.dev.vault.helper.payload.request.user.UserDto;
+import com.dev.vault.model.entity.project.Project;
+import com.dev.vault.model.entity.project.ProjectMembers;
+import com.dev.vault.model.entity.user.User;
+import com.dev.vault.repository.project.ProjectMembersRepository;
+import com.dev.vault.repository.project.ProjectRepository;
 import com.dev.vault.service.interfaces.project.SearchProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,9 +18,11 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+*/
 /**
  * Service implementation for searching projects.
- */
+ *//*
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -29,11 +32,13 @@ public class SearchProjectServiceImpl implements SearchProjectService {
     private final ProjectRepository projectRepository;
     private final ProjectMembersRepository projectMembersRepository;
 
-    /**
+    */
+/**
      * Returns a list of all projects with their details.
      *
      * @return A list of SearchResponse objects containing project details.
-     */
+     *//*
+
     @Override
     public List<SearchResponse> listAllProjects() {
         // Get all projects from the project repository
@@ -50,13 +55,15 @@ public class SearchProjectServiceImpl implements SearchProjectService {
         ).toList();
     }
 
-    /**
+    */
+/**
      * Searches for a project based on their name and returns their details.
      *
      * @param projectName The name of the project to search for.
      * @return A list of SearchResponse objects containing project details.
      * @throws ResourceNotFoundException If no project is found with the given name.
-     */
+     *//*
+
     @Override
     public List<SearchResponse> searchForProject(String projectName) {
         // Search for projects with names containing the given string
@@ -79,12 +86,14 @@ public class SearchProjectServiceImpl implements SearchProjectService {
                 .toList();
     }
 
-    /**
+    */
+/**
      * Returns a list of UserDto objects for a given project.
      *
      * @param project The project to get the list of members for.
      * @return A list of UserDto objects representing the members of the project.
-     */
+     *//*
+
     private List<UserDto> getUserDtoList(Project project) {
         // Get all project members associated with the given project
         List<ProjectMembers> members = projectMembersRepository.findByProject(project);
@@ -106,3 +115,4 @@ public class SearchProjectServiceImpl implements SearchProjectService {
         return userDtos;
     }
 }
+*/

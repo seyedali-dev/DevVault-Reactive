@@ -1,8 +1,7 @@
 package com.dev.vault.service.module.mail;
 
 import com.dev.vault.helper.exception.DevVaultException;
-import com.dev.vault.helper.payload.email.Email;
-import jakarta.transaction.Transactional;
+import com.dev.vault.helper.payload.request.email.Email;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailException;
@@ -11,6 +10,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service implementation for Sending Email.

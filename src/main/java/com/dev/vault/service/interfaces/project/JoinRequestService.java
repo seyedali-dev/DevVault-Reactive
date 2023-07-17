@@ -1,8 +1,8 @@
 package com.dev.vault.service.interfaces.project;
 
-import com.dev.vault.helper.payload.group.JoinProjectDto;
-import com.dev.vault.helper.payload.group.JoinResponse;
-import com.dev.vault.model.project.enums.JoinStatus;
+import com.dev.vault.helper.payload.request.project.JoinProjectDto;
+import com.dev.vault.helper.payload.response.project.JoinResponse;
+import com.dev.vault.model.enums.JoinStatus;
 
 import java.util.List;
 

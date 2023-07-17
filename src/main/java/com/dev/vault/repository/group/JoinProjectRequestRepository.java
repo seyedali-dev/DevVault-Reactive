@@ -1,7 +1,7 @@
 package com.dev.vault.repository.group;
 
-import com.dev.vault.model.project.JoinProjectRequest;
-import com.dev.vault.model.project.enums.JoinStatus;
+import com.dev.vault.model.entity.project.JoinProjectRequest;
+import com.dev.vault.model.enums.JoinStatus;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 
 import java.util.List;
