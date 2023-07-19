@@ -10,5 +10,5 @@ public interface AuthenticationService {
     Mono<AuthenticationResponse> registerUser(RegisterRequest request);
     void verifyAccount(String token);
     Mono<AuthenticationResponse> authenticate(AuthenticationRequest authenticationRequest);
-    Mono<User> getCurrentUser();
+    Mono<User> getCurrentUserMono();
 }

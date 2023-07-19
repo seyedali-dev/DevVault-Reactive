@@ -1,4 +1,4 @@
-package com.dev.vault.repository.group;
+package com.dev.vault.repository.project;
 
 import com.dev.vault.model.entity.project.JoinCoupon;
 import com.dev.vault.model.entity.project.Project;

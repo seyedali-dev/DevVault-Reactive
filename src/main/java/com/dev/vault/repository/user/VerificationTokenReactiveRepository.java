@@ -4,6 +4,6 @@ import com.dev.vault.model.entity.user.VerificationToken;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 
-public interface VerificationTokenReactiveRepository extends ReactiveMongoRepository<VerificationToken, Long> {
+public interface VerificationTokenReactiveRepository extends ReactiveMongoRepository<VerificationToken, String> {
     Mono<VerificationToken> findByToken(String token);
 }

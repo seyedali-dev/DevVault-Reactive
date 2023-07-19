@@ -8,7 +8,7 @@ import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.project.ProjectMembers;
 import com.dev.vault.model.entity.user.User;
 import com.dev.vault.repository.project.JoinProjectRequestRepository;
-import com.dev.vault.repository.project.ProjectMembersRepository;
+import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class JoinRequestProjectUtilsImpl implements ProjectUtils {
-    private final ProjectMembersRepository projectMembersRepository;
+    private final ProjectMembersReactiveRepository projectMembersRepository;
     private final JoinProjectRequestRepository joinProjectRequestRepository;
 
     */

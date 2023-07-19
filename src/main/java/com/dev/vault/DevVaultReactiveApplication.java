@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.mongodb.config.EnableReactiveMongoAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -13,6 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 // TODO: There are a few places that have been using wrong exception signatures, refactor them and use proper exceptions
 //  (DevVaultException -> NotMemberOfProjectException)
 @EnableScheduling
+@EnableReactiveMongoAuditing // for enabling @CreatedDate
 public class DevVaultReactiveApplication {
 
     public static void main(String[] args) {

@@ -8,8 +8,8 @@ import com.dev.vault.helper.payload.request.user.UserDto;
 import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.project.ProjectMembers;
 import com.dev.vault.model.entity.user.User;
-import com.dev.vault.repository.project.ProjectMembersRepository;
-import com.dev.vault.repository.project.ProjectRepository;
+import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
+import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.service.interfaces.project.SearchProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +29,8 @@ import java.util.List;
 // TODO:: pagination
 public class SearchProjectServiceImpl implements SearchProjectService {
 
-    private final ProjectRepository projectRepository;
-    private final ProjectMembersRepository projectMembersRepository;
+    private final ProjectReactiveRepository projectRepository;
+    private final ProjectMembersReactiveRepository projectMembersRepository;
 
     */
 /**

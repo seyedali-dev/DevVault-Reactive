@@ -15,8 +15,8 @@ import com.dev.vault.model.entity.enums.project.JoinStatus;
 import com.dev.vault.model.entity.user.User;
 import com.dev.vault.repository.project.JoinCouponRepository;
 import com.dev.vault.repository.project.JoinProjectRequestRepository;
-import com.dev.vault.repository.project.ProjectMembersRepository;
-import com.dev.vault.repository.project.ProjectRepository;
+import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
+import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.service.interfaces.project.JoinRequestService;
 import com.dev.vault.util.project.JoinRequestProjectUtilsImpl;
@@ -44,8 +44,8 @@ import static com.dev.vault.model.entity.enums.project.JoinStatus.PENDING;
 @Slf4j
 public class JoinRequestServiceImpl implements JoinRequestService {
     private final JoinCouponRepository joinCouponRepository;
-    private final ProjectMembersRepository projectMembersRepository;
-    private final ProjectRepository projectRepository;
+    private final ProjectMembersReactiveRepository projectMembersRepository;
+    private final ProjectReactiveRepository projectRepository;
     private final JoinProjectRequestRepository joinProjectRequestRepository;
     private final AuthenticationService authenticationService;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
@@ -58,7 +58,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
      *//*
 
     @Autowired
-    public JoinRequestServiceImpl(JoinCouponRepository joinCouponRepository, ProjectMembersRepository projectMembersRepository, ProjectRepository projectRepository, JoinProjectRequestRepository joinProjectRequestRepository, AuthenticationService authenticationService, ReactiveRepositoryUtils reactiveRepositoryUtils, @Qualifier("projectUtilsImpl") ProjectUtilsImpl projectUtils, @Qualifier("joinRequestProjectUtilsImpl") JoinRequestProjectUtilsImpl joinProjectUtils) {
+    public JoinRequestServiceImpl(JoinCouponRepository joinCouponRepository, ProjectMembersReactiveRepository projectMembersRepository, ProjectReactiveRepository projectRepository, JoinProjectRequestRepository joinProjectRequestRepository, AuthenticationService authenticationService, ReactiveRepositoryUtils reactiveRepositoryUtils, @Qualifier("projectUtilsImpl") ProjectUtilsImpl projectUtils, @Qualifier("joinRequestProjectUtilsImpl") JoinRequestProjectUtilsImpl joinProjectUtils) {
         this.joinCouponRepository = joinCouponRepository;
         this.projectMembersRepository = projectMembersRepository;
         this.projectRepository = projectRepository;

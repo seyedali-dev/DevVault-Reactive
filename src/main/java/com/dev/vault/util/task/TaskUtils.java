@@ -9,7 +9,7 @@ import com.dev.vault.helper.payload.response.task.TaskResponse;
 import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.user.User;
-import com.dev.vault.repository.project.ProjectMembersRepository;
+import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
 import com.dev.vault.repository.task.TaskRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
@@ -33,7 +33,7 @@ public class TaskUtils {
     private final UserReactiveRepository userReactiveRepository;
     private final TaskRepository taskRepository;
     private final ProjectUtils projectUtils;
-    private final ProjectMembersRepository projectMembersRepository;
+    private final ProjectMembersReactiveRepository projectMembersRepository;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
     private final AuthenticationService authenticationService;
 

@@ -7,8 +7,8 @@ import com.dev.vault.model.entity.project.UserProjectRole;
 import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
 import com.dev.vault.model.enums.Role;
-import com.dev.vault.repository.group.ProjectMembersRepository;
-import com.dev.vault.repository.group.UserProjectRoleRepository;
+import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
+import com.dev.vault.repository.project.UserProjectRoleReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -24,8 +24,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Primary
 public class ProjectUtilsImpl implements ProjectUtils {
-    private final UserProjectRoleRepository userProjectRoleRepository;
-    private final ProjectMembersRepository projectMembersRepository;
+    private final UserProjectRoleReactiveRepository userProjectRoleRepository;
+    private final ProjectMembersReactiveRepository projectMembersRepository;
 
     */
 /**

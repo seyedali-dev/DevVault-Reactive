@@ -9,7 +9,7 @@ import com.dev.vault.model.entity.project.JoinCoupon;
 import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.user.User;
 import com.dev.vault.repository.project.JoinCouponRepository;
-import com.dev.vault.repository.project.ProjectRepository;
+import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.service.interfaces.project.JoinCouponService;
 import com.dev.vault.util.repository.ReactiveRepositoryUtils;
@@ -32,7 +32,7 @@ import java.util.Random;
 public class JoinCouponServiceImpl implements JoinCouponService {
 
     private final JoinCouponRepository joinCouponRepository;
-    private final ProjectRepository projectRepository;
+    private final ProjectReactiveRepository projectRepository;
     private final AuthenticationService authenticationService;
     private final ProjectUtils projectUtils;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
