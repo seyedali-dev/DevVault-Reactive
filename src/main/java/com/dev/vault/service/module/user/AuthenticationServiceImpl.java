@@ -23,9 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Authentication implementation: Registration & Login.
  */
@@ -268,7 +265,7 @@ private Mono<AuthenticationResponse> createNewUser(Mono<RegisterRequest> request
      * @return the logged-in user
      */
     @Override
-    public Mono<User> getCurrentUser() {
+    public Mono<User> getCurrentUserMono() {
         // get the email of the currently authenticated user from the reactive security context
         return ReactiveSecurityContextHolder.getContext()
                 .map(SecurityContext::getAuthentication)

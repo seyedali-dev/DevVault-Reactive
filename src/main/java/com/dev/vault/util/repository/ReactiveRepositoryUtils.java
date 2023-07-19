@@ -5,7 +5,7 @@ import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
 import com.dev.vault.model.entity.user.UserRole;
 import com.dev.vault.model.enums.Role;
-import com.dev.vault.repository.group.ProjectRepository;
+import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.task.TaskRepository;
 import com.dev.vault.repository.user.RolesReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
@@ -25,7 +25,7 @@ public class ReactiveRepositoryUtils {
     private final TaskRepository taskRepository;
     private final UserReactiveRepository userReactiveRepository;
     private final RolesReactiveRepository rolesReactiveRepository;
-    private final ProjectRepository projectRepository;
+    private final ProjectReactiveRepository projectReactiveRepository;
 
     public Mono<User> findUserByEmail_OrElseThrow_ResourceNotFoundException(String email) {
         return userReactiveRepository.findByEmail(email)
@@ -53,7 +53,7 @@ public class ReactiveRepositoryUtils {
     }
 
   /*  public Project findProjectById_OrElseThrow_ResourceNoFoundException(Long projectId) {
-        return projectRepository.findById(projectId)
+        return projectReactiveRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", "ProjectID", projectId.toString()));
     }
 

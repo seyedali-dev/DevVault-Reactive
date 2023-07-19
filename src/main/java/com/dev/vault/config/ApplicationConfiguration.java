@@ -54,7 +54,7 @@ public class ApplicationConfiguration {
             Mono<User> userMono = reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email);
 
             return userMono.flatMap(user -> {
-                /*List<GrantedAuthority> authorities = new ArrayList<>();
+                List<GrantedAuthority> authorities = new ArrayList<>();
                 // get the IDs of roles of the user
                 List<String> listOfRoleIds = user.getUserRoles().stream().map(userRole -> userRole.getRoles().getRoleId()).toList();
 
@@ -66,14 +66,14 @@ public class ApplicationConfiguration {
                                 // add the granted authority to the authority list
                                 .doOnNext(authorities::add)
                                 .doOnNext(simpleGrantedAuthority -> log.info("role that got added to authority list: {}", simpleGrantedAuthority.getAuthority()))
-                );*/
+                );
 
                 log.info("authorities of user: {}", user.getAuthorities().stream().toList());
 
                 return Mono.just(new org.springframework.security.core.userdetails.User(
                         user.getEmail(),
                         user.getPassword(),
-                        user.getAuthorities()
+                        authorities
                 ));
             });
         };

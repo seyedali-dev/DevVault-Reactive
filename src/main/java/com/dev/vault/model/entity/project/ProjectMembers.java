@@ -1,9 +1,7 @@
 package com.dev.vault.model.entity.project;
 
-import com.dev.vault.model.entity.user.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -21,15 +19,14 @@ public class ProjectMembers {
     private String projectMemberId;
 
     /* relationships */
-    @Transient
-    private User user;
+    private String userId;
 
-    @Transient
-    private Project project;
+    private String projectId;
     /* end of relationships */
 
-    public ProjectMembers(User user, Project project) {
-        this.user = user;
-        this.project = project;
+    public ProjectMembers(String userId, String projectId) {
+        this.userId = userId;
+        this.projectId = projectId;
     }
+
 }

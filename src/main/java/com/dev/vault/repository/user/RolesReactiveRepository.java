@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @Repository
-public interface RolesReactiveRepository extends ReactiveMongoRepository<Roles, Long> {
+public interface RolesReactiveRepository extends ReactiveMongoRepository<Roles, String> {
     Flux<Roles> findAllByRoleId(String roleId);
     Mono<Roles> findByRole(Role role);
 }

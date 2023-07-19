@@ -1,5 +1,4 @@
-# 🚀 DevVault - Reactive
-This is the Non-blocking asynchronous version of [Project-DevVault](https://github.com/sayedxali/DevVault). The features are same the same. Some additional features will be added in the futrue and this project will be turned into a microservice project later on!
+# 🚀 DevVault
 
 DevVault is a project management application built with Spring Boot. It allows users to create projects, add members to projects, create tasks within projects, and assign tasks to project members. The application also supports user authentication and authorization using JWT tokens.
 

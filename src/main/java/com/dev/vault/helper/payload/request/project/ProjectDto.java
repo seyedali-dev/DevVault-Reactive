@@ -2,8 +2,7 @@ package com.dev.vault.helper.payload.request.project;
 
 import lombok.*;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -13,6 +12,5 @@ import java.time.LocalTime;
 public class ProjectDto {
     private String projectName;
     private String projectDescription;
-    private LocalDate createdAt;
-    private LocalTime creationTime;
+    private LocalDateTime createdAt;
 }

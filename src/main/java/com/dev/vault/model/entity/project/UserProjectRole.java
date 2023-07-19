@@ -23,19 +23,14 @@ public class UserProjectRole {
     private String userProjectRoleId;
 
     /* relationships */
-    @Transient
-    private User user;
-
-    @Transient
-    private Roles role;
-
-    @Transient
-    private Project project;
+    private String userId;
+    private String roleId;
+    private String projectId;
     /* end of relationships */
 
-    public UserProjectRole(User user, Roles role, Project project) {
-        this.user = user;
-        this.role = role;
-        this.project = project;
+    public UserProjectRole(String userId, String roleId, String projectId) {
+        this.userId = userId;
+        this.roleId = roleId;
+        this.projectId = projectId;
     }
 }

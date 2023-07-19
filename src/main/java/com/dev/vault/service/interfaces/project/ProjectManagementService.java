@@ -1,7 +1,8 @@
 package com.dev.vault.service.interfaces.project;
 
 import com.dev.vault.helper.payload.request.project.ProjectDto;
+import reactor.core.publisher.Mono;
 
 public interface ProjectManagementService {
-    ProjectDto createProject(ProjectDto projectDto);
+    Mono<ProjectDto> createProject(ProjectDto projectDto);
 }
