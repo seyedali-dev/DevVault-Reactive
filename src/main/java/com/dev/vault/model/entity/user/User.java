@@ -2,7 +2,9 @@ package com.dev.vault.model.entity.user;
 
 import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.user.jwt.JwtToken;
+import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,13 +14,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.*;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Slf4j
 @Document
 public class User implements UserDetails {
+
+    private ReactiveRepositoryUtils reactiveRepositoryUtils;
 
     @Id
     private String userId;
@@ -33,10 +37,10 @@ public class User implements UserDetails {
 
     /* relationships */
     @Transient
-    private Set<Roles> roles = new HashSet<>();
+    private List<UserRole> userRoles = new ArrayList<>();
 
     @Transient
-    private List<Task> task = new ArrayList<>();
+    private Set<Task> task = new HashSet<>();
 
     @Transient
     private List<JwtToken> jwtTokens;
@@ -45,11 +49,17 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        for (Roles eachRole : roles) {
-            authorities.add(new SimpleGrantedAuthority(eachRole.getRole().name()));
-        }
+        userRoles.forEach(userRole ->
+                reactiveRepositoryUtils.findAllRoleByRoleId_OrElseThrow_ResourceNotFoundException(userRole.getRoles().getRoleId())
+                        .map(roles -> roles.getRole().name())
+                        .map(SimpleGrantedAuthority::new)
+                        .doOnNext(authorities::add)
+                        .doOnNext(simpleGrantedAuthority -> log.info("Role added as authority: {}", simpleGrantedAuthority.getAuthority()))
+                        .blockLast()
+        );
         return authorities;
     }
+
 
     @Override
     public String getPassword() {

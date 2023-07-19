@@ -6,11 +6,13 @@ import com.dev.vault.helper.payload.request.auth.RegisterRequest;
 import com.dev.vault.helper.payload.request.email.Email;
 import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.entity.user.UserRole;
 import com.dev.vault.model.entity.user.VerificationToken;
 import com.dev.vault.model.entity.user.jwt.JwtToken;
 import com.dev.vault.model.enums.TokenType;
 import com.dev.vault.repository.user.RolesReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
+import com.dev.vault.repository.user.UserRoleReactiveRepository;
 import com.dev.vault.repository.user.VerificationTokenReactiveRepository;
 import com.dev.vault.repository.user.jwt.JwtTokenReactiveRepository;
 import com.dev.vault.service.module.mail.MailService;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.dev.vault.model.enums.Role.TEAM_MEMBER;
 
@@ -35,6 +38,7 @@ import static com.dev.vault.model.enums.Role.TEAM_MEMBER;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationUtils {
+    private final UserRoleReactiveRepository userRoleReactiveRepository;
 
     @Value("${account.verification.auth.url}")
     private String ACCOUNT_VERIFICATION_AUTH_URL;
@@ -52,10 +56,9 @@ public class AuthenticationUtils {
 
     public Mono<AuthenticationResponse> createNewUser(RegisterRequest registerRequest) {
         return reactiveRepositoryUtils.findRoleByRole_OrElseThrow_ResourceNotFoundException(TEAM_MEMBER)
-                .switchIfEmpty(Mono.just(new Roles()))
-                .flatMap(rolesReactiveRepository::save)
                 .flatMap(teamMemberRole -> {
                     User user = createUserFromRequest(registerRequest);
+                    log.info("userID: {}", user.getUserId());
                     Mono<User> savedUserMono = userReactiveRepository.save(user);
                     log.info("✅ User saved to db, attempting to send activation email...");
 
@@ -63,15 +66,7 @@ public class AuthenticationUtils {
                             .flatMap(tuple -> {
                                 Roles roles = tuple.getT1();
                                 User savedUser = tuple.getT2();
-                                roles.getUsers().add(savedUser); // add the user to the role
-                                savedUser.getRoles().add(roles); // add the role to the user
-
-                                rolesReactiveRepository.save(roles) // save the updated role
-                                        // create a new user_roles document
-                                        .and(userReactiveRepository.save(savedUser))
-                                        .subscribe();
-
-                                return sendVerificationEmail(savedUser, registerRequest)
+                                return sendVerificationEmail(savedUser)
                                         .flatMap(jwtToken -> buildAuthenticationResponse(savedUser, jwtToken));
                             });
                 });
@@ -79,18 +74,35 @@ public class AuthenticationUtils {
 
     private User createUserFromRequest(RegisterRequest registerRequest) {
         User user = modelMapper.map(registerRequest, User.class);
+        user.setUserId(UUID.randomUUID().toString());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setActive(false);
+
+        rolesReactiveRepository.findByRole(TEAM_MEMBER)
+                .flatMap(roles -> {
+                    // create a new user_roles document and save it
+                    UserRole userRole = UserRole.builder()
+                            .user(user)
+                            .roles(roles)
+                            .build();
+                    userRoleReactiveRepository.save(userRole)
+                            .doOnNext(ur -> log.info("userRole saved: {}", ur))
+                            .doOnNext(ur -> log.info("userRole, roles saved: {}", ur.getRoles().getRole().name()))
+                            .subscribe();
+                    return Mono.just(userRole);
+                }).subscribe();
+
         return user;
     }
 
-    private Mono<String> sendVerificationEmail(User user, RegisterRequest registerRequest) {
+    private Mono<String> sendVerificationEmail(User user) {
         String verificationToken = generateVerificationToken(user);
         mailService.sendEmail(new Email(
                 "Please Activate Your Account",
                 user.getEmail(),
                 "Thank you for signing up to our app! " +
-                "Please click the url below to activate your account: " + ACCOUNT_VERIFICATION_AUTH_URL + verificationToken));
+                "Please click the url below to activate your account: " + ACCOUNT_VERIFICATION_AUTH_URL + verificationToken)
+        );
 
         log.info("➡️ generating JWT token...");
         return Mono.just(jwtService.generateToken(user))
@@ -100,18 +112,18 @@ public class AuthenticationUtils {
     }
 
     private Mono<AuthenticationResponse> buildAuthenticationResponse(User user, String jwtToken) {
-        return Mono.just(
-                AuthenticationResponse.builder()
-                        .username(user.getUsername())
-                        .roles(user.getRoles()
-                                .stream().map(Roles::getRole)
-                                .map(Enum::name)
-                                .toList()
-                        )
-                        .rolesDescription(List.of("➡️➡️Default role for user is TEAM_MEMBER"))
-                        .token(jwtToken)
-                        .build()
-        );
+        return reactiveRepositoryUtils.findAllUserRolesByUserId_OrElseThrow_ResourceNotFoundException(user.getUserId())
+                .map(userRole -> userRole.getRoles().getRole().name())
+                .collectList()
+                .flatMap(rolesList ->
+                        Mono.just(AuthenticationResponse.builder()
+                                .username(user.getUsername())
+                                .roles(rolesList)
+                                .rolesDescription(List.of("➡️➡️Default role for user is TEAM_MEMBER"))
+                                .token(jwtToken)
+                                .build()
+                        ).doOnSuccess(authenticationResponse -> log.info("roles that got build-> {}", authenticationResponse.getRoles()))
+                );
     }
 
 
@@ -144,8 +156,7 @@ public class AuthenticationUtils {
         jwtTokenReactiveRepository.findAllByUser_UserIdAndExpiredIsFalseAndRevokedIsFalse(user.getUserId())
                 // If no valid tokens were found, return without modifying the database
                 .switchIfEmpty(emptyToken -> {
-                })
-                .map(jwtTokens -> {
+                }).map(jwtTokens -> {
 
                     // Iterate through all valid tokens and set their 'expired' and 'revoked' flags to true
                     jwtTokens.forEach(token -> {

@@ -15,7 +15,7 @@ import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import com.dev.vault.util.user.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,7 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Authentication implementation: Registration & Login.
@@ -204,7 +205,7 @@ private Mono<AuthenticationResponse> createNewUser(Mono<RegisterRequest> request
      * @param authenticationRequest the authentication request containing the user's email and password
      * @return an AuthenticationResponse object containing the JWT token and user information
      */
-    @Override
+    /*@Override
     public Mono<AuthenticationResponse> authenticate(AuthenticationRequest authenticationRequest) {
         return reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(authenticationRequest.getEmail())
                 .filter(userDetails ->
@@ -230,6 +231,34 @@ private Mono<AuthenticationResponse> createNewUser(Mono<RegisterRequest> request
                             .token(generatedJwtToken)
                             .build();
                 }).switchIfEmpty(Mono.error(new AuthenticationCredentialsNotFoundException("You are not authenticated!")));
+    }*/
+    @Override
+    public Mono<AuthenticationResponse> authenticate(AuthenticationRequest authenticationRequest) {
+        return reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(authenticationRequest.getEmail())
+                .flatMap(user -> {
+                    boolean passwordMatches = passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword());
+                    if (passwordMatches) {
+                        String generatedJwtToken = jwtService.generateToken(user);
+
+                        // Revoke all the saved tokens for the user and save the generated token
+                        authenticationUtils.revokeAllUserTokens(user);
+                        return authenticationUtils.buildAndSaveJwtToken(user, generatedJwtToken)
+                                .flatMap(jwtToken -> reactiveRepositoryUtils.findAllUserRolesByUserId_OrElseThrow_ResourceNotFoundException(user.getUserId())
+                                        .map(userRole -> userRole.getRoles().getRole().name())
+                                        .collectList()
+                                        .map(roleNames -> {
+                                                    log.info("roles list: {}", roleNames);
+                                                    return AuthenticationResponse.builder()
+                                                            .username(user.getUsername())
+                                                            .roles(roleNames)
+                                                            .token(jwtToken.getToken())
+                                                            .build();
+                                                }
+                                        )
+                                );
+                    } else
+                        return Mono.error(new BadCredentialsException("Invalid username or password"));
+                }).switchIfEmpty(Mono.error(new BadCredentialsException("Invalid username or password")));
     }
 
 
