@@ -43,8 +43,7 @@ public class DemoController {
     @GetMapping("/all")
     public Mono<ResponseEntity<String>> all() {
         return Mono.just(ResponseEntity.ok("""
-                Congratulations on successfully implementing JWT with role base.
-                This is TEAM_MEMBER
+                Accessible to all users.
                 """)
         );
     }

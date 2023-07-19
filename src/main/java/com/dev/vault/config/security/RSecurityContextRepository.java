@@ -8,7 +8,6 @@ import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextImpl;
@@ -88,24 +87,26 @@ public class RSecurityContextRepository implements ServerSecurityContextReposito
                                             .map(jwtToken -> !jwtToken.isRevoked() && !jwtToken.isExpired())
                                             .defaultIfEmpty(Boolean.FALSE)
                                             .flatMap(isTokenValid -> {
-                                                if (!isTokenValid && !jwtService.validateToken(token, user)) {
-                                                    log.error("Invalid login Request! token not valid! ❌❌❌");
-                                                    return Mono.error(new DevVaultException("Invalid login Request! user not valid! ❌❌❌"));
-                                                } else {
-                                                    UsernamePasswordAuthenticationToken authentication =
-                                                            new UsernamePasswordAuthenticationToken(token, token);
-                                                    return authenticationManager.authenticate(authentication)
-                                                            .doOnNext(auth -> {
-                                                                log.info("JWT token is valid! ✅");
-                                                                log.info("authentication successful ✅");
-                                                                log.info(" ✅✅✅✅✅✅✅✅✅✅✅✅✅");
-                                                            })
-                                                            .map(SecurityContextImpl::new);
-                                                }
-                                            })
+                                                        if (!isTokenValid && !jwtService.validateToken(token, user)) {
+                                                            log.error("Invalid login Request! token not valid! ❌❌❌");
+                                                            return Mono.error(new DevVaultException("Invalid login Request! user not valid! ❌❌❌"));
+                                                        } else {
+                                                            UsernamePasswordAuthenticationToken authentication =
+                                                                    new UsernamePasswordAuthenticationToken(token, token);
+                                                            return authenticationManager.authenticate(authentication)
+                                                                    .doOnNext(auth -> {
+                                                                        log.info("JWT token is valid! ✅");
+                                                                        log.info("authentication successful ✅");
+                                                                        log.info(" ✅✅✅✅✅✅✅✅✅✅✅✅✅");
+                                                                    })
+                                                                    .map(SecurityContextImpl::new);
+                                                        }
+                                                    }
+                                            )
                             );
                 });
     }
+
     /*@Override
     public Mono<SecurityContext> load(ServerWebExchange exchange) {
         // extract the header from request
@@ -115,29 +116,29 @@ public class RSecurityContextRepository implements ServerSecurityContextReposito
                 .flatMap(this::authenticateToken)
                 .switchIfEmpty(Mono.error(new AuthenticationCredentialsNotFoundException("Bearer token not found in the authorization header ❌")))
                 .doOnNext(securityContext -> log.error("Bearer token not found in the authorization header ❌"));
-    }
+    }*/
 
-    *//**
+    /**
      * Extracts the bearer token from the authorization header.
      *
      * @param authHeader the authorization header
      * @return a Mono containing the extracted bearer token
-     *//*
-    private Mono<String> extractTokenFromHeader(String authHeader) {
+     */
+    /*private Mono<String> extractTokenFromHeader(String authHeader) {
         return Mono.justOrEmpty(authHeader)
                 .doOnNext(header -> log.info("Authorization header extracted"))
                 .filter(header -> header.startsWith(TOKEN_PREFIX))
                 .map(header -> header.substring(TOKEN_PREFIX.length()))
                 .doOnNext(token -> log.info("Bearer token found in the authorization header 👍: {}", token));
-    }
+    }*/
 
-    *//**
+    /**
      * Authenticates the given bearer token and returns a Mono containing the resulting SecurityContext.
      *
      * @param token the bearer token
      * @return a Mono containing the authenticated SecurityContext
-     *//*
-    private Mono<SecurityContext> authenticateToken(String token) {
+     */
+    /*private Mono<SecurityContext> authenticateToken(String token) {
         String userEmail;
 
         try {
