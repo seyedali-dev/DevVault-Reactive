@@ -24,9 +24,4 @@ public class ProjectMembers {
     private String projectId;
     /* end of relationships */
 
-    public ProjectMembers(String userId, String projectId) {
-        this.userId = userId;
-        this.projectId = projectId;
-    }
-
 }

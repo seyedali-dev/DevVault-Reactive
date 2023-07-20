@@ -11,9 +11,11 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class UserDto {
+
     private String username;
     private String major;
     private String education;
     private List<String> role;
     private JoinStatus joinStatus;
+
 }

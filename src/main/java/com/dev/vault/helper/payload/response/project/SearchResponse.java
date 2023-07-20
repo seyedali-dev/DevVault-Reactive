@@ -9,9 +9,11 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class SearchResponse {
-    private Long projectId;
+
+    private String projectId;
     private String projectName;
-    private String leaderName;
+    private String leaderEmail;
     private String projectDescription;
     private ProjectMembersDto members;
+
 }

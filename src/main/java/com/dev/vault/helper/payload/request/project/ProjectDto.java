@@ -12,5 +12,4 @@ import java.time.LocalDateTime;
 public class ProjectDto {
     private String projectName;
     private String projectDescription;
-    private LocalDateTime createdAt;
 }

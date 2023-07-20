@@ -1,18 +1,13 @@
 package com.dev.vault.model.entity.project;
 
 import com.dev.vault.model.entity.task.Task;
-import com.dev.vault.model.entity.user.User;
 import lombok.*;
-import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,9 +29,7 @@ public class Project {
     private int memberCount;
 
     /* relationships */
-    @Transient
-    @CreatedBy
-    private User leader;
+    private String leaderEmail;
 
     @Transient
     private List<Task> tasks = new ArrayList<>();

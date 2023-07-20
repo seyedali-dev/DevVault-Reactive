@@ -21,6 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 /**
  * Service Implementation of Project Creation
  */
@@ -28,6 +31,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Slf4j
 public class ProjectManagementServiceImpl implements ProjectManagementService {
+
     private final UserProjectRoleReactiveRepository userProjectRoleReactiveRepository;
     private final ProjectMembersReactiveRepository projectMembersReactiveRepository;
     private final ProjectReactiveRepository projectReactiveRepository;
@@ -74,7 +78,6 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
                                                                 return ProjectDto.builder()
                                                                         .projectName(savedProject.getProjectName())
                                                                         .projectDescription(savedProject.getDescription())
-                                                                        .createdAt(savedProject.getCreatedAt())
                                                                         .build();
                                                             });
                                                 })
@@ -101,7 +104,9 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
      */
     private Project createProjectObject(ProjectDto projectDto, User currentUser) {
         Project project = modelMapper.map(projectDto, Project.class);
-        project.setLeader(currentUser);
+        project.setProjectId(UUID.randomUUID().toString());
+        project.setCreatedAt(LocalDateTime.now());
+        project.setLeaderEmail(currentUser.getEmail());
         project.incrementMemberCount();
         return project;
     }
