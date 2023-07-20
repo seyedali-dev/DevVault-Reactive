@@ -10,6 +10,7 @@ import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
 import com.dev.vault.service.interfaces.project.SearchProjectService;
+import com.dev.vault.util.project.ProjectUtilsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class SearchProjectServiceImpl implements SearchProjectService {
     private final UserReactiveRepository userReactiveRepository;
     private final ProjectReactiveRepository projectRepository;
     private final ProjectMembersReactiveRepository projectMembersRepository;
+    private final ProjectUtilsImpl projectUtils;
 
 
     /**
@@ -38,7 +40,7 @@ public class SearchProjectServiceImpl implements SearchProjectService {
      *
      * @return A list of SearchResponse objects containing project details.
      */
-    @Override
+    /*@Override
     public Flux<SearchResponse> listAllProjects() {
         // find all the projects in db
         return projectRepository.findAll()
@@ -63,8 +65,47 @@ public class SearchProjectServiceImpl implements SearchProjectService {
                                             .leaderEmail(tuple.getT2().getUsername())
                                             .members(new ProjectMembersDto(tuple.getT3()))
                                             .build()
+                            )
+//                            .doOnNext(projectUtils.projectSink::tryEmitNext)
+                            ;
+                });
+    }*/
+    @Override
+    public Flux<SearchResponse> listAllProjects() {
+        // Create a new Flux that emits the newly created project
+        Flux<SearchResponse> newProjectFlux = projectUtils.projectSink.asFlux()
+                .map(searchResponse -> {
+                    log.info("New project emitted: {}", searchResponse.getProjectName());
+                    return searchResponse;
+                });
+
+        // Create a Flux that emits all the projects from the database
+        Flux<SearchResponse> dbProjectsFlux = projectRepository.findAll()
+                .flatMap(project -> {
+                    Mono<Project> projectMono = Mono.just(project);
+
+                    // find the leader of that specific project
+                    Mono<User> userMono = userReactiveRepository.findByEmail(project.getLeaderEmail())
+                            .switchIfEmpty(Mono.error(new ResourceNotFoundException("User not found")));
+
+                    // create a list of user dtos for finding the project members of the project
+                    Mono<List<UserDto>> projectMembersMono = getUserDtoMonoList(project).collectList();
+
+                    // combine all the asynchronous calls and build a `SearchResponse` object for sending a response
+                    return Mono.zip(projectMono, userMono, projectMembersMono)
+                            .map(tuple ->
+                                    SearchResponse.builder()
+                                            .projectId(tuple.getT1().getProjectId())
+                                            .projectName(tuple.getT1().getProjectName())
+                                            .projectDescription(tuple.getT1().getDescription())
+                                            .leaderEmail(tuple.getT2().getUsername())
+                                            .members(new ProjectMembersDto(tuple.getT3()))
+                                            .build()
                             );
                 });
+
+        // Merge the two Fluxes and return the result
+        return Flux.merge(newProjectFlux, dbProjectsFlux);
     }
 
 
@@ -103,7 +144,7 @@ public class SearchProjectServiceImpl implements SearchProjectService {
      * @param project The project to get the list of members for.
      * @return A list of UserDto objects representing the members of the project.
      */
-    private Flux<UserDto> getUserDtoMonoList(Project project) {
+    public Flux<UserDto> getUserDtoMonoList(Project project) {
         // Get all project members associated with the given project
         return projectMembersRepository.findByProjectId(project.getProjectId())
                 .flatMap(members -> {
