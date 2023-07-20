@@ -18,11 +18,13 @@ DevVault is a project management application built with Spring Boot. It allows u
 
 ## 🛠️ Technologies Used
 
-- Java 11
+- Java 17
 - Spring Boot
 - Spring Security
+- Spring WebFlux
+- Spring Data Reactive MongoDB
+- Spring Mail Service
 - JWT
-- Hibernate
 - Maven
 
 ## 🎉 Features
