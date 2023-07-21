@@ -45,6 +45,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     private final ProjectUtilsImpl projectUtils;
     private final SearchProjectServiceImpl searchProjectServiceImpl;
 
+
     /**
      * Creates a new project with the given project details, assigns the current user as the project leader,
      * increments the count of member by one, and saves the project to the database.
@@ -54,47 +55,6 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
      * @return a Mono of ProjectDto containing the project information
      * @throws ResourceAlreadyExistsException if a project with the same name already exists
      */
-    /*@Override
-    @Transactional
-    public Mono<ProjectDto> createProject(ProjectDto projectDto) {
-        // Check if a project with the same name already exists
-        return checkIfProjectExists(projectDto).flatMap(projectExists -> // Get the current user
-                authenticationService.getCurrentUserMono().flatMap(currentUser -> // Get the PROJECT_LEADER role
-                        reactiveRepositoryUtils.findRoleByRole_OrElseThrow_ResourceNotFoundException(Role.PROJECT_LEADER).flatMap(projectLeaderRole -> {
-                            // Create the Project object and set the leader to the current user
-                            Project project = createProjectObject(projectDto, currentUser);
-
-                            // Create a new ProjectMembers object for the current user and save it to the database
-                            ProjectMembers projectMembers = createProjectMembersObject(currentUser, project);
-
-                            // Create a new UserProjectRole object for the current user and save it to the database
-                            UserProjectRole userProjectRole = createUserProjectRoleObject(currentUser, projectLeaderRole, project);
-
-                            Mono<Project> savedProjectMono = projectReactiveRepository.save(project);
-                            Mono<ProjectMembers> savedProjectMembersMono = projectMembersReactiveRepository.save(projectMembers);
-                            Mono<UserProjectRole> savedUserProjectRoleMono = userProjectRoleReactiveRepository.save(userProjectRole);
-
-                            // emit the newly created project, to the subscribers using SSE
-                            buildSearchResponse(savedProjectMono, savedProjectMembersMono, savedUserProjectRoleMono)
-                                    .map(searchResponse -> {
-                                        projectUtils.projectSink.emitNext(searchResponse, Sinks.EmitFailureHandler.FAIL_FAST);
-                                        log.info("emitting newly created project: {{}}", searchResponse);
-                                        return searchResponse;
-                                    });
-
-                            // Combine all the asynchronous operations and return a ProjectDto object with the project information
-                            return Mono.zip(savedProjectMono, savedProjectMembersMono, savedUserProjectRoleMono)
-                                    .map(tuple3 -> {
-                                        Project savedProject = tuple3.getT1();
-                                        return ProjectDto.builder()
-                                                .projectName(savedProject.getProjectName())
-                                                .projectDescription(savedProject.getDescription())
-                                                .build();
-                                    });
-                        })
-                )
-        );
-    }*/
     @Override
     @Transactional
     public Mono<ProjectDto> createProject(ProjectDto projectDto) {
@@ -132,9 +92,11 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
         );
     }
 
-
+    /**
+     * Emit the newly created project to the projectSink.
+     */
     private void emitNewlyCreatedProject(User user, Project project) {
-        searchProjectServiceImpl.getUserDtoMonoList(project).collectList()
+        searchProjectServiceImpl.getUserDtoFlux(project).collectList()
                 .map(userDtos -> {
                     SearchResponse searchResponse = SearchResponse.builder()
                             .projectId(project.getProjectId())
@@ -181,7 +143,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     /**
      * Create a new ProjectMembers object for the current user and save it to the database
      */
-    private static ProjectMembers createProjectMembersObject(User currentUser, Project project) {
+    private ProjectMembers createProjectMembersObject(User currentUser, Project project) {
         return ProjectMembers.builder()
                 .userId(currentUser.getUserId())
                 .projectId(project.getProjectId())
@@ -192,7 +154,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     /**
      * Create a new UserProjectRole object for the current user and save it to the database
      */
-    private static UserProjectRole createUserProjectRoleObject(User currentUser, Roles projectLeaderRole, Project project) {
+    private UserProjectRole createUserProjectRoleObject(User currentUser, Roles projectLeaderRole, Project project) {
         return UserProjectRole.builder()
                 .userId(currentUser.getUserId())
                 .roleId(projectLeaderRole.getRoleId())

@@ -28,18 +28,17 @@ public class ProjectUtilsImpl implements ProjectUtils {
     public final Sinks.Many<SearchResponse> projectSink = Sinks.many().replay().all();
 
     /*private final UserProjectRoleReactiveRepository userProjectRoleRepository;
-    private final ProjectMembersReactiveRepository projectMembersRepository;
+    private final ProjectMembersReactiveRepository projectMembersRepository;*/
 
 
-    *//**
+    /**
       * Checks if the user is the leader or admin of the project
       *
       * @param project the project to check for leadership or admin role
       * @param user    the user to check for leadership or admin role
       * @return true if the user is the leader or admin of the project, false otherwise
-     *//*
-
-    @Override
+     */
+    /*@Override
     public boolean isLeaderOrAdminOfProject(Project project, User user) {
         // Find the user's role in the project
         Roles leaderOrAdminRole = user.getRoles().stream()
@@ -57,18 +56,17 @@ public class ProjectUtilsImpl implements ProjectUtils {
         return userProjectRole.isPresent() &&
                (userProjectRole.get().getRole().getRole() == Role.PROJECT_LEADER ||
                 userProjectRole.get().getRole().getRole() == Role.PROJECT_ADMIN);
-    }
+    }*/
 
 
-    *//**
+    /**
      * Checks if the user is a member of the project
      *
      * @param project the project to check for membership
      * @param user    the user to check for membership
      * @return true if the user is a member of the project, false otherwise
-     *//*
-
-    @Override
+     */
+    /*@Override
     public boolean isMemberOfProject(Project project, User user) {
         Optional<ProjectMembers> members = projectMembersRepository.findByProject_ProjectNameAndUser_Email(project.getProjectName(), user.getEmail());
         return members.isPresent();

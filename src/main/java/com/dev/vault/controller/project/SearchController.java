@@ -1,5 +1,6 @@
 package com.dev.vault.controller.project;
 
+import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.response.project.SearchResponse;
 import com.dev.vault.service.interfaces.project.SearchProjectService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -32,7 +34,7 @@ public class SearchController {
      * @return a stream of SearchResponse objects in Server-Sent Events (SSE) format
      */
     @GetMapping(value = "/stream", produces = TEXT_EVENT_STREAM_VALUE)
-    public Flux<SearchResponse> getProjectDtosStream2() {
+    public Flux<SearchResponse> getProjectDtosStream() {
         return searchProjectService.listAllProjects();
     }
 
@@ -43,9 +45,17 @@ public class SearchController {
      * @param projectName the name of the project to search for
      * @return a ResponseEntity containing a list of SearchResponse objects
      */
-    @GetMapping("/{projectName}")
-    public ResponseEntity<List<SearchResponse>> searchForAProject(@PathVariable String projectName) {
-        return ResponseEntity.ok(searchProjectService.searchForProject(projectName));
+    @GetMapping("/projectName/{projectName}")
+    public Mono<ResponseEntity<Flux<SearchResponse>>> searchForProject(@PathVariable String projectName) {
+        Mono<List<SearchResponse>> searchResultsMonoList = searchProjectService.searchForProject(projectName).collectList();
+        return searchResultsMonoList
+                .flatMap(searchResponseList -> {
+                            if (searchResponseList.isEmpty())
+                                return Mono.error(new ResourceNotFoundException("Project", "ProjectName", projectName));
+                            else
+                                return Mono.just(ResponseEntity.ok(Flux.fromIterable(searchResponseList)));
+                        }
+                );
     }
 
 }

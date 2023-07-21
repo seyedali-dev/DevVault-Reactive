@@ -10,5 +10,5 @@ public interface SearchProjectService {
     Flux<SearchResponse> listAllProjects();
 
     // search for a project with matching names
-    List<SearchResponse> searchForProject(String projectOrGroupName);
+    Flux<SearchResponse> searchForProject(String projectOrGroupName);
 }
