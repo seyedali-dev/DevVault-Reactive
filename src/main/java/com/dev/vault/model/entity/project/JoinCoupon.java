@@ -1,9 +1,7 @@
 package com.dev.vault.model.entity.project;
 
-import com.dev.vault.model.entity.user.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -22,22 +20,17 @@ public class JoinCoupon {
     private String coupon;
 
     /* relationships */
-    @Transient
-    private User requestingUser;
-
-    @Transient
-    private User leader;
-
-    @Transient
-    private Project project;
+    private String requestingUserId;
+    private String leaderEmail;
+    private String projectId;
     /* end of relationships */
 
     private boolean used = false;
 
-    public JoinCoupon(User requestingUser, User leader, Project project, String coupon) {
-        this.requestingUser = requestingUser;
-        this.leader = leader;
-        this.project = project;
+    public JoinCoupon(String requestingUserId, String leaderEmail, String projectId, String coupon) {
+        this.requestingUserId = requestingUserId;
+        this.leaderEmail = leaderEmail;
+        this.projectId = projectId;
         this.coupon = coupon;
     }
 }

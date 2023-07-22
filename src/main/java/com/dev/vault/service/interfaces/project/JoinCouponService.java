@@ -1,5 +1,7 @@
 package com.dev.vault.service.interfaces.project;
 
+import reactor.core.publisher.Mono;
+
 public interface JoinCouponService {
-    String generateOneTimeJoinCoupon(Long projectId, Long requestingUserId);
+    Mono<String> generateOneTimeJoinCoupon(String projectId, String requestingUserId);
 }

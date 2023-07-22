@@ -2,10 +2,11 @@ package com.dev.vault.util.project;
 
 import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.user.User;
+import reactor.core.publisher.Mono;
 
 public interface ProjectUtils {
-    boolean isLeaderOrAdminOfProject(Project project, User user);
+    Mono<Boolean> isLeaderOrAdminOfProject(Project project, User user);
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    boolean isMemberOfProject(Project project, User user);
+    Mono<Boolean> isMemberOfProject(Project project, User user);
 }

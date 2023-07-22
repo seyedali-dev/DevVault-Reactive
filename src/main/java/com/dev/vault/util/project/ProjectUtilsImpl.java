@@ -1,25 +1,26 @@
 package com.dev.vault.util.project;
 
-import com.dev.vault.helper.payload.request.project.ProjectDto;
 import com.dev.vault.helper.payload.response.project.SearchResponse;
 import com.dev.vault.model.entity.project.Project;
-import com.dev.vault.model.entity.project.ProjectMembers;
-import com.dev.vault.model.entity.project.UserProjectRole;
 import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
 import com.dev.vault.model.enums.Role;
-import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
+import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.project.UserProjectRoleReactiveRepository;
+import com.dev.vault.repository.user.RolesReactiveRepository;
+import com.dev.vault.repository.user.UserReactiveRepository;
+import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
-
-import java.util.Optional;
 
 /**
  * Service implementation for ProjectUtils.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Primary
@@ -27,36 +28,55 @@ public class ProjectUtilsImpl implements ProjectUtils {
 
     public final Sinks.Many<SearchResponse> projectSink = Sinks.many().replay().all();
 
-    /*private final UserProjectRoleReactiveRepository userProjectRoleRepository;
-    private final ProjectMembersReactiveRepository projectMembersRepository;*/
+    private final UserProjectRoleReactiveRepository userProjectRoleReactiveRepository;
+    private final ReactiveRepositoryUtils reactiveRepositoryUtils;
+    private final UserReactiveRepository userReactiveRepository;
+    private final RolesReactiveRepository rolesReactiveRepository;
+    private final ProjectReactiveRepository projectReactiveRepository;
 
 
     /**
-      * Checks if the user is the leader or admin of the project
-      *
-      * @param project the project to check for leadership or admin role
-      * @param user    the user to check for leadership or admin role
-      * @return true if the user is the leader or admin of the project, false otherwise
+     * Checks if the user is the leader or admin of the project
+     *
+     * @param project the project to check for leadership or admin role
+     * @param user    the user to check for leadership or admin role
+     * @return Mono of true if the user is the leader or admin of the project, false otherwise
      */
-    /*@Override
-    public boolean isLeaderOrAdminOfProject(Project project, User user) {
+    @Override
+    public Mono<Boolean> isLeaderOrAdminOfProject(Project project, User user) {
         // Find the user's role in the project
-        Roles leaderOrAdminRole = user.getRoles().stream()
-                .filter(roles ->
-                        roles.getRole().equals(Role.PROJECT_LEADER) ||
-                        roles.getRole().equals(Role.PROJECT_ADMIN)
-                ).findFirst()
-                .orElse(null);
+        return reactiveRepositoryUtils.findAllUserRolesByUserId_OrElseThrow_ResourceNotFoundException(user.getUserId())
+                .flatMap(userRole -> Mono.just(userRole.getRoles()))
+                .filter(role ->
+                        role.getRole().equals(Role.PROJECT_LEADER) || role.getRole().equals(Role.PROJECT_ADMIN)
+                )
+                // Find the user's role for the specified project
+                .flatMap(roles ->
+                        userProjectRoleReactiveRepository.findByUserIdAndRoleIdAndProjectId(user.getUserId(), roles.getRoleId(), project.getProjectId())
+                )
+                // Fetch the corresponding User, Role, and Project entities from the database
+                .flatMap(userProjectRole -> {
+                    Mono<User> userMono = userReactiveRepository.findById(userProjectRole.getUserId());
+                    Mono<Roles> rolesMono = rolesReactiveRepository.findById(userProjectRole.getRoleId());
+                    Mono<Project> projectMono = projectReactiveRepository.findById(userProjectRole.getProjectId());
 
-        // Find the user's role for the specified project
-        Optional<UserProjectRole> userProjectRole =
-                userProjectRoleRepository.findByUserAndProjectAndRole(user, project, leaderOrAdminRole);
+                    return Mono.zip(userMono, rolesMono, projectMono)
+                            .flatMap(tuple -> {
+                                User fetchedUser = tuple.getT1();
+                                Roles fetchedRole = tuple.getT2();
+                                Project fetchedProject = tuple.getT3();
 
-        // Return true if the user has the leader or admin role in the project, false otherwise
-        return userProjectRole.isPresent() &&
-               (userProjectRole.get().getRole().getRole() == Role.PROJECT_LEADER ||
-                userProjectRole.get().getRole().getRole() == Role.PROJECT_ADMIN);
-    }*/
+                                log.info("fetchedUser: {{}}, fetchedRole: {{}}, fetchedProject: {{}}", fetchedUser.getUsername(), fetchedRole.getRole().name(), fetchedProject.getProjectName());
+
+                                // Return true if the user has the leader or admin role in the project, false otherwise
+                                if (fetchedRole.getRole() == Role.PROJECT_LEADER || fetchedRole.getRole() == Role.PROJECT_ADMIN)
+                                    return Mono.just(true);
+                                else
+                                    return Mono.just(false);
+                            });
+                }).defaultIfEmpty(false)
+                .any(Boolean::booleanValue);
+    }
 
 
     /**
@@ -66,20 +86,11 @@ public class ProjectUtilsImpl implements ProjectUtils {
      * @param user    the user to check for membership
      * @return true if the user is a member of the project, false otherwise
      */
-    /*@Override
-    public boolean isMemberOfProject(Project project, User user) {
-        Optional<ProjectMembers> members = projectMembersRepository.findByProject_ProjectNameAndUser_Email(project.getProjectName(), user.getEmail());
-        return members.isPresent();
-    }*/
-
     @Override
-    public boolean isLeaderOrAdminOfProject(Project project, User user) {
-        return false;
-    }
-
-    @Override
-    public boolean isMemberOfProject(Project project, User user) {
-        return false;
+    public Mono<Boolean> isMemberOfProject(Project project, User user) {
+//        Optional<ProjectMembers> members = projectMembersRepository.findByProject_ProjectNameAndUser_Email(project.getProjectName(), user.getEmail());
+//        return members.isPresent();
+        return null;
     }
 
 }

@@ -1,6 +1,8 @@
 package com.dev.vault.util.repository;
 
 import com.dev.vault.helper.exception.ResourceNotFoundException;
+import com.dev.vault.model.entity.project.Project;
+import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
 import com.dev.vault.model.entity.user.UserRole;
@@ -52,18 +54,20 @@ public class ReactiveRepositoryUtils {
                 .doOnError(error -> log.error("Error occurred while finding all the user_roles by userID: {}", error.getMessage()));
     }
 
-  /*  public Project findProjectById_OrElseThrow_ResourceNoFoundException(Long projectId) {
+    public Mono<Project> findProjectById_OrElseThrow_ResourceNoFoundException(String projectId) {
         return projectReactiveRepository.findById(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project", "ProjectID", projectId.toString()));
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Project", "ProjectID", projectId)))
+                .doOnError(error -> log.error("Error occurred while finding the project by projectID: {}", error.getMessage()));
     }
 
-    public User findUserById_OrElseThrow_ResourceNoFoundException(Long userId) {
+    public Mono<User> findUserById_OrElseThrow_ResourceNoFoundException(String userId) {
         return userReactiveRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "UserID", userId.toString()));
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("User", "UserID", userId)))
+                .doOnError(error -> log.error("Error occurred while finding the user by userID: {}", error.getMessage()));
     }
 
-    public Task findTaskById_OrElseThrow_ResourceNotFoundException(Long taskId) {
-        return taskRepository.findById(taskId)
-                .orElseThrow(() -> new ResourceNotFoundException("Task", "TaskID", taskId.toString()));
-    }*/
+//    public Task findTaskById_OrElseThrow_ResourceNotFoundException(Long taskId) {
+//        return taskRepository.findById(taskId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Task", "TaskID", taskId.toString()));
+//    }
 }
