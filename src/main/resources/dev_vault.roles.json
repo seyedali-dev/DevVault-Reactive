@@ -1,0 +1,14 @@
+[
+  {
+    "roleId": "1",
+    "role": "PROJECT_LEADER"
+  },
+  {
+    "roleId": "1",
+    "role": "PROJECT_ADMIN"
+  },
+  {
+    "roleId": "3",
+    "role": "TEAM_MEMBER"
+  }
+]

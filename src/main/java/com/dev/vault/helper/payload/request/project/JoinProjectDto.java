@@ -10,7 +10,7 @@ import lombok.*;
 @Builder
 public class JoinProjectDto {
     private String projectName;
-    private Long joinRequestId;
+    private String joinRequestId;
     private String joinRequestUsersEmail;
     private JoinStatus joinStatus;
 }

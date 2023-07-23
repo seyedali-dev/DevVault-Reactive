@@ -1,11 +1,13 @@
 package com.dev.vault.controller.project;
 
+import com.dev.vault.helper.payload.request.project.JoinProjectDto;
 import com.dev.vault.helper.payload.response.project.JoinResponse;
 import com.dev.vault.service.interfaces.project.JoinRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.dev.vault.model.enums.JoinStatus.*;
@@ -45,10 +47,11 @@ public class JoinRequestController {
      * @param projectId the ID of the project to retrieve join requests for
      * @return ResponseEntity containing a List of JoinRequest objects with the specified status
      */
-    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'PROJECT_ADMIN')")
-    @GetMapping("/requests/{projectId}")
-    public ResponseEntity<?> getAllJoinRequestsByStatus(@PathVariable Long projectId) {
-        return ResponseEntity.ok(joinRequestService.getJoinRequestsByProjectIdAndStatus(projectId, PENDING));
+//    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'PROJECT_ADMIN')")
+    @GetMapping("/requests")
+    public Mono<ResponseEntity<Flux<JoinProjectDto>>> getAllJoinRequestsByStatus(@RequestParam String projectId) {
+        Flux<JoinProjectDto> joinRequests = joinRequestService.getJoinRequestsByProjectIdAndStatus(projectId, PENDING);
+        return Mono.just(ResponseEntity.ok().body(joinRequests));
     }
 
 

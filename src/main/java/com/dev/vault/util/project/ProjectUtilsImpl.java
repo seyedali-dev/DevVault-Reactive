@@ -69,8 +69,6 @@ public class ProjectUtilsImpl implements ProjectUtils {
                                 Roles fetchedRole = tuple.getT2();
                                 Project fetchedProject = tuple.getT3();
 
-                                log.info("fetchedUser: {{}}, fetchedRole: {{}}, fetchedProject: {{}}", fetchedUser.getUsername(), fetchedRole.getRole().name(), fetchedProject.getProjectName());
-
                                 // Return true if the user has the leader or admin role in the project, false otherwise
                                 if (fetchedRole.getRole() == Role.PROJECT_LEADER || fetchedRole.getRole() == Role.PROJECT_ADMIN)
                                     return Mono.just(true);

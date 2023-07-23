@@ -1,12 +1,14 @@
 package com.dev.vault.service.module.project;
 
 import com.dev.vault.helper.exception.DevVaultException;
+import com.dev.vault.helper.exception.NotLeaderOfProjectException;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.request.project.JoinProjectDto;
 import com.dev.vault.helper.payload.response.project.JoinResponse;
 import com.dev.vault.model.entity.project.JoinCoupon;
 import com.dev.vault.model.entity.project.JoinProjectRequest;
+import com.dev.vault.model.entity.user.User;
 import com.dev.vault.model.enums.JoinStatus;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
 import com.dev.vault.repository.project.JoinProjectRequestReactiveRepository;
@@ -23,9 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 import static com.dev.vault.model.enums.JoinStatus.PENDING;
 
@@ -93,15 +94,18 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                                         // Check if the user is already a member of the project or has already sent a join project request for the project
                                         return joinRequestProjectUtilsImpl.isMemberOfProject(project, user)
                                                 .flatMap(isMember -> {
-                                                    if (isMember)
-                                                        return Mono.error(new ResourceAlreadyExistsException("JoinRequest", "Member", email));
-                                                    else {
+                                                    if (isMember) {
+                                                        log.error("User {{}}, is not a member of project {{}}", user.getUsername(), project.getProjectName());
+                                                        return Mono.error(new ResourceAlreadyExistsException("User: {{" + user.getUsername() + "}} is already a member of the project {{" + project.getProjectName() + "}}"));
+                                                    } else {
 
                                                         // Check if the JoinRequestCoupon is valid
                                                         return joinRequestProjectUtilsImpl.isCouponValid(project)
                                                                 .flatMap(isCouponValid -> {
-                                                                    if (!isCouponValid)
+                                                                    if (!isCouponValid) {
+                                                                        log.error("coupon is not valid");
                                                                         return Mono.error(new DevVaultException("Invalid JoinRequestCoupon"));
+                                                                    }
 
                                                                     // Mark the JoinRequestCoupon as used
                                                                     return reactiveRepositoryUtils.findCouponByCoupon_OrElseThrow_ResourceNoFoundException(joinCoupon)
@@ -128,122 +132,51 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                                                                             });
                                                                 });
                                                     }
-                                                });
+                                                }).switchIfEmpty(Mono.error(new DevVaultException("No members found")));
                                     }));
                 });
     }
 
-    //chat, modified my impl
-    /*@Override
-    @Transactional
-    public Mono<JoinResponse> sendJoinRequest(String projectId, String joinCoupon) {
-        return authenticationService.getCurrentUserMono()
-                .flatMap(user -> reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId)
-                        .flatMap(project -> {
-                            if (joinProjectUtils.isMemberOfProject(project, user)) {
-                                return Mono.error(new ResourceAlreadyExistsException("JoinRequest", "Member", user.getEmail()));
-                            } else {
-                                return isCouponValid(project)
-                                        .flatMap(isValid -> {
-                                            if (!isValid) {
-                                                return Mono.error(new DevVaultException("Invalid JoinRequestCoupon"));
-                                            } else {
-                                                return reactiveRepositoryUtils.findCouponByCoupon(joinCoupon)
-                                                        .switchIfEmpty(Mono.error(new ResourceNotFoundException("JoinRequestCoupon", "Coupon", joinCoupon)))
-                                                        .flatMap(joinRequestCoupon -> {
-                                                            joinRequestCoupon.setUsed(true);
-                                                            Mono<JoinCoupon> joinCouponMono = joinCouponReactiveRepository.save(joinRequestCoupon);
-                                                            JoinProjectRequest joinProjectRequest = new JoinProjectRequest(project.getProjectId(), user.getUserId(), PENDING);
-                                                            Mono<JoinProjectRequest> joinProjectRequestMono = joinProjectRequestReactiveRepository.save(joinProjectRequest);
-                                                            if (joinRequestCoupon.isUsed()) {
-                                                                joinCouponReactiveRepository.delete(joinRequestCoupon).subscribe();
-                                                            }
-                                                            return Mono.zip(joinCouponMono, joinProjectRequestMono)
-                                                                    .map(tuple -> JoinResponse.builder()
-                                                                            .status("Join Project Request Sent successfully. Please wait until ProjectLeader approves your request :)")
-                                                                            .joinStatus(joinProjectRequest.getStatus().toString())
-                                                                            .build());
-                                                        });
-                                            }
-                                        });
-                            }
-                        }));
-    }*/
-
-    //chat new impl
-    /*@Override
-    @Transactional
-    public Mono<JoinResponse> sendJoinRequest(String projectId, String joinCoupon) {
-        // Get the email of the current user
-        Mono<String> emailMono = authenticationService.getCurrentUserMono().map(User::getEmail);
-
-        // Retrieve the project and user from the repositories
-        Mono<Project> projectMono = reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
-        Mono<User> userMono = emailMono.flatMap(reactiveRepositoryUtils::findUserByEmail_OrElseThrow_ResourceNotFoundException);
-
-
-        // Check if the user is already a member of the project or has already sent a join project request for the project
-        Mono<Boolean> isMemberMono = Mono.zip(projectMono, userMono)
-                .flatMap(tuple ->
-                        joinProjectUtils.isMemberOfProject(tuple.getT1(), tuple.getT2())
-                );
-
-        Mono<Boolean> hasJoinRequestSentMono = Mono.zip(projectMono, userMono)
-                .flatMap(tuple ->
-                        joinProjectRequestReactiveRepository.existsByProjectIdAndUserId(tuple.getT1(), tuple.getT2())
-                );
-
-        Mono<Boolean> isCouponValidMono = Mono.zip(projectMono, emailMono)
-                .flatMap(tuple ->
-                        isCouponValid(tuple.getT1()).onErrorResume(e -> Mono.just(false))
-                );
-
-        // Combine the results of all the checks
-        return Mono.zip(isMemberMono, hasJoinRequestSentMono, isCouponValidMono)
-                .flatMap(tuple -> {
-                    if (tuple.getT1() || tuple.getT2())
-                        return Mono.error(new ResourceAlreadyExistsException("JoinRequest", "Member", emailMono.block()));
-
-                    if (!tuple.getT3())
-                        return Mono.just(new DevVaultException("Invalid JoinRequestCoupon"));
-
-                    // Mark the JoinRequestCoupon as used
-                    Mono<JoinCoupon> joinRequestCouponMono = reactiveRepositoryUtils.findCouponByCoupon_OrElseThrow_ResourceNoFoundException(joinCoupon)
-                            .doOnNext(joinRequestCoupon -> {
-                                joinRequestCoupon.setUsed(true);
-                                joinCouponReactiveRepository.save(joinRequestCoupon).subscribe();
-                            });
-
-                    // Create a new join project request and save it to the repository
-                    Mono<JoinProjectRequest> joinProjectRequestMono = Mono.zip(projectMono, userMono)
-                            .map(projectUserTuple ->
-                                    new JoinProjectRequest(
-                                            projectUserTuple.getT1().getProjectId(),
-                                            projectUserTuple.getT2().getUserId(),
-                                            PENDING
-                                    )
-                            ).flatMap(joinProjectRequestReactiveRepository::save);
-
-                    // Delete the JoinRequestCoupon if it has been used
-                    Mono<Void> deleteJoinCouponMono = joinRequestCouponMono
-                            .filter(JoinCoupon::isUsed)
-                            .flatMap(joinCouponReactiveRepository::delete);
-
-                    // Return a JoinResponse indicating that the join project request was sent successfully and its status
-                    return Mono.zip(joinProjectRequestMono, deleteJoinCouponMono)
-                            .then(Mono.zip(joinRequestCouponMono, joinProjectRequestMono)
-                                    .map(joinCouponJoinProjectRequestTuple -> JoinResponse.builder()
-                                            .status("Join Project Request Sent successfully. Please wait until ProjectLeader approves your request :)")
-                                            .joinStatus(joinCouponJoinProjectRequestTuple.getT2().getStatus())
-                                            .build()
-                                    )
-                            );
-                });
-    }*/
-
+    /**
+     * Retrieves a list of all join project requests for the specified project with the specified status.
+     * Only project leader and project admin are allowed.
+     *
+     * @param projectId  the ID of the project to retrieve join project requests for
+     * @param joinStatus the status of the join requests to retrieve
+     * @return a List of JoinProjectDto objects containing information about each join request
+     */
     @Override
-    public List<JoinProjectDto> getJoinRequestsByProjectIdAndStatus(Long projectId, JoinStatus joinStatus) {
-        return null;
+    public Flux<JoinProjectDto> getJoinRequestsByProjectIdAndStatus(String projectId, JoinStatus joinStatus) {
+        return authenticationService.getCurrentUserMono()
+                .flatMapMany(currentUser -> reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId)
+                        .flatMapMany(project -> {
+
+                            // Check if the current user is the project leader or project admin of the project associated with the join request
+                            return projectUtils.isLeaderOrAdminOfProject(project, currentUser)
+                                    .flatMapMany(isLeaderOrAdmin -> {
+                                        if (isLeaderOrAdmin) {
+
+                                            // Retrieve the join request IDs from the repository
+                                            return joinProjectRequestReactiveRepository.findByProjectIdAndStatus(projectId, joinStatus)
+                                                    .flatMap(joinRequest -> {
+
+                                                        // Retrieve the user associated with the join request
+                                                        Mono<User> userMono = reactiveRepositoryUtils.findUserById_OrElseThrow_ResourceNoFoundException(joinRequest.getUserId());
+
+                                                        // Map the join request and user to a JoinProjectDto object
+                                                        return userMono.map(user -> JoinProjectDto.builder()
+                                                                .projectName(project.getProjectName())
+                                                                .joinRequestId(joinRequest.getJoinRequestId())
+                                                                .joinRequestUsersEmail(user.getEmail())
+                                                                .joinStatus(joinRequest.getStatus())
+                                                                .build());
+                                                    });
+                                        } else {
+                                            // Throw an exception if the user is not the project leader or admin of the project
+                                            return Flux.error(new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this project 👮🏻"));
+                                        }
+                                    });
+                        }));
     }
 
     @Override

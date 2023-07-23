@@ -46,7 +46,9 @@ public class JoinRequestProjectUtilsImpl implements ProjectUtils {
      */
     @Override
     public Mono<Boolean> isMemberOfProject(Project project, User user) {
-        return null;
+        return projectMembersReactiveRepository.findByProjectIdAndUserId(project.getProjectId(), user.getUserId())
+                .hasElement()
+                .map(foundMembers -> foundMembers);
     }
 
     /**
@@ -68,17 +70,19 @@ public class JoinRequestProjectUtilsImpl implements ProjectUtils {
                                     .flatMap(joinRequestCoupon -> {
 
                                         // Check if the JoinRequestCoupon has been used
-                                        if (joinRequestCoupon.isUsed())
+                                        if (joinRequestCoupon.isUsed()) {
+                                            log.error("You have already used this coupon. Please request for another one.");
                                             return Mono.error(new DevVaultException("You have already used this coupon. Please request for another one."));
+                                        }
 
                                         return Mono.just(true);
-                                    }).switchIfEmpty(Mono.error(new DevVaultException(
-                                                            "This JoinRequestCoupon is either; " +
-                                                            "1. Not for this project: {" + project.getProjectName() + "}" +
-                                                            " | 2. Not for this user: {" + currentUser.getUsername() + "}"
-                                                    )
-                                            )
-                                    ));
+
+                                        // if the coupon was not found
+                                    }).switchIfEmpty(Mono.defer(() -> {
+                                        log.error("Your coupon is invalid");
+                                        return Mono.error(new DevVaultException("Your coupon is invalid!"));
+                                    }))
+                            );
                 });
     }
 
