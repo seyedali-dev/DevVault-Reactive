@@ -1,12 +1,13 @@
 package com.dev.vault.util.repository;
 
 import com.dev.vault.helper.exception.ResourceNotFoundException;
+import com.dev.vault.model.entity.project.JoinCoupon;
 import com.dev.vault.model.entity.project.Project;
-import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
 import com.dev.vault.model.entity.user.UserRole;
 import com.dev.vault.model.enums.Role;
+import com.dev.vault.repository.project.JoinCouponReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.task.TaskRepository;
 import com.dev.vault.repository.user.RolesReactiveRepository;
@@ -28,6 +29,7 @@ public class ReactiveRepositoryUtils {
     private final UserReactiveRepository userReactiveRepository;
     private final RolesReactiveRepository rolesReactiveRepository;
     private final ProjectReactiveRepository projectReactiveRepository;
+    private final JoinCouponReactiveRepository joinCouponReactiveRepository;
 
     public Mono<User> findUserByEmail_OrElseThrow_ResourceNotFoundException(String email) {
         return userReactiveRepository.findByEmail(email)
@@ -70,4 +72,12 @@ public class ReactiveRepositoryUtils {
 //        return taskRepository.findById(taskId)
 //                .orElseThrow(() -> new ResourceNotFoundException("Task", "TaskID", taskId.toString()));
 //    }
+
+    public Mono<JoinCoupon> findCouponByCoupon_OrElseThrow_ResourceNoFoundException(String joinCoupon) {
+        return joinCouponReactiveRepository.findByCoupon(joinCoupon)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("JoinRequestCoupon", "Coupon", joinCoupon)))
+                .doOnError(error -> log.error("Error occurred while finding joinCoupon by coupon: {}", error.getMessage()));
+
+    }
+
 }

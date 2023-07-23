@@ -20,7 +20,6 @@ public class ProjectMembers {
 
     /* relationships */
     private String userId;
-
     private String projectId;
     /* end of relationships */
 

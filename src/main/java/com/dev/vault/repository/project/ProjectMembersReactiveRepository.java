@@ -8,4 +8,6 @@ import reactor.core.publisher.Mono;
 public interface ProjectMembersReactiveRepository extends ReactiveMongoRepository<ProjectMembers, String> {
     Flux<ProjectMembers> findByProjectId(String projectId);
 
+    Mono<ProjectMembers> findByProjectIdAndUserId(String projectId, String userId);
+
 }

@@ -1,10 +1,12 @@
 package com.dev.vault.util.project;
 
 import com.dev.vault.helper.payload.response.project.SearchResponse;
+import com.dev.vault.model.entity.project.JoinProjectRequest;
 import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
 import com.dev.vault.model.enums.Role;
+import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.project.UserProjectRoleReactiveRepository;
 import com.dev.vault.repository.user.RolesReactiveRepository;
@@ -28,6 +30,7 @@ public class ProjectUtilsImpl implements ProjectUtils {
 
     public final Sinks.Many<SearchResponse> projectSink = Sinks.many().replay().all();
 
+    private final ProjectMembersReactiveRepository projectMembersReactiveRepository;
     private final UserProjectRoleReactiveRepository userProjectRoleReactiveRepository;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
     private final UserReactiveRepository userReactiveRepository;
@@ -84,12 +87,27 @@ public class ProjectUtilsImpl implements ProjectUtils {
      *
      * @param project the project to check for membership
      * @param user    the user to check for membership
-     * @return true if the user is a member of the project, false otherwise
+     * @return <code>true</code> if the user is a member of the project, false otherwise
      */
     @Override
     public Mono<Boolean> isMemberOfProject(Project project, User user) {
-//        Optional<ProjectMembers> members = projectMembersRepository.findByProject_ProjectNameAndUser_Email(project.getProjectName(), user.getEmail());
-//        return members.isPresent();
+        return projectMembersReactiveRepository.findByProjectIdAndUserId(project.getProjectId(), user.getUserId())
+                .hasElement()
+                .map(foundMembers -> foundMembers);
+    }
+
+    @Override
+    public Mono<Boolean> isCouponValid(Project project) {
+        return null;
+    }
+
+    @Override
+    public Mono<Void> performJoinRequestApprovedActions(JoinProjectRequest request) {
+        return null;
+    }
+
+    @Override
+    public Mono<Void> performJoinRequestRejectedActions(JoinProjectRequest request) {
         return null;
     }
 

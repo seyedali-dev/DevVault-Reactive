@@ -1,24 +1,19 @@
-/*
 package com.dev.vault.service.module.project;
 
 import com.dev.vault.helper.exception.DevVaultException;
-import com.dev.vault.helper.exception.NotLeaderOfProjectException;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.request.project.JoinProjectDto;
 import com.dev.vault.helper.payload.response.project.JoinResponse;
 import com.dev.vault.model.entity.project.JoinCoupon;
 import com.dev.vault.model.entity.project.JoinProjectRequest;
-import com.dev.vault.model.entity.project.Project;
-import com.dev.vault.model.entity.project.ProjectMembers;
-import com.dev.vault.model.entity.enums.project.JoinStatus;
-import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.enums.JoinStatus;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
-import com.dev.vault.repository.project.JoinProjectRequestRepository;
+import com.dev.vault.repository.project.JoinProjectRequestReactiveRepository;
 import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
-import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.service.interfaces.project.JoinRequestService;
+import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.util.project.JoinRequestProjectUtilsImpl;
 import com.dev.vault.util.project.ProjectUtils;
 import com.dev.vault.util.project.ProjectUtilsImpl;
@@ -28,49 +23,51 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static com.dev.vault.model.entity.enums.project.JoinStatus.PENDING;
+import static com.dev.vault.model.enums.JoinStatus.PENDING;
 
-*/
 /**
  * Service implementation of sending and managing Join Project Requests.
- *//*
-
-@Service
+ */
 @Slf4j
+@Service
 public class JoinRequestServiceImpl implements JoinRequestService {
-    private final JoinCouponReactiveRepository joinCouponRepository;
+    private final JoinCouponReactiveRepository joinCouponReactiveRepository;
     private final ProjectMembersReactiveRepository projectMembersRepository;
     private final ProjectReactiveRepository projectRepository;
-    private final JoinProjectRequestRepository joinProjectRequestRepository;
+    private final JoinProjectRequestReactiveRepository joinProjectRequestReactiveRepository;
     private final AuthenticationService authenticationService;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
     private final ProjectUtils projectUtils;
-    private final JoinRequestProjectUtilsImpl joinProjectUtils;
+    private final JoinRequestProjectUtilsImpl joinRequestProjectUtilsImpl;
 
-    */
-/**
+
+    /**
      * AllArgsConstructor with @Qualifier, since there are two beans of the same type (JoinRequestProjectUtilsImpl & ProjectUtilsImpl)
-     *//*
-
+     */
     @Autowired
-    public JoinRequestServiceImpl(JoinCouponReactiveRepository joinCouponRepository, ProjectMembersReactiveRepository projectMembersRepository, ProjectReactiveRepository projectRepository, JoinProjectRequestRepository joinProjectRequestRepository, AuthenticationService authenticationService, ReactiveRepositoryUtils reactiveRepositoryUtils, @Qualifier("projectUtilsImpl") ProjectUtilsImpl projectUtils, @Qualifier("joinRequestProjectUtilsImpl") JoinRequestProjectUtilsImpl joinProjectUtils) {
-        this.joinCouponRepository = joinCouponRepository;
+    public JoinRequestServiceImpl(
+            JoinCouponReactiveRepository joinCouponReactiveRepository, ProjectMembersReactiveRepository projectMembersRepository,
+            ProjectReactiveRepository projectRepository, JoinProjectRequestReactiveRepository joinProjectRequestReactiveRepository,
+            AuthenticationService authenticationService, ReactiveRepositoryUtils reactiveRepositoryUtils,
+            @Qualifier("projectUtilsImpl") ProjectUtilsImpl projectUtils,
+            @Qualifier("joinRequestProjectUtilsImpl") JoinRequestProjectUtilsImpl joinRequestProjectUtilsImpl
+    ) {
+        this.joinCouponReactiveRepository = joinCouponReactiveRepository;
         this.projectMembersRepository = projectMembersRepository;
         this.projectRepository = projectRepository;
-        this.joinProjectRequestRepository = joinProjectRequestRepository;
+        this.joinProjectRequestReactiveRepository = joinProjectRequestReactiveRepository;
         this.authenticationService = authenticationService;
         this.reactiveRepositoryUtils = reactiveRepositoryUtils;
         this.projectUtils = projectUtils;
-        this.joinProjectUtils = joinProjectUtils;
+        this.joinRequestProjectUtilsImpl = joinRequestProjectUtilsImpl;
     }
 
-    */
-/**
+
+    /**
      * Sends a join project request for the specified project on behalf of the current user. All users are allowed.
      * Only allowed if the user has 'JoinToken' that the project leader, or project admin generated.
      *
@@ -79,184 +76,180 @@ public class JoinRequestServiceImpl implements JoinRequestService {
      * @return JoinResponse indicating whether the join project request was sent successfully and its status
      * @throws ResourceAlreadyExistsException if the user is already a member of the project or has already sent a join project request for the project
      * @throws ResourceNotFoundException      if the project or user cannot be found
-     *//*
-
+     */
     @Override
     @Transactional
-    public JoinResponse sendJoinRequest(Long projectId, String joinCoupon) {
+    public Mono<JoinResponse> sendJoinRequest(String projectId, String joinCoupon) {
         // Get the email of the current user
-        String email = authenticationService.getCurrentUser().getEmail();
+        return authenticationService.getCurrentUserMono()
+                .flatMap(currentUser -> {
+                    String email = currentUser.getEmail();
+
+                    // Retrieve the project and user from the repositories
+                    return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId)
+                            .flatMap(project -> reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email)
+                                    .flatMap(user -> {
+
+                                        // Check if the user is already a member of the project or has already sent a join project request for the project
+                                        return joinRequestProjectUtilsImpl.isMemberOfProject(project, user)
+                                                .flatMap(isMember -> {
+                                                    if (isMember)
+                                                        return Mono.error(new ResourceAlreadyExistsException("JoinRequest", "Member", email));
+                                                    else {
+
+                                                        // Check if the JoinRequestCoupon is valid
+                                                        return joinRequestProjectUtilsImpl.isCouponValid(project)
+                                                                .flatMap(isCouponValid -> {
+                                                                    if (!isCouponValid)
+                                                                        return Mono.error(new DevVaultException("Invalid JoinRequestCoupon"));
+
+                                                                    // Mark the JoinRequestCoupon as used
+                                                                    return reactiveRepositoryUtils.findCouponByCoupon_OrElseThrow_ResourceNoFoundException(joinCoupon)
+                                                                            .flatMap(joinRequestCoupon -> {
+                                                                                joinRequestCoupon.setUsed(true);
+                                                                                Mono<JoinCoupon> joinCouponMono = joinCouponReactiveRepository.save(joinRequestCoupon);
+
+                                                                                // Create a new join project request and save it to the repository
+                                                                                return joinProjectRequestReactiveRepository.save(new JoinProjectRequest(project.getProjectId(), user.getUserId(), PENDING))
+                                                                                        .flatMap(joinProjectRequest -> {
+
+                                                                                            // Delete the JoinRequestCoupon if it has been used
+                                                                                            Mono<Void> deletedMono = null;
+                                                                                            if (joinRequestCoupon.isUsed())
+                                                                                                deletedMono = joinCouponReactiveRepository.delete(joinRequestCoupon);
+
+                                                                                            // Return a JoinResponse indicating that the join project request was sent successfully and its status
+                                                                                            return Mono.when(joinCouponMono, Mono.just(joinProjectRequest), deletedMono)
+                                                                                                    .then(Mono.fromCallable(() -> JoinResponse.builder()
+                                                                                                            .status("Join Project Request Sent successfully. Please wait until ProjectLeader approves your request :)")
+                                                                                                            .joinStatus(PENDING)
+                                                                                                            .build()));
+                                                                                        });
+                                                                            });
+                                                                });
+                                                    }
+                                                });
+                                    }));
+                });
+    }
+
+    //chat, modified my impl
+    /*@Override
+    @Transactional
+    public Mono<JoinResponse> sendJoinRequest(String projectId, String joinCoupon) {
+        return authenticationService.getCurrentUserMono()
+                .flatMap(user -> reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId)
+                        .flatMap(project -> {
+                            if (joinProjectUtils.isMemberOfProject(project, user)) {
+                                return Mono.error(new ResourceAlreadyExistsException("JoinRequest", "Member", user.getEmail()));
+                            } else {
+                                return isCouponValid(project)
+                                        .flatMap(isValid -> {
+                                            if (!isValid) {
+                                                return Mono.error(new DevVaultException("Invalid JoinRequestCoupon"));
+                                            } else {
+                                                return reactiveRepositoryUtils.findCouponByCoupon(joinCoupon)
+                                                        .switchIfEmpty(Mono.error(new ResourceNotFoundException("JoinRequestCoupon", "Coupon", joinCoupon)))
+                                                        .flatMap(joinRequestCoupon -> {
+                                                            joinRequestCoupon.setUsed(true);
+                                                            Mono<JoinCoupon> joinCouponMono = joinCouponReactiveRepository.save(joinRequestCoupon);
+                                                            JoinProjectRequest joinProjectRequest = new JoinProjectRequest(project.getProjectId(), user.getUserId(), PENDING);
+                                                            Mono<JoinProjectRequest> joinProjectRequestMono = joinProjectRequestReactiveRepository.save(joinProjectRequest);
+                                                            if (joinRequestCoupon.isUsed()) {
+                                                                joinCouponReactiveRepository.delete(joinRequestCoupon).subscribe();
+                                                            }
+                                                            return Mono.zip(joinCouponMono, joinProjectRequestMono)
+                                                                    .map(tuple -> JoinResponse.builder()
+                                                                            .status("Join Project Request Sent successfully. Please wait until ProjectLeader approves your request :)")
+                                                                            .joinStatus(joinProjectRequest.getStatus().toString())
+                                                                            .build());
+                                                        });
+                                            }
+                                        });
+                            }
+                        }));
+    }*/
+
+    //chat new impl
+    /*@Override
+    @Transactional
+    public Mono<JoinResponse> sendJoinRequest(String projectId, String joinCoupon) {
+        // Get the email of the current user
+        Mono<String> emailMono = authenticationService.getCurrentUserMono().map(User::getEmail);
 
         // Retrieve the project and user from the repositories
-        Project project = reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
-        User user = reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email);
+        Mono<Project> projectMono = reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
+        Mono<User> userMono = emailMono.flatMap(reactiveRepositoryUtils::findUserByEmail_OrElseThrow_ResourceNotFoundException);
+
 
         // Check if the user is already a member of the project or has already sent a join project request for the project
-        if (joinProjectUtils.isMemberOfProject(project, user))
-            throw new ResourceAlreadyExistsException("JoinRequest", "Member", email);
+        Mono<Boolean> isMemberMono = Mono.zip(projectMono, userMono)
+                .flatMap(tuple ->
+                        joinProjectUtils.isMemberOfProject(tuple.getT1(), tuple.getT2())
+                );
 
-        // Check if the JoinRequestCoupon is valid
-        if (!isCouponValid(project, joinCoupon))
-            throw new DevVaultException("Invalid JoinRequestCoupon");
+        Mono<Boolean> hasJoinRequestSentMono = Mono.zip(projectMono, userMono)
+                .flatMap(tuple ->
+                        joinProjectRequestReactiveRepository.existsByProjectIdAndUserId(tuple.getT1(), tuple.getT2())
+                );
 
-        // Mark the JoinRequestCoupon as used
-        JoinCoupon joinRequestCoupon = joinCouponRepository.findByCoupon(joinCoupon)
-                .orElseThrow(() -> new ResourceNotFoundException("JoinRequestCoupon", "Coupon", joinCoupon));
-        joinRequestCoupon.setUsed(true);
-        joinCouponRepository.save(joinRequestCoupon);
+        Mono<Boolean> isCouponValidMono = Mono.zip(projectMono, emailMono)
+                .flatMap(tuple ->
+                        isCouponValid(tuple.getT1()).onErrorResume(e -> Mono.just(false))
+                );
 
-        // Create a new join project request and save it to the repository
-        joinProjectRequestRepository.save(new JoinProjectRequest(project, user, PENDING));
+        // Combine the results of all the checks
+        return Mono.zip(isMemberMono, hasJoinRequestSentMono, isCouponValidMono)
+                .flatMap(tuple -> {
+                    if (tuple.getT1() || tuple.getT2())
+                        return Mono.error(new ResourceAlreadyExistsException("JoinRequest", "Member", emailMono.block()));
 
-        // Delete the JoinRequestCoupon if it has been used
-        if (joinRequestCoupon.isUsed())
-            joinCouponRepository.delete(joinRequestCoupon);
+                    if (!tuple.getT3())
+                        return Mono.just(new DevVaultException("Invalid JoinRequestCoupon"));
 
-        // Return a JoinResponse indicating that the join project request was sent successfully and its status
-        return JoinResponse.builder()
-                .status("Join Project Request Sent successfully. Please wait until ProjectLeader approves your request :)")
-                .joinStatus(PENDING)
-                .build();
-    }
+                    // Mark the JoinRequestCoupon as used
+                    Mono<JoinCoupon> joinRequestCouponMono = reactiveRepositoryUtils.findCouponByCoupon_OrElseThrow_ResourceNoFoundException(joinCoupon)
+                            .doOnNext(joinRequestCoupon -> {
+                                joinRequestCoupon.setUsed(true);
+                                joinCouponReactiveRepository.save(joinRequestCoupon).subscribe();
+                            });
 
-    */
-/**
-     * Checks if the JoinRequestCoupon is valid for the specified project.
-     *
-     * @param project    the project to check the JoinRequestCoupon for
-     * @param joinCoupon the JoinRequestCoupon to check
-     * @return true if the JoinRequestCoupon is valid, false otherwise
-     * @throws DevVaultException         if the JoinRequestCoupon has been used or has exceeded its maximum usage count
-     * @throws ResourceNotFoundException if the JoinRequestCoupon cannot be found
-     *//*
+                    // Create a new join project request and save it to the repository
+                    Mono<JoinProjectRequest> joinProjectRequestMono = Mono.zip(projectMono, userMono)
+                            .map(projectUserTuple ->
+                                    new JoinProjectRequest(
+                                            projectUserTuple.getT1().getProjectId(),
+                                            projectUserTuple.getT2().getUserId(),
+                                            PENDING
+                                    )
+                            ).flatMap(joinProjectRequestReactiveRepository::save);
 
-    @SuppressWarnings("SameReturnValue")
-    private boolean isCouponValid(Project project, String joinCoupon) {
-        // Retrieve the project from the repository
-        reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(project.getProjectId());
+                    // Delete the JoinRequestCoupon if it has been used
+                    Mono<Void> deleteJoinCouponMono = joinRequestCouponMono
+                            .filter(JoinCoupon::isUsed)
+                            .flatMap(joinCouponReactiveRepository::delete);
 
-        // Check if the JoinRequestCoupon exists and if it is for the specific project and is for the requesting user (current user is requesting)
-        User currentUser = authenticationService.getCurrentUser();
-        Optional<JoinCoupon> joinRequestCoupon = joinCouponRepository
-                .findByProjectAndRequestingUserAndCoupon(project, currentUser, joinCoupon);
-
-        if (joinRequestCoupon.isEmpty())
-            throw new DevVaultException("This JoinRequestCoupon is either; " +
-                                        "1. Not for this project: {" + project.getProjectName() + "}" +
-                                        " | 2. Not for this user: {" + currentUser.getUsername() + "}");
-
-        // Check if the JoinRequestCoupon has been used
-        if (joinRequestCoupon.get().isUsed())
-            throw new DevVaultException("You have already used this coupon. Please request for another one.");
-
-        return true;
-    }
-
-    */
-/**
-     * Retrieves a list of all join project requests for the specified project with the specified status.
-     * Only project leader and project admin are allowed.
-     *
-     * @param projectId  the ID of the project to retrieve join project requests for
-     * @param joinStatus the status of the join requests to retrieve
-     * @return a List of JoinProjectDto objects containing information about each join request
-     *//*
+                    // Return a JoinResponse indicating that the join project request was sent successfully and its status
+                    return Mono.zip(joinProjectRequestMono, deleteJoinCouponMono)
+                            .then(Mono.zip(joinRequestCouponMono, joinProjectRequestMono)
+                                    .map(joinCouponJoinProjectRequestTuple -> JoinResponse.builder()
+                                            .status("Join Project Request Sent successfully. Please wait until ProjectLeader approves your request :)")
+                                            .joinStatus(joinCouponJoinProjectRequestTuple.getT2().getStatus())
+                                            .build()
+                                    )
+                            );
+                });
+    }*/
 
     @Override
-    @Transactional
     public List<JoinProjectDto> getJoinRequestsByProjectIdAndStatus(Long projectId, JoinStatus joinStatus) {
-        Project project = reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
-
-        // Check if the current user is the project leader or project admin of the project associated with the join request
-        if (projectUtils.isLeaderOrAdminOfProject(project, authenticationService.getCurrentUser())) {
-            // Retrieve the join requests from the repository and map them to JoinProjectDto objects
-            return joinProjectRequestRepository.findByProject_ProjectIdAndStatus(projectId, joinStatus)
-                    .stream().map(joinRequest -> JoinProjectDto.builder()
-                            .projectName(joinRequest.getProject().getProjectName())
-                            .joinRequestId(joinRequest.getJoinRequestId())
-                            .joinRequestUsersEmail(joinRequest.getUser().getEmail())
-                            .joinStatus(joinRequest.getStatus())
-                            .build()
-                    ).collect(Collectors.toList());
-        } else {
-            // Throw an exception if the user is not the project leader or admin of the project
-            throw new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this project 👮🏻");
-        }
+        return null;
     }
-
-    */
-/**
-     * Updates the status of a join request with the given ID and join status (APPROVED, REJECTED).
-     *
-     * @param joinRequestId The ID of the join request to update.
-     * @param joinStatus    The new status of the join request.
-     * @return A JoinResponse object with the updated join status.
-     * @throws ResourceNotFoundException   If the join request with the given ID is not found.
-     * @throws NotLeaderOfProjectException If the user is not the leader or admin of the project.
-     *//*
 
     @Override
-    @Transactional
-    public JoinResponse updateJoinRequestStatus(Long joinRequestId, JoinStatus joinStatus) {
-        // Find the join request with the given ID
-        JoinProjectRequest request = joinProjectRequestRepository.findById(joinRequestId)
-                .orElseThrow(() -> new ResourceNotFoundException("JoinProjectRequest", "JoinProjectId", joinRequestId.toString()));
-
-        // Check if the user is the leader or admin of the project
-        if (!projectUtils.isLeaderOrAdminOfProject(request.getProject(), authenticationService.getCurrentUser()))
-            throw new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this project 👮🏻");
-
-        // Update the status of the join request
-        request.setStatus(joinStatus);
-        joinProjectRequestRepository.save(request);
-
-        // Perform actions based on the new join status
-        switch (joinStatus) {
-            case APPROVED -> {
-                performJoinRequestApprovedActions(request);
-                return JoinResponse.builder().joinStatus(joinStatus).build();
-            }
-            case REJECTED -> {
-                performJoinRequestRejectedActions(request);
-                return JoinResponse.builder().joinStatus(joinStatus).build();
-            }
-            default -> {
-                return null;
-            }
-        }
+    public JoinResponse updateJoinRequestStatus(Long projectId, JoinStatus joinStatus) {
+        return null;
     }
 
-    */
-/**
-     * Performs actions when a join request is approved.
-     *
-     * @param request The join request that was approved.
-     *//*
-
-    private void performJoinRequestApprovedActions(JoinProjectRequest request) {
-        // Add the user to the project members
-        ProjectMembers projectMembers = new ProjectMembers(request.getUser(), request.getProject());
-        projectMembersRepository.save(projectMembers);
-
-        // Increment the member count of the project
-        Project project = projectMembers.getProject();
-        project.incrementMemberCount();
-        projectRepository.save(project);
-
-        // Delete the join request
-        joinProjectRequestRepository.delete(request);
-    }
-
-    */
-/**
-     * Performs actions when a join request is rejected.
-     *
-     * @param request The join request that was rejected.
-     *//*
-
-    private void performJoinRequestRejectedActions(JoinProjectRequest request) {
-        // Delete the join request
-        joinProjectRequestRepository.delete(request);
-    }
 }
-*/
+

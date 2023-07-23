@@ -6,4 +6,6 @@ import reactor.core.publisher.Mono;
 
 public interface JoinCouponReactiveRepository extends ReactiveMongoRepository<JoinCoupon, Long> {
     Mono<JoinCoupon> findByRequestingUserIdAndProjectId(String requestingUserId, String projectId);
+
+    Mono<JoinCoupon> findByCoupon(String joinCoupon);
 }
