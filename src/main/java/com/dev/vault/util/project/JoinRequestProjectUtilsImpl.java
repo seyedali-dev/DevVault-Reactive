@@ -3,9 +3,15 @@ package com.dev.vault.util.project;
 import com.dev.vault.helper.exception.DevVaultException;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
+import com.dev.vault.helper.payload.request.project.ProjectDto;
+import com.dev.vault.helper.payload.request.user.UserDto;
 import com.dev.vault.model.entity.project.JoinProjectRequest;
 import com.dev.vault.model.entity.project.Project;
+import com.dev.vault.model.entity.project.ProjectMembers;
+import com.dev.vault.model.entity.project.UserProjectRole;
+import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.entity.user.UserRole;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
 import com.dev.vault.repository.project.JoinProjectRequestReactiveRepository;
 import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
@@ -15,6 +21,7 @@ import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -95,11 +102,19 @@ public class JoinRequestProjectUtilsImpl implements ProjectUtils {
     @Override
     public Mono<Void> performJoinRequestApprovedActions(JoinProjectRequest request) {
         // Add the user to the project members
+        ProjectMembers projectMembers = new ProjectMembers(request.getUserId(), request.getProjectId());
+        return projectMembersReactiveRepository.save(projectMembers)
+                .then(reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectMembers.getProjectId())
+                        .flatMap(project -> {
 
-        // Increment the member count of the project
+                            // Increment the member count of the project
+                            project.incrementMemberCount();
+                            return projectReactiveRepository.save(project)
 
-        // Delete the join request
-        return Mono.empty();
+                                    // Delete the join request
+                                    .then(joinProjectRequestReactiveRepository.delete(request));
+                        })
+                );
     }
 
 
@@ -114,6 +129,40 @@ public class JoinRequestProjectUtilsImpl implements ProjectUtils {
         return joinProjectRequestReactiveRepository.delete(request);
     }
 
+    @Override
+    public void emitNewlyCreatedProject(User user, Project project) {
+
+    }
+
+    @Override
+    public Mono<Boolean> checkIfProjectExists(ProjectDto projectDto) {
+        return null;
+    }
+
+    @Override
+    public Project createProjectObject(ProjectDto projectDto, User currentUser) {
+        return null;
+    }
+
+    @Override
+    public ProjectMembers createProjectMembersObject(User currentUser, Project project) {
+        return null;
+    }
+
+    @Override
+    public Mono<UserProjectRole> createUserProjectRoleObject(User currentUser, Roles projectLeaderRole, Project project) {
+        return null;
+    }
+
+    @Override
+    public Mono<UserRole> createUserRoleObject(User user, Roles leaderRole) {
+        return null;
+    }
+
+    @Override
+    public Flux<UserDto> getUserDtoFlux(Project project) {
+        return null;
+    }
 
     @Override
     public Mono<Boolean> isLeaderOrAdminOfProject(Project project, User user) {

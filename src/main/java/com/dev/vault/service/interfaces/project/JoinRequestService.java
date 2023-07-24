@@ -6,12 +6,10 @@ import com.dev.vault.model.enums.JoinStatus;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 public interface JoinRequestService {
     Mono<JoinResponse> sendJoinRequest(String projectId, String joinToken);
 
     Flux<JoinProjectDto> getJoinRequestsByProjectIdAndStatus(String projectId, JoinStatus joinStatus);
 
-    JoinResponse updateJoinRequestStatus(Long projectId, JoinStatus joinStatus);
+    Mono<JoinResponse> updateJoinRequestStatus(String projectId, JoinStatus joinStatus);
 }

@@ -3,31 +3,25 @@ package com.dev.vault.service.module.project;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.payload.request.project.ProjectDto;
 import com.dev.vault.helper.payload.request.project.ProjectMembersDto;
-import com.dev.vault.helper.payload.response.project.SearchResponse;
+import com.dev.vault.helper.payload.request.user.UserDto;
 import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.project.ProjectMembers;
 import com.dev.vault.model.entity.project.UserProjectRole;
-import com.dev.vault.model.entity.user.Roles;
-import com.dev.vault.model.entity.user.User;
 import com.dev.vault.model.entity.user.UserRole;
 import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
-import com.dev.vault.repository.project.UserProjectRoleReactiveRepository;
-import com.dev.vault.repository.user.UserRoleReactiveRepository;
 import com.dev.vault.service.interfaces.project.ProjectManagementService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
-import com.dev.vault.util.project.ProjectUtilsImpl;
+import com.dev.vault.util.project.ProjectManagementUtilsImpl;
 import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Sinks;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.List;
 
 import static com.dev.vault.model.enums.Role.PROJECT_LEADER;
 
@@ -38,16 +32,12 @@ import static com.dev.vault.model.enums.Role.PROJECT_LEADER;
 @RequiredArgsConstructor
 @Slf4j
 public class ProjectManagementServiceImpl implements ProjectManagementService {
-    private final UserRoleReactiveRepository userRoleReactiveRepository;
 
-    private final UserProjectRoleReactiveRepository userProjectRoleReactiveRepository;
     private final ProjectMembersReactiveRepository projectMembersReactiveRepository;
     private final ProjectReactiveRepository projectReactiveRepository;
-    private final ModelMapper modelMapper;
     private final AuthenticationService authenticationService;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
-    private final ProjectUtilsImpl projectUtils;
-    private final SearchProjectServiceImpl searchProjectServiceImpl;
+    private final ProjectManagementUtilsImpl projectManagementUtils;
 
 
     /**
@@ -63,28 +53,28 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     @Transactional
     public Mono<ProjectDto> createProject(ProjectDto projectDto) {
         // Check if a project with the same name already exists
-        return checkIfProjectExists(projectDto).flatMap(projectExists ->
+        return projectManagementUtils.checkIfProjectExists(projectDto).flatMap(projectExists ->
                 // Get the current user
                 authenticationService.getCurrentUserMono().flatMap(currentUser ->
                         // Get the PROJECT_LEADER role
                         reactiveRepositoryUtils.findRoleByRole_OrElseThrow_ResourceNotFoundException(PROJECT_LEADER).flatMap(projectLeaderRole -> {
                             // Create the `Project` object and set the leader to the current user
-                            Project project = createProjectObject(projectDto, currentUser);
+                            Project project = projectManagementUtils.createProjectObject(projectDto, currentUser);
 
                             // Create a new `ProjectMembers` object for the current user and save it to the database
-                            ProjectMembers projectMembers = createProjectMembersObject(currentUser, project);
+                            ProjectMembers projectMembers = projectManagementUtils.createProjectMembersObject(currentUser, project);
 
                             // Create a new `UserProjectRole` object for the current user and save it to the database
-                            Mono<UserProjectRole> userProjectRoleMono = createUserProjectRoleObject(currentUser, projectLeaderRole, project);
+                            Mono<UserProjectRole> userProjectRoleMono = projectManagementUtils.createUserProjectRoleObject(currentUser, projectLeaderRole, project);
 
                             // Create a new `UserRole` object for the current user and save it to the database
-                            Mono<UserRole> userRoleMono = createUserRoleObject(currentUser, projectLeaderRole);
+                            Mono<UserRole> userRoleMono = projectManagementUtils.createUserRoleObject(currentUser, projectLeaderRole);
 
                             Mono<Project> savedProjectMono = projectReactiveRepository.save(project);
                             Mono<ProjectMembers> savedProjectMembersMono = projectMembersReactiveRepository.save(projectMembers);
 
                             // Emit the newly created project to the projectSink
-                            emitNewlyCreatedProject(currentUser, project);
+                            projectManagementUtils.emitNewlyCreatedProject(currentUser, project);
 
                             // combine all asynchronous operations and Return a ProjectDto object with the project information
                             return Mono.zip(savedProjectMono, savedProjectMembersMono, userProjectRoleMono, userRoleMono)
@@ -99,97 +89,30 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
         );
     }
 
-    /**
-     * Emit the newly created project to the projectSink.
-     */
-    private void emitNewlyCreatedProject(User user, Project project) {
-        searchProjectServiceImpl.getUserDtoFlux(project).collectList()
-                .map(userDtos -> {
-                    SearchResponse searchResponse = SearchResponse.builder()
-                            .projectId(project.getProjectId())
-                            .projectName(project.getProjectName())
-                            .projectDescription(project.getDescription())
-                            .leaderEmail(user.getUsername())
-                            .members(new ProjectMembersDto(userDtos))
-                            .build();
-                    projectUtils.projectSink.emitNext(searchResponse, Sinks.EmitFailureHandler.FAIL_FAST);
-                    log.info("emitting newly created project, projectMembers: {{}}", searchResponse.getMembers().getProjectMembers());
-                    return Mono.empty();
-                }).subscribe();
-    }
-
 
     /**
-     * Check if a {@link Project} with the same name already exists
+     * Get all the members of a project.
+     *
+     * @param projectId id of the project that you want to see the members of.
+     * @return Member of project as Flux of {@link ProjectMembersDto} which contains a list of {@link UserDto}.
      */
-    private Mono<Boolean> checkIfProjectExists(ProjectDto projectDto) {
-        return projectReactiveRepository.existsByProjectNameIgnoreCase(projectDto.getProjectName())
-                .flatMap(exists -> {
-                    if (exists) {
-                        log.info("⚠️this project already exists! provide a unique name");
-                        return Mono.error(new ResourceAlreadyExistsException("Project", "Project Name", projectDto.getProjectName()));
-                    }
-                    return Mono.just(false);
-                });
-    }
+    @Override
+    public Flux<ProjectMembersDto> getAllMembersOfProject(String projectId) {
+        // find the project first
+        Mono<Project> projectMono = reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
+        return projectMono.flatMapMany(project -> {
 
+            // then build the `UserDto` list from the project (get the members of the found project)
+            Mono<List<UserDto>> userDtoMonoList = projectManagementUtils.getUserDtoFlux(project).collectList();
 
-    /**
-     * Create the {@link Project} object and set the leader to the current user
-     */
-    private Project createProjectObject(ProjectDto projectDto, User currentUser) {
-        Project project = modelMapper.map(projectDto, Project.class);
-        project.setProjectId(UUID.randomUUID().toString());
-        project.setCreatedAt(LocalDateTime.now());
-        project.setLeaderEmail(currentUser.getEmail());
-        project.incrementMemberCount();
-        return project;
-    }
-
-
-    /**
-     * Create a new {@link ProjectMembers} object for the current user and save it to the database
-     */
-    private ProjectMembers createProjectMembersObject(User currentUser, Project project) {
-        return ProjectMembers.builder()
-                .userId(currentUser.getUserId())
-                .projectId(project.getProjectId())
-                .build();
-    }
-
-
-    /**
-     * Create a new {@link UserProjectRole} object for the current user and save it to the database
-     */
-    private Mono<UserProjectRole> createUserProjectRoleObject(User currentUser, Roles projectLeaderRole, Project project) {
-        // Check if a `UserProjectRole` object already exists for the user and project
-        return userProjectRoleReactiveRepository.findByUserIdAndRoleIdAndProjectId(currentUser.getUserId(), projectLeaderRole.getRoleId(), project.getProjectId())
-
-                // Return the existing `UserProjectRole` object if it exists
-                .flatMap(Mono::just)
-
-                // Create a new `UserProjectRole` object if one does not exist
-                .switchIfEmpty(Mono.defer(() -> {
-                    UserProjectRole userProjectRole = new UserProjectRole(currentUser.getUserId(), projectLeaderRole.getRoleId(), project.getProjectId());
-                    return userProjectRoleReactiveRepository.save(userProjectRole);
-                }));
-    }
-
-
-    /**
-     * Create a new {@link UserRole} object for the current user and save it to the database
-     */
-    private Mono<UserRole> createUserRoleObject(User user, Roles leaderRole) {
-        // Check if a UserProjectRole object already exists for the user and project
-        return userRoleReactiveRepository.findByUser_UserIdAndRoles_RoleId(user.getUserId(), leaderRole.getRoleId())
-                // Create a new `UserRole` object if one does not exist
-                .switchIfEmpty(Mono.defer(() -> {
-                    UserRole userRole = UserRole.builder()
-                            .user(user)
-                            .roles(leaderRole)
-                            .build();
-                    return userRoleReactiveRepository.save(userRole);
-                }));
+            // create and return a `ProjectMembersDto` with the `UserDto` list
+            return Flux.zip(userDtoMonoList, projectMono)
+                    .map(tuple ->
+                            ProjectMembersDto.builder()
+                                    .projectMembers(tuple.getT1())
+                                    .build()
+                    );
+        });
     }
 
 }

@@ -5,10 +5,9 @@ import com.dev.vault.helper.payload.request.project.ProjectMembersDto;
 import com.dev.vault.helper.payload.request.user.UserDto;
 import com.dev.vault.helper.payload.response.project.SearchResponse;
 import com.dev.vault.model.entity.project.Project;
-import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
-import com.dev.vault.repository.user.UserReactiveRepository;
 import com.dev.vault.service.interfaces.project.SearchProjectService;
+import com.dev.vault.util.project.ProjectManagementUtilsImpl;
 import com.dev.vault.util.project.ProjectUtilsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +27,9 @@ import java.util.List;
 // TODO:: pagination
 public class SearchProjectServiceImpl implements SearchProjectService {
 
-    private final UserReactiveRepository userReactiveRepository;
     private final ProjectReactiveRepository projectReactiveRepository;
-    private final ProjectMembersReactiveRepository projectMembersRepository;
     private final ProjectUtilsImpl projectUtils;
+    private final ProjectManagementUtilsImpl projectManagementUtils;
 
 
     /**
@@ -54,7 +52,7 @@ public class SearchProjectServiceImpl implements SearchProjectService {
                     Mono<Project> projectMono = Mono.just(project);
 
                     // create a list of user dtos for finding the project members of the project
-                    Mono<List<UserDto>> userDtoMonoList = getUserDtoFlux(project).collectList();
+                    Mono<List<UserDto>> userDtoMonoList = projectManagementUtils.getUserDtoFlux(project).collectList();
 
                     // combine all the asynchronous calls and build a `SearchResponse` object for sending a response
                     return buildSearchResponseObject(projectMono, userDtoMonoList);
@@ -82,7 +80,7 @@ public class SearchProjectServiceImpl implements SearchProjectService {
                         return Mono.error(new ResourceNotFoundException("Project", "ProjectName", projectName));
 
                     // Map each project to a SearchResponse object and collect them into a list
-                    Mono<List<UserDto>> userDtoMonoList = getUserDtoFlux(project).collectList();
+                    Mono<List<UserDto>> userDtoMonoList = projectManagementUtils.getUserDtoFlux(project).collectList();
                     Mono<Project> projectMono = Mono.just(project);
 
                     return buildSearchResponseObject(projectMono, userDtoMonoList);
@@ -100,31 +98,6 @@ public class SearchProjectServiceImpl implements SearchProjectService {
                         .members(new ProjectMembersDto(tuple.getT2()))
                         .build()
                 );
-    }
-
-
-    /**
-     * Returns a list of UserDto objects for a given project.
-     *
-     * @param project The project to get the list of members for.
-     * @return A list of UserDto objects representing the members of the project.
-     */
-    public Flux<UserDto> getUserDtoFlux(Project project) {
-        // Get all project members associated with the given project
-        return projectMembersRepository.findByProjectId(project.getProjectId())
-                .flatMap(members -> {
-                    // Create a list of UserDto objects for the project members
-                    return userReactiveRepository.findById(members.getUserId())
-                            .map(user -> UserDto.builder()
-                                    .username(user.getUsername())
-                                    .major(user.getMajor())
-                                    .education(user.getEducation())
-                                    .role(user.getUserRoles().stream()
-                                            .map(userRole -> userRole.getRoles().getRole().name())
-                                            .toList()
-                                    ).build()
-                            );
-                });
     }
 
 }

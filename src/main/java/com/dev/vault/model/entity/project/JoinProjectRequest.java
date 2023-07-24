@@ -3,7 +3,6 @@ package com.dev.vault.model.entity.project;
 import com.dev.vault.model.enums.JoinStatus;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**

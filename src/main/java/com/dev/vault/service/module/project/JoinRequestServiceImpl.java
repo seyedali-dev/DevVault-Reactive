@@ -36,14 +36,16 @@ import static com.dev.vault.model.enums.JoinStatus.PENDING;
 @Slf4j
 @Service
 public class JoinRequestServiceImpl implements JoinRequestService {
+
     private final JoinCouponReactiveRepository joinCouponReactiveRepository;
-    private final ProjectMembersReactiveRepository projectMembersRepository;
+    private final ProjectMembersReactiveRepository projectMembersReactiveRepository;
     private final ProjectReactiveRepository projectRepository;
     private final JoinProjectRequestReactiveRepository joinProjectRequestReactiveRepository;
     private final AuthenticationService authenticationService;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
     private final ProjectUtils projectUtils;
     private final JoinRequestProjectUtilsImpl joinRequestProjectUtilsImpl;
+    private final ProjectReactiveRepository projectReactiveRepository;
 
 
     /**
@@ -51,20 +53,21 @@ public class JoinRequestServiceImpl implements JoinRequestService {
      */
     @Autowired
     public JoinRequestServiceImpl(
-            JoinCouponReactiveRepository joinCouponReactiveRepository, ProjectMembersReactiveRepository projectMembersRepository,
+            JoinCouponReactiveRepository joinCouponReactiveRepository, ProjectMembersReactiveRepository projectMembersReactiveRepository,
             ProjectReactiveRepository projectRepository, JoinProjectRequestReactiveRepository joinProjectRequestReactiveRepository,
             AuthenticationService authenticationService, ReactiveRepositoryUtils reactiveRepositoryUtils,
             @Qualifier("projectUtilsImpl") ProjectUtilsImpl projectUtils,
-            @Qualifier("joinRequestProjectUtilsImpl") JoinRequestProjectUtilsImpl joinRequestProjectUtilsImpl
-    ) {
+            @Qualifier("joinRequestProjectUtilsImpl") JoinRequestProjectUtilsImpl joinRequestProjectUtilsImpl,
+            ProjectReactiveRepository projectReactiveRepository) {
         this.joinCouponReactiveRepository = joinCouponReactiveRepository;
-        this.projectMembersRepository = projectMembersRepository;
+        this.projectMembersReactiveRepository = projectMembersReactiveRepository;
         this.projectRepository = projectRepository;
         this.joinProjectRequestReactiveRepository = joinProjectRequestReactiveRepository;
         this.authenticationService = authenticationService;
         this.reactiveRepositoryUtils = reactiveRepositoryUtils;
         this.projectUtils = projectUtils;
         this.joinRequestProjectUtilsImpl = joinRequestProjectUtilsImpl;
+        this.projectReactiveRepository = projectReactiveRepository;
     }
 
 
@@ -179,9 +182,55 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                         }));
     }
 
+
+    /**
+     * Updates the status of a join request with the given ID and join status (APPROVED, REJECTED).
+     *
+     * @param joinRequestId The ID of the join request to update.
+     * @param joinStatus    The new status of the join request.
+     * @return A JoinResponse object with the updated join status.
+     * @throws ResourceNotFoundException   If the join request with the given ID is not found.
+     * @throws NotLeaderOfProjectException If the user is not the leader or admin of the project.
+     */
     @Override
-    public JoinResponse updateJoinRequestStatus(Long projectId, JoinStatus joinStatus) {
-        return null;
+    public Mono<JoinResponse> updateJoinRequestStatus(String joinRequestId, JoinStatus joinStatus) {
+        // Find the join request with the given ID
+        return reactiveRepositoryUtils.findJoinProjectRequestById_OrElseThrow_ResourceNotFoundException(joinRequestId)
+                .flatMap(request ->
+                        authenticationService.getCurrentUserMono().flatMap(currentUser ->
+                                reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(request.getProjectId()).flatMap(project -> {
+
+                                    // Check if the user is the leader or admin of the project
+                                    return projectUtils.isLeaderOrAdminOfProject(project, currentUser)
+                                            .flatMap(isLeaderOrAdmin -> {
+                                                if (!isLeaderOrAdmin) {
+                                                    log.error("👮🏻 you are not the leader or admin of this project 👮🏻");
+                                                    return Mono.error(new NotLeaderOfProjectException("👮🏻 you are not the leader or admin of this project 👮🏻"));
+                                                }
+
+                                                // Update the status of the join request
+                                                request.setStatus(joinStatus);
+                                                joinProjectRequestReactiveRepository.save(request)
+                                                        .doOnNext(req -> log.info("joinProjectRequest saved successfully: {{}}", req.getStatus()));
+
+                                                // Perform actions based on the new join status
+                                                switch (joinStatus) {
+                                                    case APPROVED -> {
+                                                        return joinRequestProjectUtilsImpl.performJoinRequestApprovedActions(request)
+                                                                .then(Mono.just(JoinResponse.builder().joinStatus(joinStatus).build()));
+                                                    }
+                                                    case REJECTED -> {
+                                                        return joinRequestProjectUtilsImpl.performJoinRequestRejectedActions(request)
+                                                                .then(Mono.just(JoinResponse.builder().joinStatus(joinStatus).build()));
+                                                    }
+                                                    default -> {
+                                                        return Mono.empty();
+                                                    }
+                                                }
+                                            });
+                                })
+                        )
+                );
     }
 
 }

@@ -2,12 +2,14 @@ package com.dev.vault.util.repository;
 
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.model.entity.project.JoinCoupon;
+import com.dev.vault.model.entity.project.JoinProjectRequest;
 import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
 import com.dev.vault.model.entity.user.UserRole;
 import com.dev.vault.model.enums.Role;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
+import com.dev.vault.repository.project.JoinProjectRequestReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.task.TaskRepository;
 import com.dev.vault.repository.user.RolesReactiveRepository;
@@ -24,6 +26,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class ReactiveRepositoryUtils {
 
+    private final JoinProjectRequestReactiveRepository joinProjectRequestReactiveRepository;
     private final UserRoleReactiveRepository userRoleReactiveRepository;
     private final TaskRepository taskRepository;
     private final UserReactiveRepository userReactiveRepository;
@@ -80,4 +83,9 @@ public class ReactiveRepositoryUtils {
 
     }
 
+    public Mono<JoinProjectRequest> findJoinProjectRequestById_OrElseThrow_ResourceNotFoundException(String joinRequestId) {
+        return joinProjectRequestReactiveRepository.findById(joinRequestId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("JoinProjectRequest", "joinRequestId", joinRequestId)))
+                .doOnError(error -> log.error("Error occurred while finding joinProjectRequest by joinRequestId: {}", error.getMessage()));
+    }
 }

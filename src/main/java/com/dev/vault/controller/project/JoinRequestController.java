@@ -5,7 +5,6 @@ import com.dev.vault.helper.payload.response.project.JoinResponse;
 import com.dev.vault.service.interfaces.project.JoinRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -61,10 +60,11 @@ public class JoinRequestController {
      * @param joinRequestId the ID of the join project request to approve
      * @return ResponseEntity containing the JoinRequest object after it has been updated
      */
-    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'PROJECT_ADMIN')")
+//    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'PROJECT_ADMIN')")
     @PostMapping("/{joinRequestId}/approve")
-    public ResponseEntity<?> approveJoinRequest(@PathVariable Long joinRequestId) {
-        return ResponseEntity.ok(joinRequestService.updateJoinRequestStatus(joinRequestId, APPROVED));
+    public Mono<ResponseEntity<JoinResponse>> approveJoinRequest(@PathVariable String joinRequestId) {
+        return joinRequestService.updateJoinRequestStatus(joinRequestId, APPROVED)
+                .map(ResponseEntity::ok);
     }
 
 
@@ -74,9 +74,11 @@ public class JoinRequestController {
      * @param joinRequestId the ID of the join project request to reject
      * @return ResponseEntity containing the JoinRequest object after it has been updated
      */
-    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'PROJECT_ADMIN')")
+//    @PreAuthorize("hasAnyRole('PROJECT_LEADER', 'PROJECT_ADMIN')")
     @PostMapping("/{joinRequestId}/reject")
-    public ResponseEntity<?> rejectJoinRequest(@PathVariable Long joinRequestId) {
-        return ResponseEntity.ok(joinRequestService.updateJoinRequestStatus(joinRequestId, REJECTED));
+    public Mono<ResponseEntity<JoinResponse>> rejectJoinRequest(@PathVariable String joinRequestId) {
+        return joinRequestService.updateJoinRequestStatus(joinRequestId, REJECTED)
+                .map(ResponseEntity::ok);
     }
+
 }
