@@ -1,4 +1,6 @@
-# 🚀 DevVault
+# 🚀 DevVault - Reactive
+
+This is the reactive version of the project DevVault. It uses Reactive MongoDB and Spring webflux. Other features are same, except, some features will be added in the future.
 
 DevVault is a project management application built with Spring Boot. It allows users to create projects, add members to projects, create tasks within projects, and assign tasks to project members. The application also supports user authentication and authorization using JWT tokens.
 
@@ -18,11 +20,13 @@ DevVault is a project management application built with Spring Boot. It allows u
 
 ## 🛠️ Technologies Used
 
-- Java 11
+- Java 17
 - Spring Boot
 - Spring Security
+- Spring WebFlux
+- Spring Data Reactive MongoDB
+- Spring Mail Service
 - JWT
-- Hibernate
 - Maven
 
 ## 🎉 Features
