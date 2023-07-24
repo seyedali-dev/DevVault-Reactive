@@ -1,4 +1,5 @@
 [
+
   {
     "roleId": "1",
     "role": "PROJECT_LEADER"
@@ -11,4 +12,5 @@
     "roleId": "3",
     "role": "TEAM_MEMBER"
   }
+
 ]
