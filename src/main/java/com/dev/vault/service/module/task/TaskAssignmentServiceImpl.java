@@ -9,7 +9,7 @@ import com.dev.vault.helper.payload.response.task.TaskResponse;
 import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.user.User;
-import com.dev.vault.repository.task.TaskRepository;
+import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.service.interfaces.task.TaskAssignmentService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.util.project.ProjectUtils;
@@ -35,7 +35,7 @@ import java.util.Set;
 @Slf4j
 public class TaskAssignmentServiceImpl implements TaskAssignmentService {
 
-    private final TaskRepository taskRepository;
+    private final TaskReactiveRepository taskRepository;
     private final AuthenticationService authenticationService;
     private final ProjectUtils projectUtils;
     private final TaskUtils taskUtils;

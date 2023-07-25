@@ -1,6 +1,6 @@
 package com.dev.vault.scheduler;
 
-import com.dev.vault.repository.task.TaskRepository;
+import com.dev.vault.repository.task.TaskReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 public class ProjectTaskScheduler {
-    private final TaskRepository taskRepository;
+    private final TaskReactiveRepository taskReactiveRepository;
 
     /**
      * This method marks overdue tasks as "overdue" and saves them to the database.<br>
@@ -44,7 +44,7 @@ public class ProjectTaskScheduler {
      */
     /*@Scheduled(fixedRateString = "PT10M")
     public void markTaskOverDue() {
-        List<Task> tasks = taskRepository.findAll();
+        List<Task> tasks = taskReactiveRepository.findAll();
         for (Task task : tasks) {
             // TODO: SEND NOTIFICATION OF OVERDUE TASK
             // Check if the task is already marked as overdue
@@ -64,7 +64,7 @@ public class ProjectTaskScheduler {
                 task.setHasOverdue(true);
                 task.setCompletionDate(LocalDateTime.now());
 
-                taskRepository.save(task);
+                taskReactiveRepository.save(task);
             }
         }
     }*/

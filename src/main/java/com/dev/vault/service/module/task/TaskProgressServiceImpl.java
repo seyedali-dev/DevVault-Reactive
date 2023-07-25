@@ -9,7 +9,7 @@ import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.enums.task.TaskStatus;
 import com.dev.vault.model.entity.user.User;
-import com.dev.vault.repository.task.TaskRepository;
+import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.service.interfaces.task.TaskProgressService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.util.repository.ReactiveRepositoryUtils;
@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 public class TaskProgressServiceImpl implements TaskProgressService {
-    private final TaskRepository taskRepository;
+    private final TaskReactiveRepository taskRepository;
     private final TaskUtils taskUtils;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
     private final AuthenticationService authenticationService;

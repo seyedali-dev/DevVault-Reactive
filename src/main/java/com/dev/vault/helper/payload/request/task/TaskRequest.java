@@ -14,10 +14,12 @@ import java.time.LocalDateTime;
 @Builder
 @ToString
 public class TaskRequest {
+
     private String taskName;
-    @FutureOrPresent
     private String description;
+    @FutureOrPresent
     private LocalDateTime dueDate;
     private TaskStatus taskStatus;
     private TaskPriority taskPriority;
+
 }

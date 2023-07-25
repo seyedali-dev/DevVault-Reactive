@@ -11,7 +11,7 @@ import com.dev.vault.model.enums.Role;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
 import com.dev.vault.repository.project.JoinProjectRequestReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
-import com.dev.vault.repository.task.TaskRepository;
+import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.repository.user.RolesReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
 import com.dev.vault.repository.user.UserRoleReactiveRepository;
@@ -28,7 +28,7 @@ public class ReactiveRepositoryUtils {
 
     private final JoinProjectRequestReactiveRepository joinProjectRequestReactiveRepository;
     private final UserRoleReactiveRepository userRoleReactiveRepository;
-    private final TaskRepository taskRepository;
+    private final TaskReactiveRepository taskReactiveRepository;
     private final UserReactiveRepository userReactiveRepository;
     private final RolesReactiveRepository rolesReactiveRepository;
     private final ProjectReactiveRepository projectReactiveRepository;
@@ -72,7 +72,7 @@ public class ReactiveRepositoryUtils {
     }
 
 //    public Task findTaskById_OrElseThrow_ResourceNotFoundException(Long taskId) {
-//        return taskRepository.findById(taskId)
+//        return taskReactiveRepository.findById(taskId)
 //                .orElseThrow(() -> new ResourceNotFoundException("Task", "TaskID", taskId.toString()));
 //    }
 

@@ -1,12 +1,9 @@
 package com.dev.vault.model.entity.task;
 
-import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.enums.TaskPriority;
 import com.dev.vault.model.enums.TaskStatus;
-import com.dev.vault.model.entity.user.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -34,13 +31,9 @@ public class Task {
     private boolean hasOverdue;
 
     /* relationships */
-    @Transient
-    private Set<User> assignedUsers = new HashSet<>();
-
-    @Transient
-    private User createdBy;
-
-    @Transient
-    private Project project;
+    private Set<String> assignedUserIds = new HashSet<>();
+    private String createdByUserId;
+    private String projectId;
     /* end of relationships */
+
 }
