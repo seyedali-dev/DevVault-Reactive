@@ -2,11 +2,14 @@ package com.dev.vault.controller.task;
 
 import com.dev.vault.helper.payload.request.task.TaskRequest;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
+import com.dev.vault.model.enums.TaskPriority;
+import com.dev.vault.model.enums.TaskStatus;
 import com.dev.vault.service.interfaces.task.TaskManagementService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -35,6 +38,28 @@ public class TaskManagementController {
     public Mono<ResponseEntity<TaskResponse>> newTask(@Valid @RequestParam String projectId, @RequestBody TaskRequest taskRequest) {
         return taskService.createNewTask(projectId, taskRequest)
                 .map(createdTask -> new ResponseEntity<>(createdTask, CREATED));
+    }
+
+
+    /**
+     * Searches for tasks based on different criteria.
+     *
+     * @param status           the status of the tasks to search for
+     * @param priority         the priority of the tasks to search for
+     * @param projectId        the ID of the project to search for tasks in
+     * @param assignedTo_UserId the ID of the user the tasks are assigned to
+     * @return a Mono of ResponseEntity containing a Flux of TaskResponse objects and an HTTP status code
+     */
+    @GetMapping("/searchTasks")
+    public Mono<ResponseEntity<Flux<TaskResponse>>> searchTaskBasedOnDifferentCriteria(
+            @RequestParam(value = "status", required = false) TaskStatus status,
+            @RequestParam(value = "priority", required = false) TaskPriority priority,
+            @RequestParam(value = "projectId", required = false) String projectId,
+            @RequestParam(value = "assignedTo_UserId", required = false) String assignedTo_UserId
+    ) {
+        return Mono.just(
+                ResponseEntity.ok(taskService.searchTaskBasedOnDifferentCriteria(status, priority, projectId, assignedTo_UserId))
+        );
     }
 
 //
@@ -88,27 +113,6 @@ public class TaskManagementController {
 //    }
 //
 //
-//    /**
-//     * Searches for tasks based on different criteria.
-//     *
-//     * @param status     the status of the tasks to search for
-//     * @param priority   the priority of the tasks to search for
-//     * @param projectId  the ID of the project to search for tasks in
-//     * @param assignedTo the ID of the user the tasks are assigned to
-//     * @return a ResponseEntity containing a list of TaskResponse objects and an HTTP status code
-//     */
-//    @SuppressWarnings("CommentedOutCode")
-//    @GetMapping("/searchTasks") //TODO
-//    public ResponseEntity<List<TaskResponse>> searchTasks(
-//            @RequestParam(value = "status", required = false) TaskStatus status,
-//            @RequestParam(value = "priority", required = false) TaskPriority priority,
-//            @RequestParam(value = "projectId", required = false) Long projectId,
-//            @RequestParam(value = "assignedTo", required = false) Long assignedTo
-//    ) {
-////        List<TaskResponse> taskResponses = taskService.searchTasks(status, priority, projectId, assignedTo);
-////        return ResponseEntity.ok(taskResponses);
-//        return null;
-//    }
 //
 //
 //    /**

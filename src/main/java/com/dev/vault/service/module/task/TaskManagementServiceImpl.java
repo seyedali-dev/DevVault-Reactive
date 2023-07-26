@@ -6,6 +6,9 @@ import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.request.task.TaskRequest;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
+import com.dev.vault.model.entity.task.Task;
+import com.dev.vault.model.enums.TaskPriority;
+import com.dev.vault.model.enums.TaskStatus;
 import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.service.interfaces.task.TaskManagementService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
@@ -16,7 +19,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Set;
 
 
 /**
@@ -84,6 +90,35 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                             });
                 })
         );
+    }
+
+    /**
+     * Searches for tasks based on the given criteria and returns a Flux of {@link TaskResponse} objects.
+     *
+     * @param status            the status of the tasks to search for (optional)
+     * @param priority          the priority of the tasks to search for (optional)
+     * @param projectId         the ID of the project that the tasks belong to (optional)
+     * @param assignedTo_UserId the ID of the user that the tasks are assigned to (optional)
+     * @return a Flux of {@link TaskResponse} objects
+     */
+    public Flux<TaskResponse> searchTaskBasedOnDifferentCriteria(TaskStatus status, TaskPriority priority, String projectId, String assignedTo_UserId) {
+        Flux<Task> taskFlux = Flux.empty();
+
+        if (status != null)
+            taskFlux = taskFlux.mergeWith(taskReactiveRepository.findByTaskStatus(status));
+
+        if (priority != null)
+            taskFlux = taskFlux.mergeWith(taskReactiveRepository.findByTaskPriority(priority));
+
+        if (projectId != null)
+            taskFlux = taskFlux.mergeWith(taskReactiveRepository.findByProjectId(projectId));
+
+        if (assignedTo_UserId != null)
+            taskFlux = taskFlux.mergeWith(taskReactiveRepository.findByAssignedUserIds(Set.of(assignedTo_UserId)));
+
+        return taskFlux
+//                .distinct() // if we don't the duplicate values to be sent as response
+                .flatMap(taskUtils::buildTaskResponse);
     }
 
 }

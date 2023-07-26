@@ -9,16 +9,19 @@ import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.user.User;
 import com.dev.vault.repository.task.TaskReactiveRepository;
+import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 import static com.dev.vault.model.enums.TaskStatus.IN_PROGRESS;
+import static java.util.stream.Collectors.toSet;
 
 
 /**
@@ -32,6 +35,7 @@ public class TaskUtils {
 
     private final TaskReactiveRepository taskReactiveRepository;
     private final ModelMapper mapper;
+    private final ReactiveRepositoryUtils reactiveRepositoryUtils;
 
 
     /**
@@ -99,7 +103,7 @@ public class TaskUtils {
         taskResponse.setTaskStatus(task.getTaskStatus());
         taskResponse.setDueDate(task.getDueDate());
         taskResponse.setProjectName(project.getProjectName());
-        taskResponse.setAssignedUsers(map);
+//        taskResponse.setAssignedUsers(map);
         return taskResponse;
     }
 
@@ -163,13 +167,43 @@ public class TaskUtils {
 
 
     /**
-     * Retrieves a set of users associated with a task and a project, and updates the statusResponseMap with the status of the assignment for each user.
+     * Builds a {@link Task} object.
      *
-     * @param task              The task to assign.
-     * @param project           The project to which the task belongs.
-     * @param statusResponseMap The map to which the status of the assignment for each user will be added.
-     * @return A set of users associated with the task and the project.
+     * @param task {@link Task}.
+     * @return Mono of created {@link Task}.
      */
+    public Mono<TaskResponse> buildTaskResponse(Task task) {
+        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(task.getProjectId())
+                .flatMap(project ->
+                        Flux.fromIterable(task.getAssignedUserIds())
+                                .flatMap(reactiveRepositoryUtils::findUserById_OrElseThrow_ResourceNoFoundException).collectList()
+                                .flatMap(user ->
+                                        Mono.just(TaskResponse.builder()
+                                                .taskName(task.getTaskName())
+                                                .projectName(project.getProjectName())
+                                                .taskStatus(task.getTaskStatus())
+                                                .dueDate(task.getDueDate())
+                                                .taskPriority(task.getTaskPriority())
+                                                .assignedUsers(
+                                                        user.stream()
+                                                                .map(User::getUsername)
+                                                                .collect(toSet())
+                                                )
+                                                .build()
+                                        )
+                                )
+                );
+    }
+
+
+/**
+ * Retrieves a set of users associated with a task and a project, and updates the statusResponseMap with the status of the assignment for each user.
+ *
+ * @param task              The task to assign.
+ * @param project           The project to which the task belongs.
+ * @param statusResponseMap The map to which the status of the assignment for each user will be added.
+ * @return A set of users associated with the task and the project.
+ */
     /*public Set<User> getUsers(Task task, Project project, Map<String, String> statusResponseMap) {
         return projectMembersRepository.findByProject(project)
                 .stream().map(projectMembers -> {
