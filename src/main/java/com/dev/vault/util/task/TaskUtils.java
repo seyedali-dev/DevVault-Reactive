@@ -18,7 +18,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 import static com.dev.vault.model.enums.TaskStatus.IN_PROGRESS;
 import static java.util.stream.Collectors.toSet;
@@ -43,7 +42,7 @@ public class TaskUtils {
      *
      * @param taskName  the request object containing the details of the task to create
      * @param projectId the projectId to check for existing tasks
-     * @return true if a task with the same name already exists in the projectId, false otherwise
+     * @return Mono of true if a task with the same name already exists in the projectId, false otherwise
      */
     public Mono<Boolean> doesTaskAlreadyExists(String taskName, String projectId) {
         return taskReactiveRepository.existsByTaskNameAndProjectId(taskName, projectId);
@@ -87,25 +86,6 @@ public class TaskUtils {
 //
 //        }
 //    }
-
-
-    /**
-     * Builds a TaskResponse object with information about the assigned task and its assigned users.
-     *
-     * @param task    the assigned task
-     * @param project the project the task belongs to
-     * @param map     the map of responses for each assigned user
-     * @return a TaskResponse object with information about the assigned task and its assigned users
-     */
-    public TaskResponse buildTaskResponse(Task task, Project project, Map<String, String> map) {
-        TaskResponse taskResponse = new TaskResponse();
-        taskResponse.setTaskName(task.getTaskName());
-        taskResponse.setTaskStatus(task.getTaskStatus());
-        taskResponse.setDueDate(task.getDueDate());
-        taskResponse.setProjectName(project.getProjectName());
-//        taskResponse.setAssignedUsers(map);
-        return taskResponse;
-    }
 
 
     /**
