@@ -1,4 +1,3 @@
-/*
 package com.dev.vault.controller.task;
 
 import com.dev.vault.helper.payload.response.task.TaskResponse;
@@ -13,31 +12,33 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/task")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('PROJECT_LEADER','PROJECT_ADMIN')")
+// @PreAuthorize("hasAnyRole('PROJECT_LEADER','PROJECT_ADMIN')")
 public class TaskAssignmentController {
 
     private final TaskAssignmentService taskService;
 
-    */
-/**
+
+   /**
      * Assigns a task to a list of users.
      *
      * @param taskId     the ID of the task to assign
      * @param projectId  the ID of the project the task belongs to
      * @param userIdList the list of user IDs to assign the task to
      * @return a ResponseEntity with an OK HTTP status code and a map of responses for each assigned user
-     *//*
+     */
 
     @PostMapping("/assignTask")
-    public ResponseEntity<TaskResponse> assignTaskToUsers(
+    public Mono<ResponseEntity<TaskResponse>> assignTaskToUsers(
             @RequestParam("taskId") Long taskId,
             @RequestParam("projectId") Long projectId,
             @RequestBody List<Long> userIdList
     ) {
-        return ResponseEntity.ok(taskService.assignTaskToUsers(taskId, projectId, userIdList));
+        return taskService.assignTaskToUsers(taskId, projectId, userIdList))
+            .map(ResponseEntity::ok);
     }
 
-    */
+} 
+    
 /**
      * Assigns a task to all users in a project.
      *
