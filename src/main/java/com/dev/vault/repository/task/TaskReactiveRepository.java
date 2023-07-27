@@ -1,5 +1,6 @@
 package com.dev.vault.repository.task;
 
+import com.dev.vault.model.entity.mappings.TaskUser;
 import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.enums.TaskPriority;
 import com.dev.vault.model.enums.TaskStatus;
@@ -11,9 +12,9 @@ import java.util.List;
 import java.util.Set;
 
 public interface TaskReactiveRepository extends ReactiveMongoRepository<Task, String> {
-    Flux<Task> findByAssignedUserIdsAndTaskId(List<String> userIdList, String taskId);
+//    Flux<Task> findByAssignedUserIdsAndTaskId(List<String> userIdList, String taskId);
 
-    Flux<Task> findByAssignedUserIds(Set<String> assignedUserIds);
+//    Flux<Task> findByAssignedUserIds(Set<TaskUser> assignedUserIds);
 
     Flux<Task> findByProjectId(String projectId);
 

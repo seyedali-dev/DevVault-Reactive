@@ -51,10 +51,10 @@ public class JoinCouponServiceImpl implements JoinCouponService {
     @Transactional
     public Mono<String> generateOneTimeJoinCoupon(String projectId, String requestingUserId) {
         // Get the project with the given ID from the database
-        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId)
+        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId)
                 .flatMap(project -> {
                     // Get the requesting user (the user who is requesting to join the project)
-                    return reactiveRepositoryUtils.findUserById_OrElseThrow_ResourceNoFoundException(requestingUserId)
+                    return reactiveRepositoryUtils.findUserById_OrElseThrow_ResourceNotFoundException(requestingUserId)
                             .flatMap(requestingUser -> {
                                 // Check if the current user is the leader or admin of the specific project
                                 return authenticationService.getCurrentUserMono()

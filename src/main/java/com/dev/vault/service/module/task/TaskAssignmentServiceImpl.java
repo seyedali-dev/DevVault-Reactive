@@ -1,9 +1,7 @@
 package com.dev.vault.service.module.task;
 
-import com.dev.vault.helper.exception.DevVaultException;
 import com.dev.vault.helper.exception.NotLeaderOfProjectException;
 import com.dev.vault.helper.exception.NotMemberOfProjectException;
-import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
 import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.service.interfaces.task.TaskAssignmentService;

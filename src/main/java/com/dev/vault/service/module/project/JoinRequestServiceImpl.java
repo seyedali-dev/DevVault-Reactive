@@ -90,7 +90,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                     String email = currentUser.getEmail();
 
                     // Retrieve the project and user from the repositories
-                    return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId)
+                    return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId)
                             .flatMap(project -> reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email)
                                     .flatMap(user -> {
 
@@ -151,7 +151,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
     @Override
     public Flux<JoinProjectDto> getJoinRequestsByProjectIdAndStatus(String projectId, JoinStatus joinStatus) {
         return authenticationService.getCurrentUserMono()
-                .flatMapMany(currentUser -> reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId)
+                .flatMapMany(currentUser -> reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId)
                         .flatMapMany(project -> {
 
                             // Check if the current user is the project leader or project admin of the project associated with the join request
@@ -164,7 +164,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                                                     .flatMap(joinRequest -> {
 
                                                         // Retrieve the user associated with the join request
-                                                        Mono<User> userMono = reactiveRepositoryUtils.findUserById_OrElseThrow_ResourceNoFoundException(joinRequest.getUserId());
+                                                        Mono<User> userMono = reactiveRepositoryUtils.findUserById_OrElseThrow_ResourceNotFoundException(joinRequest.getUserId());
 
                                                         // Map the join request and user to a JoinProjectDto object
                                                         return userMono.map(user -> JoinProjectDto.builder()
@@ -198,7 +198,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
         return reactiveRepositoryUtils.findJoinProjectRequestById_OrElseThrow_ResourceNotFoundException(joinRequestId)
                 .flatMap(request ->
                         authenticationService.getCurrentUserMono().flatMap(currentUser ->
-                                reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(request.getProjectId()).flatMap(project -> {
+                                reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(request.getProjectId()).flatMap(project -> {
 
                                     // Check if the user is the leader or admin of the project
                                     return projectUtils.isLeaderOrAdminOfProject(project, currentUser)

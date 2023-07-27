@@ -1,7 +1,7 @@
 package com.dev.vault.model.entity.user;
 
+import com.dev.vault.model.entity.mappings.TaskUser;
 import com.dev.vault.model.entity.mappings.UserRole;
-import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.user.jwt.JwtToken;
 import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import lombok.AllArgsConstructor;
@@ -44,7 +44,7 @@ public class User implements UserDetails {
     private List<UserRole> userRoles = new ArrayList<>();
 
     @Transient
-    private Set<Task> task = new HashSet<>();
+    private Set<TaskUser> taskUsers = new HashSet<>();
 
     @Transient
     private List<JwtToken> jwtTokens;

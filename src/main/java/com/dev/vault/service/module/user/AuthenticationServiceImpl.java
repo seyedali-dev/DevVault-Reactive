@@ -26,6 +26,7 @@ import reactor.core.publisher.Mono;
 /**
  * Authentication implementation: Registration & Login.
  */
+@SuppressWarnings("CommentedOutCode")
 @Service
 @RequiredArgsConstructor
 @Slf4j

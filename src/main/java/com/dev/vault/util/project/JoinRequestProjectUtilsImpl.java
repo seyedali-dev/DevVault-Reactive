@@ -68,7 +68,7 @@ public class JoinRequestProjectUtilsImpl implements ProjectUtils {
      */
     public Mono<Boolean> isCouponValid(Project project) {
         // Retrieve the project from the repository
-        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(project.getProjectId())
+        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(project.getProjectId())
                 .flatMap(foundProject -> {
 
                     // Check if the JoinRequestCoupon exists and if it is for the specific project and is for the requesting user (current user is requesting)
@@ -104,7 +104,7 @@ public class JoinRequestProjectUtilsImpl implements ProjectUtils {
         // Add the user to the project members
         ProjectMembers projectMembers = new ProjectMembers(request.getUserId(), request.getProjectId());
         return projectMembersReactiveRepository.save(projectMembers)
-                .then(reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectMembers.getProjectId())
+                .then(reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectMembers.getProjectId())
                         .flatMap(project -> {
 
                             // Increment the member count of the project

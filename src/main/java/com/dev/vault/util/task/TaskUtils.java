@@ -1,26 +1,28 @@
 package com.dev.vault.util.task;
 
-import com.dev.vault.helper.exception.DevVaultException;
-import com.dev.vault.helper.exception.NotLeaderOfProjectException;
-import com.dev.vault.helper.exception.NotMemberOfProjectException;
 import com.dev.vault.helper.payload.request.task.TaskRequest;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
+import com.dev.vault.model.entity.mappings.TaskUser;
 import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.enums.TaskPriority;
+import com.dev.vault.model.enums.TaskStatus;
+import com.dev.vault.repository.mappings.TaskUserReactiveRepository;
 import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
+import com.dev.vault.service.module.task.TaskManagementServiceImpl;
 import com.dev.vault.util.project.ProjectUtilsImpl;
 import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.dev.vault.model.enums.TaskStatus.IN_PROGRESS;
 import static java.util.stream.Collectors.toSet;
@@ -35,6 +37,7 @@ import static java.util.stream.Collectors.toSet;
 @RequiredArgsConstructor
 public class TaskUtils {
 
+    private final TaskUserReactiveRepository taskUserReactiveRepository;
     private final TaskReactiveRepository taskReactiveRepository;
     private final ModelMapper mapper;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
@@ -55,111 +58,19 @@ public class TaskUtils {
 
 
     /**
-     * Loops through the list of user IDs and assigns the task to each user.
-     *
-     * @param projectId  the ID of the project the task belongs to
-     * @param userIdList the list of user IDs to assign the task to
-     * @param task       the task to assign
-     * @param project    the project the task belongs to
-     */
-    /*public void assignTaskToUserList(String projectId, List<String> userIdList, Task task, Project project, Map<String, String> statusResponseMap) {
-        for (String userId : userIdList) {
-            // Find the user by ID or throw a RecourseNotFoundException if it doesn't exist
-            Mono<User> user = reactiveRepositoryUtils.findUserById_OrElseThrow_ResourceNoFoundException(userId);
-
-            // Check if the user is a member of the project, and add a response to the map if they're not
-            if (!projectUtils.isMemberOfProject(project, user)) {
-                statusResponseMap.put(user.getUsername(), "Fail: User with ID " + userId + " is not a member of project with ID " + projectId);
-                continue;
-            }
-
-            // Check if the task is already assigned to the user skip ahead, and add a response to the map
-            if (taskReactiveRepository.findByAssignedUsersAndTaskId(user, task.getTaskId()).isPresent()) {
-                statusResponseMap.put(user.getUsername(), "Fail: Task already assigned to user " + user.getUsername());
-                continue;
-            }
-
-            // Assign the task to the user, add the user to the assigned users set, and add a response to the map
-            user.getTask().add(task);
-            User savedUser = userReactiveRepository.save(user);
-            task.getAssignedUsers().add(savedUser);
-            statusResponseMap.put(savedUser.getUsername(), "Success: Task assigned to user " + savedUser.getUsername());
-
-            // Set the assigned users for the task and save the task
-            task.setAssignedUsers(task.getAssignedUsers());
-            taskReactiveRepository.save(task);
-
-        }
-    }*/
-    /*public Mono<Map<String, String>> assignTaskToUserList(String projectId, List<String> userIdList, Task task, Project project) {
-        Map<String, String> statusResponseMap = new HashMap<>();
-
-        return Flux.fromIterable(userIdList)
-                .flatMap(userId -> reactiveRepositoryUtils.findUserById(userId)
-                        .switchIfEmpty(Mono.error(new ResourceNotFoundException("User with ID " + userId + " not found")))
-                        .flatMap(user -> {
-                            if (!projectUtils.isMemberOfProject(project, user)) {
-                                statusResponseMap.put(user.getUsername(), "Fail: User with ID " + userId + " is not a member of project with ID " + projectId);
-                                return Mono.empty();
-                            }
-
-                            return taskReactiveRepository.findByAssignedUsersAndTaskId(user, task.getTaskId())
-                                    .flatMap(existingTask -> {
-                                        statusResponseMap.put(user.getUsername(), "Fail: Task already assigned to user " + user.getUsername());
-                                        return Mono.empty();
-                                    })
-                                    .switchIfEmpty(Mono.defer(() -> {
-                                        user.getTask().add(task);
-                                        User savedUser = userReactiveRepository.save(user).block();
-                                        task.getAssignedUsers().add(savedUser);
-                                        statusResponseMap.put(savedUser.getUsername(), "Success: Task assigned to user " + savedUser.getUsername());
-
-                                        return Mono.just(savedUser);
-                                    }))
-                                    .flatMap(savedUser -> {
-                                        task.setAssignedUsers(task.getAssignedUsers());
-                                        return taskReactiveRepository.save(task);
-                                    });
-                        }))
-                .then(Mono.just(statusResponseMap));
-    }*/
-
-
-    /**
-     * Validates whether the task belongs to the project and whether the user is a member and leader/admin of the project.
-     *
-     * @param task    the task to validate
-     * @param project the project to validate against
-     * @param user    the user to validate
-     * @throws DevVaultException           if the task does not belong to the project
-     * @throws NotMemberOfProjectException if the user is not a member of the project
-     * @throws NotLeaderOfProjectException if the user is not the leader or admin of the project
-     */
-   /* public void validateTaskAndProject(Task task, Project project, User user) {
-        // Check if the task belongs to the project or throw a DevVaultException if it doesn't
-        if (!task.getProject().getProjectId().equals(project.getProjectId()))
-            throw new DevVaultException("Task with ID " + task.getTaskId() + " does not belong to project with ID " + project.getProjectId());
-        // Check if the user is a member of the project or throw a NotMemberOfProjectException if they aren't
-        if (!projectUtils.isMemberOfProject(project, user))
-            throw new NotMemberOfProjectException("You are not a member of this project");
-        // Check if the user is the leader or admin of the project or throw a NotLeaderOfProjectException if they aren't
-        if (!projectUtils.isLeaderOrAdminOfProject(project, user))
-            throw new NotLeaderOfProjectException("👮🏻You are not the leader or admin of this project👮🏻");
-    }*/
-
-
-    /**
      * Builds a TaskResponse object with information about the newly created task.
      *
      * @param task the assigned task
      * @return a TaskResponse object with information about the newly created task
      */
-    public TaskResponse buildTaskResponse(Task task, Project project) {
+    public TaskResponse buildTaskResponse_ForCreatingTask(Task task, Project project) {
         return TaskResponse.builder()
                 .taskName(task.getTaskName())
                 .projectName(project.getProjectName())
                 .taskStatus(task.getTaskStatus())
                 .dueDate(task.getDueDate())
+                .assignedUsers(task.getAssignedTaskUser().stream().map(taskUser -> taskUser.getUser().getUsername()).collect(toSet()))
+                .taskPriority(task.getTaskPriority())
                 .build();
     }
 
@@ -177,24 +88,30 @@ public class TaskUtils {
         task.setProjectId(project.getProjectId());
         task.setCreatedAt(LocalDateTime.now());
         task.setTaskStatus(IN_PROGRESS);
-        task.getAssignedUserIds().add(user.getUserId());
+
+        TaskUser taskUser = new TaskUser();
+        taskUser.setUser(user);
+        taskUser.setTask(task);
+        task.getAssignedTaskUser().add(taskUser);
 
         return task;
     }
 
 
     /**
-     * Builds a {@link Task} object.
+     * Builds a {@link Task} object as response for {@link TaskManagementServiceImpl#searchTaskBasedOnDifferentCriteria(TaskStatus, TaskPriority, String, String)
+     * searchTaskBasedOnDifferentCriteria(TaskStatus, TaskPriority, String, String)}
      *
      * @param task {@link Task}.
      * @return Mono of created {@link Task}.
      */
-    public Mono<TaskResponse> buildTaskResponse(Task task) {
-        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(task.getProjectId())
+    public Mono<TaskResponse> buildTaskResponse_ForSearchTask(Task task) {
+        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(task.getProjectId())
                 .flatMap(project ->
-                        Flux.fromIterable(task.getAssignedUserIds())
-                                .flatMap(reactiveRepositoryUtils::findUserById_OrElseThrow_ResourceNoFoundException).collectList()
-                                .flatMap(user ->
+                        reactiveRepositoryUtils.findTaskUsersByTaskId_OrElseThrow_ResourceNoFoundException(task.getTaskId())
+                                .flatMap(taskUser -> reactiveRepositoryUtils.findUserById_OrElseThrow_ResourceNotFoundException(taskUser.getUser().getUserId()))
+                                .collectList()
+                                .flatMap(users ->
                                         Mono.just(TaskResponse.builder()
                                                 .taskName(task.getTaskName())
                                                 .projectName(project.getProjectName())
@@ -202,9 +119,9 @@ public class TaskUtils {
                                                 .dueDate(task.getDueDate())
                                                 .taskPriority(task.getTaskPriority())
                                                 .assignedUsers(
-                                                        user.stream()
+                                                        users.stream()
                                                                 .map(User::getUsername)
-                                                                .collect(toSet())
+                                                                .collect(Collectors.toSet())
                                                 )
                                                 .build()
                                         )

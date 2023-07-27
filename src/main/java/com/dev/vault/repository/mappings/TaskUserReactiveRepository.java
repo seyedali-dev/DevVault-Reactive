@@ -6,4 +6,6 @@ import reactor.core.publisher.Flux;
 
 public interface TaskUserReactiveRepository extends ReactiveMongoRepository<TaskUser, String> {
     Flux<TaskUser> findByUser_UserId(String userId);
+
+    Flux<TaskUser> findByTask_TaskId(String taskId);
 }

@@ -99,7 +99,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     @Override
     public Flux<ProjectMembersDto> getAllMembersOfProject(String projectId) {
         // find the project first
-        Mono<Project> projectMono = reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
+        Mono<Project> projectMono = reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId);
         return projectMono.flatMapMany(project -> {
 
             // then build the `UserDto` list from the project (get the members of the found project)

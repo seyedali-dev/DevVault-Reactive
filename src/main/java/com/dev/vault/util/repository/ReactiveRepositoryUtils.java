@@ -1,21 +1,23 @@
 package com.dev.vault.util.repository;
 
 import com.dev.vault.helper.exception.ResourceNotFoundException;
+import com.dev.vault.model.entity.mappings.TaskUser;
+import com.dev.vault.model.entity.mappings.UserRole;
 import com.dev.vault.model.entity.project.JoinCoupon;
 import com.dev.vault.model.entity.project.JoinProjectRequest;
 import com.dev.vault.model.entity.project.Project;
 import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
-import com.dev.vault.model.entity.mappings.UserRole;
 import com.dev.vault.model.enums.Role;
+import com.dev.vault.repository.mappings.TaskUserReactiveRepository;
+import com.dev.vault.repository.mappings.UserRoleReactiveRepository;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
 import com.dev.vault.repository.project.JoinProjectRequestReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.repository.user.RolesReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
-import com.dev.vault.repository.mappings.UserRoleReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Slf4j
 public class ReactiveRepositoryUtils {
+    private final TaskUserReactiveRepository taskUserReactiveRepository;
 
     private final JoinProjectRequestReactiveRepository joinProjectRequestReactiveRepository;
     private final UserRoleReactiveRepository userRoleReactiveRepository;
@@ -60,13 +63,13 @@ public class ReactiveRepositoryUtils {
                 .doOnError(error -> log.error("Error occurred while finding all the user_roles by userID: {}", error.getMessage()));
     }
 
-    public Mono<Project> findProjectById_OrElseThrow_ResourceNoFoundException(String projectId) {
+    public Mono<Project> findProjectById_OrElseThrow_ResourceNotFoundException(String projectId) {
         return projectReactiveRepository.findById(projectId)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Project", "ProjectID", projectId)))
                 .doOnError(error -> log.error("Error occurred while finding the project by projectID: {}", error.getMessage()));
     }
 
-    public Mono<User> findUserById_OrElseThrow_ResourceNoFoundException(String userId) {
+    public Mono<User> findUserById_OrElseThrow_ResourceNotFoundException(String userId) {
         return userReactiveRepository.findById(userId)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("User", "UserID", userId)))
                 .doOnError(error -> log.error("Error occurred while finding the user by userID: {}", error.getMessage()));
@@ -89,5 +92,17 @@ public class ReactiveRepositoryUtils {
         return joinProjectRequestReactiveRepository.findById(joinRequestId)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("JoinProjectRequest", "joinRequestId", joinRequestId)))
                 .doOnError(error -> log.error("Error occurred while finding joinProjectRequest by joinRequestId: {}", error.getMessage()));
+    }
+
+    public Flux<TaskUser> findTaskUsersByUserId_OrElseThrow_ResourceNoFoundException(String assignedToUserId) {
+        return taskUserReactiveRepository.findByUser_UserId(assignedToUserId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("TaskUser", "assignedToUserId", assignedToUserId)))
+                .doOnError(error -> log.error("Error occurred while finding taskUser by assignedToUserId: {}", error.getMessage()));
+    }
+
+    public Flux<TaskUser> findTaskUsersByTaskId_OrElseThrow_ResourceNoFoundException(String taskId) {
+        return taskUserReactiveRepository.findByTask_TaskId(taskId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("TaskUser", "taskId", taskId)))
+                .doOnError(error -> log.error("Error occurred while finding taskUser by taskId: {}", error.getMessage()));
     }
 }

@@ -6,6 +6,7 @@ import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.request.task.TaskRequest;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
+import com.dev.vault.model.entity.mappings.TaskUser;
 import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.enums.TaskPriority;
 import com.dev.vault.model.enums.TaskStatus;
@@ -22,8 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.Set;
 
 
 /**
@@ -55,7 +54,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     @Transactional
     public Mono<TaskResponse> createNewTask(String projectId, TaskRequest taskRequest) {
         // find the user and project
-        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId).flatMap(project ->
+        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId).flatMap(project ->
                 authenticationService.getCurrentUserMono().flatMap(currentUser -> {
 
                     // Check if a task with the same name already exists in the project
@@ -85,8 +84,14 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                                                         }
 
                                                         return taskReactiveRepository.save(taskUtils.buildTaskObject(project, currentUser, taskRequest))
-                                                                .map(savedTask -> taskUtils.buildTaskResponse(savedTask, project));
-
+                                                                .flatMap(savedTask -> {
+                                                                    TaskUser taskUser = TaskUser.builder()
+                                                                            .task(savedTask)
+                                                                            .user(currentUser)
+                                                                            .build();
+                                                                    return taskUserReactiveRepository.save(taskUser)
+                                                                            .thenReturn(taskUtils.buildTaskResponse_ForCreatingTask(savedTask, project));
+                                                                });
                                                     });
                                         });
                             });
@@ -115,12 +120,19 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         if (projectId != null)
             taskFlux = taskFlux.mergeWith(taskReactiveRepository.findByProjectId(projectId));
 
-        if (assignedTo_UserId != null)
-            taskFlux = taskFlux.mergeWith(taskReactiveRepository.findByAssignedUserIds(Set.of(assignedTo_UserId)));
+//        if (assignedTo_UserId != null)
+//            taskFlux = taskFlux.mergeWith(taskReactiveRepository.findByAssignedUserIds(Set.of(assignedTo_UserId)));
+
+        if (assignedTo_UserId != null) {
+            taskFlux = taskFlux.mergeWith(
+                    taskUserReactiveRepository.findByUser_UserId(assignedTo_UserId)
+                            .map(TaskUser::getTask)
+            );
+        }
 
         return taskFlux
 //                .distinct() // if we don't the duplicate values to be sent as response
-                .flatMap(taskUtils::buildTaskResponse);
+                .flatMap(taskUtils::buildTaskResponse_ForSearchTask);
     }
 
 }
