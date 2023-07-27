@@ -120,9 +120,6 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         if (projectId != null)
             taskFlux = taskFlux.mergeWith(taskReactiveRepository.findByProjectId(projectId));
 
-//        if (assignedTo_UserId != null)
-//            taskFlux = taskFlux.mergeWith(taskReactiveRepository.findByAssignedUserIds(Set.of(assignedTo_UserId)));
-
         if (assignedTo_UserId != null) {
             taskFlux = taskFlux.mergeWith(
                     taskUserReactiveRepository.findByUser_UserId(assignedTo_UserId)
