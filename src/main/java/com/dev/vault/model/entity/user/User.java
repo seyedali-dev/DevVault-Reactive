@@ -1,9 +1,13 @@
 package com.dev.vault.model.entity.user;
 
+import com.dev.vault.model.entity.mappings.UserRole;
 import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.user.jwt.JwtToken;
 import com.dev.vault.util.repository.ReactiveRepositoryUtils;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;

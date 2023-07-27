@@ -9,6 +9,7 @@ import com.dev.vault.helper.payload.response.task.TaskResponse;
 import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.enums.TaskPriority;
 import com.dev.vault.model.enums.TaskStatus;
+import com.dev.vault.repository.mappings.TaskUserReactiveRepository;
 import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.service.interfaces.task.TaskManagementService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
@@ -32,6 +33,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 public class TaskManagementServiceImpl implements TaskManagementService {
+    private final TaskUserReactiveRepository taskUserReactiveRepository;
 
     private final TaskReactiveRepository taskReactiveRepository;
     private final AuthenticationService authenticationService;

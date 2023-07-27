@@ -4,9 +4,10 @@ import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.model.entity.project.JoinCoupon;
 import com.dev.vault.model.entity.project.JoinProjectRequest;
 import com.dev.vault.model.entity.project.Project;
+import com.dev.vault.model.entity.task.Task;
 import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
-import com.dev.vault.model.entity.user.UserRole;
+import com.dev.vault.model.entity.mappings.UserRole;
 import com.dev.vault.model.enums.Role;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
 import com.dev.vault.repository.project.JoinProjectRequestReactiveRepository;
@@ -14,7 +15,7 @@ import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.repository.user.RolesReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
-import com.dev.vault.repository.user.UserRoleReactiveRepository;
+import com.dev.vault.repository.mappings.UserRoleReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -71,10 +72,11 @@ public class ReactiveRepositoryUtils {
                 .doOnError(error -> log.error("Error occurred while finding the user by userID: {}", error.getMessage()));
     }
 
-//    public Task findTaskById_OrElseThrow_ResourceNotFoundException(Long taskId) {
-//        return taskReactiveRepository.findById(taskId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Task", "TaskID", taskId.toString()));
-//    }
+    public Mono<Task> findTaskById_OrElseThrow_ResourceNotFoundException(String taskId) {
+        return taskReactiveRepository.findById(taskId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Task", "TaskID", taskId)))
+                .doOnError(error -> log.error("Error occurred while finding task by taskID: {}", error.getMessage()));
+    }
 
     public Mono<JoinCoupon> findCouponByCoupon_OrElseThrow_ResourceNoFoundException(String joinCoupon) {
         return joinCouponReactiveRepository.findByCoupon(joinCoupon)

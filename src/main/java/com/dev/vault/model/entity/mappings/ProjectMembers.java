@@ -1,11 +1,11 @@
-package com.dev.vault.model.entity.project;
+package com.dev.vault.model.entity.mappings;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * Entity for managing the relationship of members of a Project.
+ * Entity for managing the mappings of members of a Project.
  */
 @Getter
 @Setter

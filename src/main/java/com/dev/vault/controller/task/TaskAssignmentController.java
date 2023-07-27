@@ -4,8 +4,8 @@ import com.dev.vault.helper.payload.response.task.TaskResponse;
 import com.dev.vault.service.interfaces.task.TaskAssignmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -29,11 +29,11 @@ public class TaskAssignmentController {
 
     @PostMapping("/assignTask")
     public Mono<ResponseEntity<TaskResponse>> assignTaskToUsers(
-            @RequestParam("taskId") Long taskId,
-            @RequestParam("projectId") Long projectId,
-            @RequestBody List<Long> userIdList
+            @RequestParam("taskId") String taskId,
+            @RequestParam("projectId") String projectId,
+            @RequestBody List<String> userIdList
     ) {
-        return taskService.assignTaskToUsers(taskId, projectId, userIdList))
+        return taskService.assignTaskToUsers(taskId, projectId, userIdList)
             .map(ResponseEntity::ok);
     }
 

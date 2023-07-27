@@ -1,6 +1,6 @@
-package com.dev.vault.repository.project;
+package com.dev.vault.repository.mappings;
 
-import com.dev.vault.model.entity.project.ProjectMembers;
+import com.dev.vault.model.entity.mappings.ProjectMembers;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

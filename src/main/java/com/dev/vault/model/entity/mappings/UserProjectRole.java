@@ -1,11 +1,11 @@
-package com.dev.vault.model.entity.project;
+package com.dev.vault.model.entity.mappings;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * Entity for managing the relationship of a PROJECT_LEADER with a specific project.
+ * Entity for managing the mappings of a PROJECT_LEADER with a specific project.
  * This class is used to check if a user is a project leader of a specific project, not other projects.
  */
 @Getter

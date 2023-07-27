@@ -1,6 +1,6 @@
-package com.dev.vault.repository.user;
+package com.dev.vault.repository.mappings;
 
-import com.dev.vault.model.entity.user.UserRole;
+import com.dev.vault.model.entity.mappings.UserRole;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

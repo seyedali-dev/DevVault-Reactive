@@ -1,5 +1,6 @@
 package com.dev.vault.model.entity.user;
 
+import com.dev.vault.model.entity.mappings.UserRole;
 import com.dev.vault.model.enums.Role;
 import lombok.*;
 import org.springframework.data.annotation.Id;

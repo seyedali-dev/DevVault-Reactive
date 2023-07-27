@@ -24,9 +24,9 @@ public class VerificationToken {
     private Instant createdAt;
     // TODO: create a expiry date functionality like for 3 hours
 
-    /*relationship*/
+    /*mappings*/
     private User user;
-    /*end of relationship*/
+    /*end of mappings*/
 
     public VerificationToken(User user) {
         this.user = user;

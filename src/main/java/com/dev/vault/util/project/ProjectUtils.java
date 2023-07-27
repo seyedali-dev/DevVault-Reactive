@@ -7,11 +7,11 @@ import com.dev.vault.helper.payload.request.project.ProjectDto;
 import com.dev.vault.helper.payload.request.user.UserDto;
 import com.dev.vault.model.entity.project.JoinProjectRequest;
 import com.dev.vault.model.entity.project.Project;
-import com.dev.vault.model.entity.project.ProjectMembers;
-import com.dev.vault.model.entity.project.UserProjectRole;
+import com.dev.vault.model.entity.mappings.ProjectMembers;
+import com.dev.vault.model.entity.mappings.UserProjectRole;
 import com.dev.vault.model.entity.user.Roles;
 import com.dev.vault.model.entity.user.User;
-import com.dev.vault.model.entity.user.UserRole;
+import com.dev.vault.model.entity.mappings.UserRole;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

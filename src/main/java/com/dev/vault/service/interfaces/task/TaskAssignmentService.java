@@ -1,12 +1,13 @@
 package com.dev.vault.service.interfaces.task;
 
 import com.dev.vault.helper.payload.response.task.TaskResponse;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 public interface TaskAssignmentService {
 
-    TaskResponse assignTaskToUsers(Long taskId, Long projectId, List<Long> userIdList);
+    Mono<TaskResponse> assignTaskToUsers(String taskId, String projectId, List<String> userIdList);
 
     TaskResponse assignTaskToAllUsersInProject(Long taskId, Long projectId);
 

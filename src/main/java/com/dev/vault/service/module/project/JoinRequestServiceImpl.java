@@ -12,7 +12,7 @@ import com.dev.vault.model.entity.user.User;
 import com.dev.vault.model.enums.JoinStatus;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
 import com.dev.vault.repository.project.JoinProjectRequestReactiveRepository;
-import com.dev.vault.repository.project.ProjectMembersReactiveRepository;
+import com.dev.vault.repository.mappings.ProjectMembersReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.service.interfaces.project.JoinRequestService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
