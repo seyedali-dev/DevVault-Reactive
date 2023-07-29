@@ -232,8 +232,6 @@ public class TaskUtils {
                                                             }
                                                         });
                                                     }
-                                                    // Return an empty Mono to continue the reactive stream
-//                                                    return Mono.empty();
                                                 })
                                 )
                 )// Once all the users have been processed, discard the emitted values and return a Mono that emits the updated statusResponseMap
