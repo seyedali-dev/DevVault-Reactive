@@ -1,9 +1,10 @@
 package com.dev.vault.service.module.task;
 
+import com.dev.vault.helper.exception.DevVaultException;
 import com.dev.vault.helper.exception.NotLeaderOfProjectException;
 import com.dev.vault.helper.exception.NotMemberOfProjectException;
+import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
-import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.service.interfaces.task.TaskAssignmentService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.util.project.ProjectUtils;
@@ -15,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service implementation for task assignments.
@@ -25,7 +28,6 @@ import java.util.List;
 @Slf4j
 public class TaskAssignmentServiceImpl implements TaskAssignmentService {
 
-    private final TaskReactiveRepository taskRepository;
     private final AuthenticationService authenticationService;
     private final ProjectUtils projectUtils;
     private final TaskUtils taskUtils;
@@ -49,18 +51,20 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
     @Override
     @Transactional
     public Mono<TaskResponse> assignTaskToUsers(String taskId, String projectId, List<String> userIdList) {
-        /*// find the task and the project of that task
+        // find the task and the project of that task
         return reactiveRepositoryUtils.findTaskById_OrElseThrow_ResourceNotFoundException(taskId)
-                .flatMap(task -> reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId)
+                .flatMap(task -> reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId)
                         .flatMap(project -> {
 
                             // Check if the task belongs to the project
-                            if (!task.getProjectId().equals(projectId))
+                            if (!task.getProjectId().equals(projectId)) {
+                                log.error("task does not belong to this project");
                                 return Mono.error(new DevVaultException("Task with ID " + taskId + " does not belong to project with ID " + projectId));
+                            }
 
                             return authenticationService.getCurrentUserMono().flatMap(currentUser -> {
 
-                                // Check if the user requesting is leader or admin of the project
+                                // Check if the requesting user is leader or admin of the project
                                 return projectUtils.isLeaderOrAdminOfProject(project, currentUser).flatMap(isLeader -> {
                                     if (!isLeader)
                                         return Mono.error(new NotLeaderOfProjectException("👮🏻You are not a leader or admin of this project👮🏻"));
@@ -68,14 +72,13 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
                                         Map<String, String> statusResponseMap = new HashMap<>();
 
                                         // Loop through the list of user IDs and assign the task to them
-                                        taskUtils.assignTaskToUserList(projectId, userIdList, task, project, statusResponseMap);
-                                        return taskUtils.buildTaskResponse(task, project, statusResponseMap);
+                                        return taskUtils.assignTaskToUserList(userIdList, task, project, statusResponseMap)
+                                                .then(taskUtils.buildTaskResponse_ForAssignTaskToUsers(task, project, statusResponseMap));
                                     }
                                 });
                             });
                         })
-                );*/
-        return Mono.empty();
+                );
     }
 
 

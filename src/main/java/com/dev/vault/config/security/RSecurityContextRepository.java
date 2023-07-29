@@ -60,9 +60,9 @@ public class RSecurityContextRepository implements ServerSecurityContextReposito
         log.info("extracting header ...");
         String authHeader = exchange.getRequest().getHeaders().getFirst(AUTHORIZATION);
         return Mono.justOrEmpty(authHeader)
-                .doOnNext(header -> log.info("extracted header 👍"))
+//                .doOnNext(header -> log.info("extracted header 👍"))
                 .filter(header -> header.startsWith(TOKEN_PREFIX))
-                .doOnNext(header -> log.info("Bearer token found in the authorization header 👍"))
+//                .doOnNext(header -> log.info("Bearer token found in the authorization header 👍"))
                 .flatMap(header -> {
                     String token = header.substring(TOKEN_PREFIX.length()); // which is seven
                     String userEmail;
@@ -95,9 +95,8 @@ public class RSecurityContextRepository implements ServerSecurityContextReposito
                                                                     new UsernamePasswordAuthenticationToken(token, token);
                                                             return authenticationManager.authenticate(authentication)
                                                                     .doOnNext(auth -> {
-                                                                        log.info("JWT token is valid! ✅");
-                                                                        log.info("authentication successful ✅");
-                                                                        log.info(" ✅✅✅✅✅✅✅✅✅✅✅✅✅");
+                                                                        log.info("JWT token is valid! authentication successful ✅");
+                                                                        log.info("------------------------------------------------");
                                                                     })
                                                                     .map(SecurityContextImpl::new);
                                                         }

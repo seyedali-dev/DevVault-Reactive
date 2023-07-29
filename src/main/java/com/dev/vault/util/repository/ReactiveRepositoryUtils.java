@@ -100,7 +100,7 @@ public class ReactiveRepositoryUtils {
                 .doOnError(error -> log.error("Error occurred while finding taskUser by assignedToUserId: {}", error.getMessage()));
     }
 
-    public Flux<TaskUser> findTaskUsersByTaskId_OrElseThrow_ResourceNoFoundException(String taskId) {
+    public Flux<TaskUser> findTaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(String taskId) {
         return taskUserReactiveRepository.findByTask_TaskId(taskId)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("TaskUser", "taskId", taskId)))
                 .doOnError(error -> log.error("Error occurred while finding taskUser by taskId: {}", error.getMessage()));

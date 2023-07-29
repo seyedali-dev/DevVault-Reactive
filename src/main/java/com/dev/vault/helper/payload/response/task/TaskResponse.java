@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -20,7 +20,7 @@ public class TaskResponse {
     private LocalDateTime dueDate;
     private String projectName;
     private TaskStatus taskStatus;
-    private Set<String> assignedUsers;
+    private Map<String, String> assignedUsers;
     private TaskPriority taskPriority;
 
 }

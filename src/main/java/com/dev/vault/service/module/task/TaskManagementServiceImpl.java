@@ -90,7 +90,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                                                                             .user(currentUser)
                                                                             .build();
                                                                     return taskUserReactiveRepository.save(taskUser)
-                                                                            .thenReturn(taskUtils.buildTaskResponse_ForCreatingTask(savedTask, project));
+                                                                            .then(taskUtils.buildTaskResponse_ForCreatingTask(savedTask, project));
                                                                 });
                                                     });
                                         });
