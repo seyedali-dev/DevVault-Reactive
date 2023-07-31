@@ -39,7 +39,6 @@ public class JoinRequestProjectUtilsImpl implements ProjectUtils {
     private final ProjectReactiveRepository projectReactiveRepository;
     private final AuthenticationService authenticationService;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
-    private final ProjectUtils projectUtils;
 
 
     /**

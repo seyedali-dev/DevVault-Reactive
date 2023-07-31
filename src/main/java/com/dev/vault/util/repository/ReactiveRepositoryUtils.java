@@ -94,12 +94,6 @@ public class ReactiveRepositoryUtils {
                 .doOnError(error -> log.error("Error occurred while finding joinProjectRequest by joinRequestId: {}", error.getMessage()));
     }
 
-    public Flux<TaskUser> find_TaskUsersByUserId_OrElseThrow_ResourceNoFoundException(String assignedToUserId) {
-        return taskUserReactiveRepository.findByUser_UserId(assignedToUserId)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("TaskUser", "assignedToUserId", assignedToUserId)))
-                .doOnError(error -> log.error("Error occurred while finding taskUser by assignedToUserId: {}", error.getMessage()));
-    }
-
     public Flux<TaskUser> find_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(String taskId) {
         return taskUserReactiveRepository.findByTask_TaskId(taskId)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("TaskUser", "taskId", taskId)))

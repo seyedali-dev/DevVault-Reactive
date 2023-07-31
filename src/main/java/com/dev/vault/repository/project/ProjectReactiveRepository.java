@@ -10,8 +10,6 @@ public interface ProjectReactiveRepository extends ReactiveMongoRepository<Proje
 
     Flux<Project> findByProjectNameContaining(String projectName);
 
-    Mono<Project> findByProjectNameAllIgnoreCase(String projectName);
-
     Mono<Boolean> existsByProjectNameIgnoreCase(String projectName);
 
 }

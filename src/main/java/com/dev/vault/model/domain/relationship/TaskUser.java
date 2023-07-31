@@ -1,6 +1,5 @@
 package com.dev.vault.model.domain.relationship;
 
-import com.dev.vault.model.domain.project.Project;
 import com.dev.vault.model.domain.task.Task;
 import com.dev.vault.model.domain.user.User;
 import lombok.*;

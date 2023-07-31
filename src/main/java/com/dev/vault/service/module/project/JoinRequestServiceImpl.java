@@ -12,8 +12,6 @@ import com.dev.vault.model.domain.user.User;
 import com.dev.vault.model.enums.JoinStatus;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
 import com.dev.vault.repository.project.JoinProjectRequestReactiveRepository;
-import com.dev.vault.repository.mappings.ProjectMembersReactiveRepository;
-import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.service.interfaces.project.JoinRequestService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.util.project.JoinRequestProjectUtilsImpl;
@@ -38,14 +36,11 @@ import static com.dev.vault.model.enums.JoinStatus.PENDING;
 public class JoinRequestServiceImpl implements JoinRequestService {
 
     private final JoinCouponReactiveRepository joinCouponReactiveRepository;
-    private final ProjectMembersReactiveRepository projectMembersReactiveRepository;
-    private final ProjectReactiveRepository projectRepository;
     private final JoinProjectRequestReactiveRepository joinProjectRequestReactiveRepository;
     private final AuthenticationService authenticationService;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
     private final ProjectUtils projectUtils;
     private final JoinRequestProjectUtilsImpl joinRequestProjectUtilsImpl;
-    private final ProjectReactiveRepository projectReactiveRepository;
 
 
     /**
@@ -53,21 +48,18 @@ public class JoinRequestServiceImpl implements JoinRequestService {
      */
     @Autowired
     public JoinRequestServiceImpl(
-            JoinCouponReactiveRepository joinCouponReactiveRepository, ProjectMembersReactiveRepository projectMembersReactiveRepository,
-            ProjectReactiveRepository projectRepository, JoinProjectRequestReactiveRepository joinProjectRequestReactiveRepository,
+            JoinCouponReactiveRepository joinCouponReactiveRepository,
+            JoinProjectRequestReactiveRepository joinProjectRequestReactiveRepository,
             AuthenticationService authenticationService, ReactiveRepositoryUtils reactiveRepositoryUtils,
             @Qualifier("projectUtilsImpl") ProjectUtilsImpl projectUtils,
-            @Qualifier("joinRequestProjectUtilsImpl") JoinRequestProjectUtilsImpl joinRequestProjectUtilsImpl,
-            ProjectReactiveRepository projectReactiveRepository) {
+            @Qualifier("joinRequestProjectUtilsImpl") JoinRequestProjectUtilsImpl joinRequestProjectUtilsImpl
+    ) {
         this.joinCouponReactiveRepository = joinCouponReactiveRepository;
-        this.projectMembersReactiveRepository = projectMembersReactiveRepository;
-        this.projectRepository = projectRepository;
         this.joinProjectRequestReactiveRepository = joinProjectRequestReactiveRepository;
         this.authenticationService = authenticationService;
         this.reactiveRepositoryUtils = reactiveRepositoryUtils;
         this.projectUtils = projectUtils;
         this.joinRequestProjectUtilsImpl = joinRequestProjectUtilsImpl;
-        this.projectReactiveRepository = projectReactiveRepository;
     }
 
 
