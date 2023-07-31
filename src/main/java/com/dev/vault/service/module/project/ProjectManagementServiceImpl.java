@@ -4,10 +4,10 @@ import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.payload.request.project.ProjectDto;
 import com.dev.vault.helper.payload.request.project.ProjectMembersDto;
 import com.dev.vault.helper.payload.request.user.UserDto;
-import com.dev.vault.model.entity.project.Project;
-import com.dev.vault.model.entity.mappings.ProjectMembers;
-import com.dev.vault.model.entity.mappings.UserProjectRole;
-import com.dev.vault.model.entity.mappings.UserRole;
+import com.dev.vault.model.domain.project.Project;
+import com.dev.vault.model.domain.relationship.ProjectMembers;
+import com.dev.vault.model.domain.relationship.UserProjectRole;
+import com.dev.vault.model.domain.relationship.UserRole;
 import com.dev.vault.repository.mappings.ProjectMembersReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.service.interfaces.project.ProjectManagementService;
@@ -57,7 +57,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
                 // Get the current user
                 authenticationService.getCurrentUserMono().flatMap(currentUser ->
                         // Get the PROJECT_LEADER role
-                        reactiveRepositoryUtils.findRoleByRole_OrElseThrow_ResourceNotFoundException(PROJECT_LEADER).flatMap(projectLeaderRole -> {
+                        reactiveRepositoryUtils.find_RoleByRole_OrElseThrow_ResourceNotFoundException(PROJECT_LEADER).flatMap(projectLeaderRole -> {
                             // Create the `Project` object and set the leader to the current user
                             Project project = projectManagementUtils.createProjectObject(projectDto, currentUser);
 
@@ -99,7 +99,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     @Override
     public Flux<ProjectMembersDto> getAllMembersOfProject(String projectId) {
         // find the project first
-        Mono<Project> projectMono = reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId);
+        Mono<Project> projectMono = reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectId);
         return projectMono.flatMapMany(project -> {
 
             // then build the `UserDto` list from the project (get the members of the found project)

@@ -1,6 +1,6 @@
-package com.dev.vault.model.entity.project;
+package com.dev.vault.model.domain.project;
 
-import com.dev.vault.model.entity.task.Task;
+import com.dev.vault.model.domain.relationship.ProjectTask;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -32,7 +32,7 @@ public class Project {
     private String leaderEmail;
 
     @Transient
-    private List<Task> tasks = new ArrayList<>();
+    private List<ProjectTask> tasks = new ArrayList<>();
     /* end of relationships */
 
     public void incrementMemberCount() {

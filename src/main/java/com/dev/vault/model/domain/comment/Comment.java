@@ -1,8 +1,8 @@
-package com.dev.vault.model.entity.comment;
+package com.dev.vault.model.domain.comment;
 
-import com.dev.vault.model.entity.project.Project;
-import com.dev.vault.model.entity.task.Task;
-import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.domain.project.Project;
+import com.dev.vault.model.domain.task.Task;
+import com.dev.vault.model.domain.user.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;

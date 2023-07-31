@@ -1,6 +1,6 @@
 package com.dev.vault.repository.user;
 
-import com.dev.vault.model.entity.user.Roles;
+import com.dev.vault.model.domain.user.Roles;
 import com.dev.vault.model.enums.Role;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;

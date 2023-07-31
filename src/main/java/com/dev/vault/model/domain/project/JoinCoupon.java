@@ -1,4 +1,4 @@
-package com.dev.vault.model.entity.project;
+package com.dev.vault.model.domain.project;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;

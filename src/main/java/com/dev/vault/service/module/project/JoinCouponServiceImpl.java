@@ -3,9 +3,9 @@ package com.dev.vault.service.module.project;
 import com.dev.vault.helper.exception.NotLeaderOfProjectException;
 import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
-import com.dev.vault.model.entity.project.JoinCoupon;
-import com.dev.vault.model.entity.project.Project;
-import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.domain.project.JoinCoupon;
+import com.dev.vault.model.domain.project.Project;
+import com.dev.vault.model.domain.user.User;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
@@ -51,10 +51,10 @@ public class JoinCouponServiceImpl implements JoinCouponService {
     @Transactional
     public Mono<String> generateOneTimeJoinCoupon(String projectId, String requestingUserId) {
         // Get the project with the given ID from the database
-        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId)
+        return reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectId)
                 .flatMap(project -> {
                     // Get the requesting user (the user who is requesting to join the project)
-                    return reactiveRepositoryUtils.findUserById_OrElseThrow_ResourceNotFoundException(requestingUserId)
+                    return reactiveRepositoryUtils.find_UserById_OrElseThrow_ResourceNotFoundException(requestingUserId)
                             .flatMap(requestingUser -> {
                                 // Check if the current user is the leader or admin of the specific project
                                 return authenticationService.getCurrentUserMono()

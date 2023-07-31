@@ -1,6 +1,6 @@
 package com.dev.vault.repository.user;
 
-import com.dev.vault.model.entity.user.VerificationToken;
+import com.dev.vault.model.domain.user.VerificationToken;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 

@@ -5,13 +5,13 @@ import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.request.project.ProjectDto;
 import com.dev.vault.helper.payload.request.user.UserDto;
-import com.dev.vault.model.entity.project.JoinProjectRequest;
-import com.dev.vault.model.entity.project.Project;
-import com.dev.vault.model.entity.mappings.ProjectMembers;
-import com.dev.vault.model.entity.mappings.UserProjectRole;
-import com.dev.vault.model.entity.user.Roles;
-import com.dev.vault.model.entity.user.User;
-import com.dev.vault.model.entity.mappings.UserRole;
+import com.dev.vault.model.domain.project.JoinProjectRequest;
+import com.dev.vault.model.domain.project.Project;
+import com.dev.vault.model.domain.relationship.ProjectMembers;
+import com.dev.vault.model.domain.relationship.UserProjectRole;
+import com.dev.vault.model.domain.user.Roles;
+import com.dev.vault.model.domain.user.User;
+import com.dev.vault.model.domain.relationship.UserRole;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
 import com.dev.vault.repository.project.JoinProjectRequestReactiveRepository;
 import com.dev.vault.repository.mappings.ProjectMembersReactiveRepository;
@@ -68,7 +68,7 @@ public class JoinRequestProjectUtilsImpl implements ProjectUtils {
      */
     public Mono<Boolean> isCouponValid(Project project) {
         // Retrieve the project from the repository
-        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(project.getProjectId())
+        return reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(project.getProjectId())
                 .flatMap(foundProject -> {
 
                     // Check if the JoinRequestCoupon exists and if it is for the specific project and is for the requesting user (current user is requesting)
@@ -104,7 +104,7 @@ public class JoinRequestProjectUtilsImpl implements ProjectUtils {
         // Add the user to the project members
         ProjectMembers projectMembers = new ProjectMembers(request.getUserId(), request.getProjectId());
         return projectMembersReactiveRepository.save(projectMembers)
-                .then(reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectMembers.getProjectId())
+                .then(reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectMembers.getProjectId())
                         .flatMap(project -> {
 
                             // Increment the member count of the project

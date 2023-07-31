@@ -1,6 +1,6 @@
 package com.dev.vault.repository.mappings;
 
-import com.dev.vault.model.entity.mappings.UserProjectRole;
+import com.dev.vault.model.domain.relationship.UserProjectRole;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 

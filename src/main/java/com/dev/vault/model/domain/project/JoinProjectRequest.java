@@ -1,4 +1,4 @@
-package com.dev.vault.model.entity.project;
+package com.dev.vault.model.domain.project;
 
 import com.dev.vault.model.enums.JoinStatus;
 import lombok.*;

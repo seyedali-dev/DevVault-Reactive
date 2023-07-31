@@ -1,6 +1,6 @@
 package com.dev.vault.repository.task;
 
-import com.dev.vault.model.entity.task.Task;
+import com.dev.vault.model.domain.task.Task;
 import com.dev.vault.model.enums.TaskPriority;
 import com.dev.vault.model.enums.TaskStatus;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;

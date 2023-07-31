@@ -1,11 +1,13 @@
-package com.dev.vault.model.entity.mappings;
+package com.dev.vault.model.domain.relationship;
 
+import com.dev.vault.model.domain.project.Project;
+import com.dev.vault.model.domain.user.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * Entity for managing the mappings of members of a Project.
+ * Manages the relationship of members of a Project. Relationship between {@link Project} and {@link User}.
  */
 @Getter
 @Setter

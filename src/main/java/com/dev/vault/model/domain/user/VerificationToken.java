@@ -1,4 +1,4 @@
-package com.dev.vault.model.entity.user;
+package com.dev.vault.model.domain.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,9 +24,9 @@ public class VerificationToken {
     private Instant createdAt;
     // TODO: create a expiry date functionality like for 3 hours
 
-    /*mappings*/
+    /*relationship*/
     private User user;
-    /*end of mappings*/
+    /*end of relationship*/
 
     public VerificationToken(User user) {
         this.user = user;

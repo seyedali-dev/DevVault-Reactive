@@ -4,7 +4,7 @@ import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.request.project.ProjectMembersDto;
 import com.dev.vault.helper.payload.request.user.UserDto;
 import com.dev.vault.helper.payload.response.project.SearchResponse;
-import com.dev.vault.model.entity.project.Project;
+import com.dev.vault.model.domain.project.Project;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.service.interfaces.project.SearchProjectService;
 import com.dev.vault.util.project.ProjectManagementUtilsImpl;

@@ -1,8 +1,8 @@
 package com.dev.vault.repository.mappings;
 
-import com.dev.vault.model.entity.mappings.TaskUser;
-import com.dev.vault.model.entity.task.Task;
-import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.domain.relationship.TaskUser;
+import com.dev.vault.model.domain.task.Task;
+import com.dev.vault.model.domain.user.User;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

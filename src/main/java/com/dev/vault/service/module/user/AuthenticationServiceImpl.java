@@ -6,8 +6,8 @@ import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.request.auth.AuthenticationRequest;
 import com.dev.vault.helper.payload.request.auth.AuthenticationResponse;
 import com.dev.vault.helper.payload.request.auth.RegisterRequest;
-import com.dev.vault.model.entity.user.User;
-import com.dev.vault.model.entity.user.VerificationToken;
+import com.dev.vault.model.domain.user.User;
+import com.dev.vault.model.domain.user.VerificationToken;
 import com.dev.vault.repository.user.UserReactiveRepository;
 import com.dev.vault.repository.user.VerificationTokenReactiveRepository;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
@@ -232,7 +232,7 @@ private Mono<AuthenticationResponse> createNewUser(Mono<RegisterRequest> request
     }*/
     @Override
     public Mono<AuthenticationResponse> authenticate(AuthenticationRequest authenticationRequest) {
-        return reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(authenticationRequest.getEmail())
+        return reactiveRepositoryUtils.find_UserByEmail_OrElseThrow_ResourceNotFoundException(authenticationRequest.getEmail())
                 .flatMap(user -> {
                     boolean passwordMatches = passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword());
                     if (passwordMatches) {
@@ -241,7 +241,7 @@ private Mono<AuthenticationResponse> createNewUser(Mono<RegisterRequest> request
                         // Revoke all the saved tokens for the user and save the generated token
                         authenticationUtils.revokeAllUserTokens(user);
                         return authenticationUtils.buildAndSaveJwtToken(user, generatedJwtToken)
-                                .flatMap(jwtToken -> reactiveRepositoryUtils.findAllUserRolesByUserId_OrElseThrow_ResourceNotFoundException(user.getUserId())
+                                .flatMap(jwtToken -> reactiveRepositoryUtils.find_AllUserRolesByUserId_OrElseThrow_ResourceNotFoundException(user.getUserId())
                                         .map(userRole -> userRole.getRoles().getRole().name())
                                         .collectList()
                                         .map(roleNames -> {
@@ -274,7 +274,7 @@ private Mono<AuthenticationResponse> createNewUser(Mono<RegisterRequest> request
                             String email = authentication.getName();
 
                             // find the user object in the database using the email
-                            return reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email);
+                            return reactiveRepositoryUtils.find_UserByEmail_OrElseThrow_ResourceNotFoundException(email);
                         }
                 );
     }

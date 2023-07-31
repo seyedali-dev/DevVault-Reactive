@@ -1,7 +1,7 @@
 /*
 package com.dev.vault.controller.task;
 
-import com.dev.vault.model.entity.enums.task.TaskStatus;
+import com.dev.vault.model.domain.enums.task.TaskStatus;
 import com.dev.vault.service.interfaces.task.TaskProgressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

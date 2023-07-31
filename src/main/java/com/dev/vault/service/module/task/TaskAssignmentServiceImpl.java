@@ -2,8 +2,7 @@ package com.dev.vault.service.module.task;
 
 import com.dev.vault.helper.exception.DevVaultException;
 import com.dev.vault.helper.exception.NotLeaderOfProjectException;
-import com.dev.vault.helper.exception.NotMemberOfProjectException;
-import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
+import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
 import com.dev.vault.service.interfaces.task.TaskAssignmentService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
@@ -41,19 +40,16 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
      * @param projectId  The ID of the project to which the task belongs.
      * @param userIdList The list of user IDs to assign the task to.
      * @return A {@link TaskResponse} containing information about the assigned task and its assigned users.
-     * @throws RecourseNotFoundException      If the task or project is not found.
-     * @throws DevVaultException              If the task does not belong to the project.
-     * @throws NotLeaderOfProjectException    If the current user is not a leader or admin of the project.
-     * @throws ResourceAlreadyExistsException If the task is already assigned to a user.
-     * @throws NotMemberOfProjectException    If the user is not a member of the project.
+     * @throws ResourceNotFoundException   If the task or project is not found.
+     * @throws DevVaultException           If the task does not belong to the project.
+     * @throws NotLeaderOfProjectException If the current user is not a leader or admin of the project.
      */
-    @SuppressWarnings("JavadocReference")
     @Override
     @Transactional
-    public Mono<TaskResponse> assignTaskToUsers(String taskId, String projectId, List<String> userIdList) {
+    public Mono<TaskResponse> assignTaskToUsers(String taskId, String projectId, List<String> userIdList) throws ResourceNotFoundException, NotLeaderOfProjectException, DevVaultException {
         // find the task and the project of that task
-        return reactiveRepositoryUtils.findTaskById_OrElseThrow_ResourceNotFoundException(taskId)
-                .flatMap(task -> reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId)
+        return reactiveRepositoryUtils.find_TaskById_OrElseThrow_ResourceNotFoundException(taskId)
+                .flatMap(task -> reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectId)
                         .flatMap(project -> {
 
                             // Check if the task belongs to the project
@@ -82,44 +78,45 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
     }
 
 
-    @Override
-    public TaskResponse assignTaskToAllUsersInProject(Long taskId, Long projectId) {
-        return null;
-    }
-
-
     /**
      * Assigns a task to all users in a project.
      *
      * @param taskId    The ID of the task to assign.
      * @param projectId The ID of the project to which the task belongs.
      * @return A {@link TaskResponse} containing information about the assigned task and its assigned users.
-     * @throws RecourseNotFoundException   If the task or project is not found.
      * @throws NotLeaderOfProjectException If the current user is not a leader or admin of the project.
-     * @throws NotMemberOfProjectException If the user is not a member of the project.
+     * @throws ResourceNotFoundException   If the task or project is not found.
      */
-    @SuppressWarnings("JavadocReference")
-    /*@Override
+    @Override
     @Transactional
-    public TaskResponse assignTaskToAllUsersInProject(Long taskId, Long projectId) {
-        Task task = reactiveRepositoryUtils.findTaskById_OrElseThrow_ResourceNotFoundException(taskId);
-        Project project = reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNoFoundException(projectId);
-        User currentUser = authenticationService.getCurrentUser();
+    public Mono<TaskResponse> assignTaskToAllUsersInProject(String taskId, String projectId) {
+        // find the `task`, `project` and get the current `user`
+        return reactiveRepositoryUtils.find_TaskById_OrElseThrow_ResourceNotFoundException(taskId).flatMap(task ->
+                reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectId).flatMap(project ->
+                        authenticationService.getCurrentUserMono().flatMap(currentUser -> {
 
-        // Validate task and project
-        taskUtils.validateTaskAndProject(task, project, currentUser);
+                            // Validate task and project :: whether they belong to each other
+                            return taskUtils.validateTaskAndProject(task, project, currentUser)
+                                    .then(Mono.defer(() -> {
 
-        // Create a responseMap to hold the responses for each user
-        Map<String, String> responseMap = new HashMap<>();
-        // Retrieves a set of users associated with a task and a project, and updates the responseMap with the status of the assignment for each user.
-        Set<User> users = taskUtils.getUsers(task, project, responseMap);
-        // Assign the task to all users in the set
-        task.setAssignedUsers(users);
-        taskRepository.save(task);
+                                                // Create a responseMap to hold the responses for each user
+                                                Map<String, String> responseMap = new HashMap<>();
 
-        // Build and return a TaskResponse with information about the assigned task and its assigned users
-        return taskUtils.buildTaskResponse(task, project, responseMap);
-    }*/
+                                                // Retrieve a set of users associated with a task and a project, and updates the responseMap with the status of the assignment for each user.
+                                                return taskUtils.assignTaskToUsersInProject(task, project, responseMap)
+                                                        .collectList().flatMap(taskUsers -> {
+
+                                                            // Build and return a TaskResponse with information about the assigned task and its assigned users
+                                                            return taskUtils.buildTaskResponse_ForAssignTaskToUsers(task, project, responseMap);
+                                                        });
+                                            })
+                                    );
+                        })
+                )
+        );
+    }
+
+
     @Override
     public void unAssignTaskFromUser(Long taskId, Long projectId, Long userId) {
         //TODO

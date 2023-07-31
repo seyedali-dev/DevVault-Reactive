@@ -81,7 +81,7 @@ public class RSecurityContextRepository implements ServerSecurityContextReposito
                     }
 
                     // find user and validate token
-                    return reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(userEmail)
+                    return reactiveRepositoryUtils.find_UserByEmail_OrElseThrow_ResourceNotFoundException(userEmail)
                             .flatMap(user ->
                                     jwtTokenReactiveRepository.findByToken(token)
                                             .map(jwtToken -> !jwtToken.isRevoked() && !jwtToken.isExpired())

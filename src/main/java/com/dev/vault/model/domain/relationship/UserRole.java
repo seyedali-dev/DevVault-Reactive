@@ -1,11 +1,14 @@
-package com.dev.vault.model.entity.mappings;
+package com.dev.vault.model.domain.relationship;
 
-import com.dev.vault.model.entity.user.Roles;
-import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.domain.user.Roles;
+import com.dev.vault.model.domain.user.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * Manages the Relationship between {@link User} and {@link Roles}
+ */
 @Getter
 @Setter
 @AllArgsConstructor
@@ -19,7 +22,6 @@ public class UserRole {
 
     /* relationships */
     private User user;
-
     private Roles roles;
     /* end of relationships */
 

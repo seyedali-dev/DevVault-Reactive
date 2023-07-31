@@ -1,6 +1,6 @@
 package com.dev.vault.repository.project;
 
-import com.dev.vault.model.entity.project.JoinCoupon;
+import com.dev.vault.model.domain.project.JoinCoupon;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 

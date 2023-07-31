@@ -6,9 +6,9 @@ import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.request.project.JoinProjectDto;
 import com.dev.vault.helper.payload.response.project.JoinResponse;
-import com.dev.vault.model.entity.project.JoinCoupon;
-import com.dev.vault.model.entity.project.JoinProjectRequest;
-import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.domain.project.JoinCoupon;
+import com.dev.vault.model.domain.project.JoinProjectRequest;
+import com.dev.vault.model.domain.user.User;
 import com.dev.vault.model.enums.JoinStatus;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
 import com.dev.vault.repository.project.JoinProjectRequestReactiveRepository;
@@ -90,8 +90,8 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                     String email = currentUser.getEmail();
 
                     // Retrieve the project and user from the repositories
-                    return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId)
-                            .flatMap(project -> reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email)
+                    return reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectId)
+                            .flatMap(project -> reactiveRepositoryUtils.find_UserByEmail_OrElseThrow_ResourceNotFoundException(email)
                                     .flatMap(user -> {
 
                                         // Check if the user is already a member of the project or has already sent a join project request for the project
@@ -111,7 +111,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                                                                     }
 
                                                                     // Mark the JoinRequestCoupon as used
-                                                                    return reactiveRepositoryUtils.findCouponByCoupon_OrElseThrow_ResourceNoFoundException(joinCoupon)
+                                                                    return reactiveRepositoryUtils.find_CouponByCoupon_OrElseThrow_ResourceNoFoundException(joinCoupon)
                                                                             .flatMap(joinRequestCoupon -> {
                                                                                 joinRequestCoupon.setUsed(true);
                                                                                 Mono<JoinCoupon> joinCouponMono = joinCouponReactiveRepository.save(joinRequestCoupon);
@@ -151,7 +151,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
     @Override
     public Flux<JoinProjectDto> getJoinRequestsByProjectIdAndStatus(String projectId, JoinStatus joinStatus) {
         return authenticationService.getCurrentUserMono()
-                .flatMapMany(currentUser -> reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId)
+                .flatMapMany(currentUser -> reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectId)
                         .flatMapMany(project -> {
 
                             // Check if the current user is the project leader or project admin of the project associated with the join request
@@ -164,7 +164,7 @@ public class JoinRequestServiceImpl implements JoinRequestService {
                                                     .flatMap(joinRequest -> {
 
                                                         // Retrieve the user associated with the join request
-                                                        Mono<User> userMono = reactiveRepositoryUtils.findUserById_OrElseThrow_ResourceNotFoundException(joinRequest.getUserId());
+                                                        Mono<User> userMono = reactiveRepositoryUtils.find_UserById_OrElseThrow_ResourceNotFoundException(joinRequest.getUserId());
 
                                                         // Map the join request and user to a JoinProjectDto object
                                                         return userMono.map(user -> JoinProjectDto.builder()
@@ -195,10 +195,10 @@ public class JoinRequestServiceImpl implements JoinRequestService {
     @Override
     public Mono<JoinResponse> updateJoinRequestStatus(String joinRequestId, JoinStatus joinStatus) {
         // Find the join request with the given ID
-        return reactiveRepositoryUtils.findJoinProjectRequestById_OrElseThrow_ResourceNotFoundException(joinRequestId)
+        return reactiveRepositoryUtils.find_JoinProjectRequestById_OrElseThrow_ResourceNotFoundException(joinRequestId)
                 .flatMap(request ->
                         authenticationService.getCurrentUserMono().flatMap(currentUser ->
-                                reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(request.getProjectId()).flatMap(project -> {
+                                reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(request.getProjectId()).flatMap(project -> {
 
                                     // Check if the user is the leader or admin of the project
                                     return projectUtils.isLeaderOrAdminOfProject(project, currentUser)

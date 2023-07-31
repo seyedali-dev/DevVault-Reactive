@@ -1,6 +1,6 @@
 package com.dev.vault.config;
 
-import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.domain.user.User;
 import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +51,7 @@ public class ApplicationConfiguration {
     @Bean
     public ReactiveUserDetailsService userDetailsService() {
         return email -> {
-            Mono<User> userMono = reactiveRepositoryUtils.findUserByEmail_OrElseThrow_ResourceNotFoundException(email);
+            Mono<User> userMono = reactiveRepositoryUtils.find_UserByEmail_OrElseThrow_ResourceNotFoundException(email);
 
             return userMono.flatMap(user -> {
                 List<GrantedAuthority> authorities = new ArrayList<>();
@@ -60,7 +60,7 @@ public class ApplicationConfiguration {
 
                 // then foreach roleID; map it to a Mono of `SimpleGrantedAuthority`
                 listOfRoleIds.forEach(roleId ->
-                        reactiveRepositoryUtils.findAllRoleByRoleId_OrElseThrow_ResourceNotFoundException(roleId)
+                        reactiveRepositoryUtils.find_AllRoleByRoleId_OrElseThrow_ResourceNotFoundException(roleId)
                                 .flatMap(roles -> Mono.just(new SimpleGrantedAuthority(roles.getRole().name())))
                                 .doOnNext(simpleGrantedAuthority -> log.info("role that got added to SimpleGrantedAuthority: {}", simpleGrantedAuthority.getAuthority()))
                                 // add the granted authority to the authority list

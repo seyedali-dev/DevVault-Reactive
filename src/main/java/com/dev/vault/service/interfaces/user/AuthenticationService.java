@@ -3,7 +3,7 @@ package com.dev.vault.service.interfaces.user;
 import com.dev.vault.helper.payload.request.auth.AuthenticationRequest;
 import com.dev.vault.helper.payload.request.auth.AuthenticationResponse;
 import com.dev.vault.helper.payload.request.auth.RegisterRequest;
-import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.domain.user.User;
 import reactor.core.publisher.Mono;
 
 public interface AuthenticationService {

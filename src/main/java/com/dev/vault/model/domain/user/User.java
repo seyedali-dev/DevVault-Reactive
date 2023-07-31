@@ -1,8 +1,8 @@
-package com.dev.vault.model.entity.user;
+package com.dev.vault.model.domain.user;
 
-import com.dev.vault.model.entity.mappings.TaskUser;
-import com.dev.vault.model.entity.mappings.UserRole;
-import com.dev.vault.model.entity.user.jwt.JwtToken;
+import com.dev.vault.model.domain.relationship.TaskUser;
+import com.dev.vault.model.domain.relationship.UserRole;
+import com.dev.vault.model.domain.user.jwt.JwtToken;
 import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,7 +54,7 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         userRoles.forEach(userRole ->
-                reactiveRepositoryUtils.findAllRoleByRoleId_OrElseThrow_ResourceNotFoundException(userRole.getRoles().getRoleId())
+                reactiveRepositoryUtils.find_AllRoleByRoleId_OrElseThrow_ResourceNotFoundException(userRole.getRoles().getRoleId())
                         .map(roles -> roles.getRole().name())
                         .map(SimpleGrantedAuthority::new)
                         .doOnNext(authorities::add)

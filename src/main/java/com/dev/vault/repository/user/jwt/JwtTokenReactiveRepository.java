@@ -1,6 +1,6 @@
 package com.dev.vault.repository.user.jwt;
 
-import com.dev.vault.model.entity.user.jwt.JwtToken;
+import com.dev.vault.model.domain.user.jwt.JwtToken;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

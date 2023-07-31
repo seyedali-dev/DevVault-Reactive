@@ -6,10 +6,12 @@ import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.request.task.TaskRequest;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
-import com.dev.vault.model.entity.mappings.TaskUser;
-import com.dev.vault.model.entity.task.Task;
+import com.dev.vault.model.domain.relationship.ProjectTask;
+import com.dev.vault.model.domain.relationship.TaskUser;
+import com.dev.vault.model.domain.task.Task;
 import com.dev.vault.model.enums.TaskPriority;
 import com.dev.vault.model.enums.TaskStatus;
+import com.dev.vault.repository.mappings.ProjectTaskReactiveRepository;
 import com.dev.vault.repository.mappings.TaskUserReactiveRepository;
 import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.service.interfaces.task.TaskManagementService;
@@ -24,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-
 /**
  * Service implementation for task management.
  */
@@ -32,8 +33,9 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Slf4j
 public class TaskManagementServiceImpl implements TaskManagementService {
-    private final TaskUserReactiveRepository taskUserReactiveRepository;
 
+    private final ProjectTaskReactiveRepository projectTaskReactiveRepository;
+    private final TaskUserReactiveRepository taskUserReactiveRepository;
     private final TaskReactiveRepository taskReactiveRepository;
     private final AuthenticationService authenticationService;
     private final ProjectUtils projectUtils;
@@ -46,22 +48,22 @@ public class TaskManagementServiceImpl implements TaskManagementService {
      *
      * @param projectId   the ID of the project to create the task for
      * @param taskRequest the request object containing the details of the task to create
-     * @return a TaskResponse object containing the details of the created task
+     * @return a {@code Mono<TaskResponse>} object containing the details of the created task
      * @throws ResourceNotFoundException      if the project with the given ID is not found
      * @throws ResourceAlreadyExistsException if a task with the same name already exists in the project
+     * @throws NotMemberOfProjectException    if the current user is not a member of the project
+     * @throws NotLeaderOfProjectException    if the current user is not the leader or admin of the project
      */
     @Override
     @Transactional
     public Mono<TaskResponse> createNewTask(String projectId, TaskRequest taskRequest) {
         // find the user and project
-        return reactiveRepositoryUtils.findProjectById_OrElseThrow_ResourceNotFoundException(projectId).flatMap(project ->
+        return reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectId).flatMap(project ->
                 authenticationService.getCurrentUserMono().flatMap(currentUser -> {
 
                     // Check if a task with the same name already exists in the project
                     return taskUtils.doesTaskAlreadyExists(taskRequest.getTaskName(), project.getProjectId())
                             .flatMap(taskExists -> {
-                                log.info("projectID: {{}}, taskName: {{}}", project.getProjectId(), taskRequest.getTaskName());
-                                log.info("taskExists?: {{}}", taskExists);
                                 if (taskExists) {
                                     log.error("Task already Exists: taskResource - {{}}", taskRequest.getTaskName());
                                     return Mono.error(new ResourceAlreadyExistsException("Task", "TaskName", taskRequest.getTaskName()));
@@ -90,7 +92,13 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                                                                             .user(currentUser)
                                                                             .build();
                                                                     return taskUserReactiveRepository.save(taskUser)
-                                                                            .then(taskUtils.buildTaskResponse_ForCreatingTask(savedTask, project));
+                                                                            .then(Mono.defer(() -> {
+                                                                                ProjectTask buildProjectTask = ProjectTask.builder()
+                                                                                        .project(project)
+                                                                                        .task(savedTask)
+                                                                                        .build();
+                                                                                return projectTaskReactiveRepository.save(buildProjectTask);
+                                                                            })).then(taskUtils.buildTaskResponse_ForCreatingTask(savedTask, project));
                                                                 });
                                                     });
                                         });
@@ -99,14 +107,15 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         );
     }
 
+
     /**
-     * Searches for tasks based on the given criteria and returns a Flux of {@link TaskResponse} objects.
+     * Searches for tasks based on the given criteria and returns a {@code Flux<TaskResponse>} of matching tasks.
      *
      * @param status            the status of the tasks to search for (optional)
      * @param priority          the priority of the tasks to search for (optional)
      * @param projectId         the ID of the project that the tasks belong to (optional)
      * @param assignedTo_UserId the ID of the user that the tasks are assigned to (optional)
-     * @return a Flux of {@link TaskResponse} objects
+     * @return a {@code Flux<TaskResponse>} of matching tasks
      */
     public Flux<TaskResponse> searchTaskBasedOnDifferentCriteria(TaskStatus status, TaskPriority priority, String projectId, String assignedTo_UserId) {
         Flux<Task> taskFlux = Flux.empty();

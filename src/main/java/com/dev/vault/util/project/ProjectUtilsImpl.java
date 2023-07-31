@@ -3,13 +3,13 @@ package com.dev.vault.util.project;
 import com.dev.vault.helper.payload.request.project.ProjectDto;
 import com.dev.vault.helper.payload.request.user.UserDto;
 import com.dev.vault.helper.payload.response.project.SearchResponse;
-import com.dev.vault.model.entity.project.JoinProjectRequest;
-import com.dev.vault.model.entity.project.Project;
-import com.dev.vault.model.entity.mappings.ProjectMembers;
-import com.dev.vault.model.entity.mappings.UserProjectRole;
-import com.dev.vault.model.entity.user.Roles;
-import com.dev.vault.model.entity.user.User;
-import com.dev.vault.model.entity.mappings.UserRole;
+import com.dev.vault.model.domain.project.JoinProjectRequest;
+import com.dev.vault.model.domain.project.Project;
+import com.dev.vault.model.domain.relationship.ProjectMembers;
+import com.dev.vault.model.domain.relationship.UserProjectRole;
+import com.dev.vault.model.domain.user.Roles;
+import com.dev.vault.model.domain.user.User;
+import com.dev.vault.model.domain.relationship.UserRole;
 import com.dev.vault.model.enums.Role;
 import com.dev.vault.repository.mappings.ProjectMembersReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
@@ -54,7 +54,7 @@ public class ProjectUtilsImpl implements ProjectUtils {
     @Override
     public Mono<Boolean> isLeaderOrAdminOfProject(Project project, User user) {
         // Find the user's role in the project
-        return reactiveRepositoryUtils.findAllUserRolesByUserId_OrElseThrow_ResourceNotFoundException(user.getUserId())
+        return reactiveRepositoryUtils.find_AllUserRolesByUserId_OrElseThrow_ResourceNotFoundException(user.getUserId())
                 .flatMap(userRole -> Mono.just(userRole.getRoles()))
                 .filter(role ->
                         role.getRole().equals(Role.PROJECT_LEADER) || role.getRole().equals(Role.PROJECT_ADMIN)

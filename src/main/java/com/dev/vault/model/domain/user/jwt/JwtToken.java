@@ -1,6 +1,6 @@
-package com.dev.vault.model.entity.user.jwt;
+package com.dev.vault.model.domain.user.jwt;
 
-import com.dev.vault.model.entity.user.User;
+import com.dev.vault.model.domain.user.User;
 import com.dev.vault.model.enums.TokenType;
 import lombok.*;
 import org.springframework.data.annotation.Id;

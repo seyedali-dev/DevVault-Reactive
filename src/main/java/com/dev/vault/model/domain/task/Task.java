@@ -1,6 +1,6 @@
-package com.dev.vault.model.entity.task;
+package com.dev.vault.model.domain.task;
 
-import com.dev.vault.model.entity.mappings.TaskUser;
+import com.dev.vault.model.domain.relationship.TaskUser;
 import com.dev.vault.model.enums.TaskPriority;
 import com.dev.vault.model.enums.TaskStatus;
 import lombok.*;

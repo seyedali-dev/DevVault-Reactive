@@ -4,11 +4,11 @@ import com.dev.vault.config.jwt.JwtService;
 import com.dev.vault.helper.payload.request.auth.AuthenticationResponse;
 import com.dev.vault.helper.payload.request.auth.RegisterRequest;
 import com.dev.vault.helper.payload.request.email.Email;
-import com.dev.vault.model.entity.user.Roles;
-import com.dev.vault.model.entity.user.User;
-import com.dev.vault.model.entity.mappings.UserRole;
-import com.dev.vault.model.entity.user.VerificationToken;
-import com.dev.vault.model.entity.user.jwt.JwtToken;
+import com.dev.vault.model.domain.user.Roles;
+import com.dev.vault.model.domain.user.User;
+import com.dev.vault.model.domain.relationship.UserRole;
+import com.dev.vault.model.domain.user.VerificationToken;
+import com.dev.vault.model.domain.user.jwt.JwtToken;
 import com.dev.vault.model.enums.TokenType;
 import com.dev.vault.repository.user.RolesReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
@@ -55,7 +55,7 @@ public class AuthenticationUtils {
 
 
     public Mono<AuthenticationResponse> createNewUser(RegisterRequest registerRequest) {
-        return reactiveRepositoryUtils.findRoleByRole_OrElseThrow_ResourceNotFoundException(TEAM_MEMBER)
+        return reactiveRepositoryUtils.find_RoleByRole_OrElseThrow_ResourceNotFoundException(TEAM_MEMBER)
                 .flatMap(teamMemberRole -> {
                     User user = createUserFromRequest(registerRequest);
                     log.info("userID: {}", user.getUserId());
@@ -112,7 +112,7 @@ public class AuthenticationUtils {
     }
 
     private Mono<AuthenticationResponse> buildAuthenticationResponse(User user, String jwtToken) {
-        return reactiveRepositoryUtils.findAllUserRolesByUserId_OrElseThrow_ResourceNotFoundException(user.getUserId())
+        return reactiveRepositoryUtils.find_AllUserRolesByUserId_OrElseThrow_ResourceNotFoundException(user.getUserId())
                 .map(userRole -> userRole.getRoles().getRole().name())
                 .collectList()
                 .flatMap(rolesList ->
