@@ -1,12 +1,10 @@
 package com.dev.vault.util.task;
 
-import com.dev.vault.helper.exception.DevVaultException;
-import com.dev.vault.helper.exception.NotLeaderOfProjectException;
-import com.dev.vault.helper.exception.NotMemberOfProjectException;
-import com.dev.vault.helper.exception.ResourceNotFoundException;
+import com.dev.vault.helper.exception.*;
 import com.dev.vault.helper.payload.request.task.TaskRequest;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
 import com.dev.vault.model.domain.project.Project;
+import com.dev.vault.model.domain.relationship.ProjectTask;
 import com.dev.vault.model.domain.relationship.TaskUser;
 import com.dev.vault.model.domain.task.Task;
 import com.dev.vault.model.domain.user.User;
@@ -18,6 +16,7 @@ import com.dev.vault.repository.mappings.TaskUserReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
+import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.service.module.task.TaskAssignmentServiceImpl;
 import com.dev.vault.service.module.task.TaskManagementServiceImpl;
 import com.dev.vault.util.project.ProjectUtilsImpl;
@@ -51,6 +50,10 @@ import static com.dev.vault.model.enums.TaskStatus.IN_PROGRESS;
  *      For {@link TaskAssignmentServiceImpl#assignTaskToUsers(String, String, List) assignTaskToUsers(String taskId, String projectId, List&lt;String&gt; userIdList)}.</li>
  *      <li>Build a {@link Task} object.</li>
  *      <li>Validate whether the {@link Task} belongs to the {@link Project} and whether the {@link User} is a member and leader/admin of the project.</li>
+ *      <li>Check if a task with the same name already exists in the project.</li>
+ *      <li>Checks if the currentUser is the leader or admin of the project.</li>
+ *      <li>Save the given task entity and related entities ({@link TaskUser} and {@link ProjectTask}).</li>
+ *      <li>Build a Task object for updating an existing task.</li>
  * </ul>
  */
 @Slf4j
@@ -67,6 +70,7 @@ public class TaskUtils {
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
     private final ProjectUtilsImpl projectUtils;
     private final UserReactiveRepository userReactiveRepository;
+    private final AuthenticationService authenticationService;
 
 
     /**
@@ -272,7 +276,8 @@ public class TaskUtils {
                                         .projectName(project.getProjectName())
                                         .taskStatus(task.getTaskStatus())
                                         .dueDate(task.getDueDate())
-                                        .assignedUsers(responseMap).taskPriority(task.getTaskPriority())
+                                        .assignedUsers(responseMap)
+                                        .taskPriority(task.getTaskPriority())
                                         .build()
                         )
                 );
@@ -286,7 +291,7 @@ public class TaskUtils {
      * @param user    user.
      * @return created {@link Task}.
      */
-    public Task buildTaskObject(Project project, User user, TaskRequest taskRequest) {
+    private Task buildTaskObject(Project project, User user, TaskRequest taskRequest) {
         Task task = mapper.map(taskRequest, Task.class);
         task.setCreatedByUserId(user.getUserId());
         task.setProjectId(project.getProjectId());
@@ -338,5 +343,141 @@ public class TaskUtils {
                 })).then();
     }
 
+
+    /**
+     * Check if a task with the same name already exists in the project.
+     *
+     * @param taskExists  <code>true</code> if a task with the same name already exists in the project.
+     * @param taskRequest contains information about the new task being created.
+     * @return A mono that emits a boolean indicating whether a task with the same name already exists in the project.
+     */
+    public Mono<Boolean> handleTaskExists(boolean taskExists, TaskRequest taskRequest) {
+        if (taskExists) {
+            log.error("Task already Exists: taskResource - {{}}", taskRequest.getTaskName());
+            return Mono.error(new ResourceAlreadyExistsException("Task", "TaskName", taskRequest.getTaskName()));
+        }
+        return Mono.just(false);
+    }
+
+
+    /**
+     * Checks if the currentUser is a member of the project.
+     *
+     * @param isMemberOfProject boolean value indicating if the currentUser is a member of the project
+     * @param project           the project to check membership for
+     * @param currentUser       the current user
+     * @return a Mono<Boolean> indicating if the currentUser is a member of the project
+     * @throws NotMemberOfProjectException if the currentUser is not a member of the project
+     */
+    public Mono<Boolean> handleUserMembership(boolean isMemberOfProject, Project project, User currentUser) {
+        if (!isMemberOfProject) {
+            log.error("You are not a member of this project: {} - user: {}", project.getProjectName(), currentUser.getUsername());
+            return Mono.error(new NotMemberOfProjectException("You are not a member of this project"));
+        }
+        return Mono.just(true);
+    }
+
+
+    /**
+     * Checks if the currentUser is the leader or admin of the project.
+     *
+     * @param isLeaderOrAdminOfProject boolean value indicating if the currentUser is the leader or admin of the project
+     * @param project                  the project to check leadership for
+     * @param currentUser              the current user
+     * @return a Mono<Boolean> indicating if the currentUser is the leader or admin of the project
+     * @throws NotLeaderOfProjectException if the currentUser is not the leader or admin of the project
+     */
+    public Mono<Boolean> handleUserLeadership(boolean isLeaderOrAdminOfProject, Project project, User currentUser) {
+        if (!isLeaderOrAdminOfProject) {
+            log.error("👮🏻only leader and admin can create task!👮🏻: {{}} - user: {{}}", project.getProjectName(), currentUser.getUsername());
+            return Mono.error(new NotLeaderOfProjectException("👮🏻Only Leader and Admin can create task!👮🏻"));
+        }
+        return Mono.just(true);
+    }
+
+
+    /**
+     * Save the given task entity and related entities ({@link TaskUser} and {@link ProjectTask}).
+     *
+     * @param project     is the project associated with the task.
+     * @param currentUser is the user creating the task.
+     * @param taskRequest contains information about the new task being created.
+     * @return A mono containing the saved task entity.
+     */
+    public Mono<Task> saveTaskAndEntities(Project project, User currentUser, TaskRequest taskRequest) {
+        Task task = buildTaskObject(project, currentUser, taskRequest);
+
+        TaskUser taskUser = TaskUser.builder()
+                .task(task)
+                .user(currentUser)
+                .build();
+        ProjectTask projectTask = ProjectTask.builder()
+                .project(project)
+                .task(task)
+                .build();
+
+        return taskReactiveRepository.save(task).flatMap(savedTask ->
+                taskUserReactiveRepository.save(taskUser)
+                        .then(
+                                Mono.defer(() -> projectTaskReactiveRepository.save(projectTask))
+                        ).thenReturn(savedTask)
+        );
+    }
+
+
+    /**
+     * Builds a Task object for updating an existing task.
+     *
+     * @param task        the existing task to be updated
+     * @param taskRequest the updated task request object
+     * @return a Mono<Task> object representing the updated task
+     */
+    public Mono<Task> buildTaskObject_ForUpdateTask(Task task, TaskRequest taskRequest) {
+        task.setTaskStatus(taskRequest.getTaskStatus());
+        task.setTaskName(taskRequest.getTaskName());
+        task.setTaskPriority(taskRequest.getTaskPriority());
+        task.setDescription(taskRequest.getDescription());
+        task.setDueDate(taskRequest.getDueDate());
+        return Mono.just(task);
+    }
+
+
+    /**
+     * Updates the details of a task with the given task ID and returns a Mono<TaskResponse> object representing the updated task.
+     *
+     * @param task        the task to update
+     * @param taskRequest the updated task request object
+     * @return a Mono<TaskResponse> object representing the updated task
+     * @throws ResourceNotFoundException if the task or project is not found
+     */
+    public Mono<TaskResponse> updateTask(Task task, TaskRequest taskRequest) {
+        Map<String, String> assignedUserMap = new HashMap<>();
+
+        // find the project associated with the task
+        return reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(task.getProjectId())
+                .flatMap(project -> authenticationService.getCurrentUserMono()
+
+                        // put the new details of task into the found task
+                        .flatMap(user -> buildTaskObject_ForUpdateTask(task, taskRequest)
+
+                                //save the task
+                                .flatMap(builtTaskObject -> saveTask(task, assignedUserMap)
+
+                                        // build the task response
+                                        .flatMap(savedTask -> buildTaskResponse_ForAssignTaskToUsers(builtTaskObject, project, assignedUserMap))
+                                )
+                        )
+                );
+    }
+
+
+    private Mono<Task> saveTask(Task task, Map<String, String> assignedUserMap) {
+        task.getAssignedTaskUser().forEach(taskUser -> {
+            String userId = taskUser.getUser().getUserId();
+            String username = taskUser.getUser().getUsername();
+            assignedUserMap.put(userId, username);
+        });
+        return taskReactiveRepository.save(task);
+    }
 
 }

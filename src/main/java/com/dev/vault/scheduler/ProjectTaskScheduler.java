@@ -40,7 +40,7 @@ public class ProjectTaskScheduler {
      * This method marks overdue tasks as {@link TaskStatus#OVERDUE OVERDUE} and saves them to the database.<br>
      * It iterates over all tasks in the database with a status of {@link TaskStatus#IN_PROGRESS IN_PROGRESS} and checks if their due date is before the current date and time.<br>
      * If a task is overdue, its status is updated to {@link TaskStatus#OVERDUE OVERDUE}, its "{@link Task#hasOverdue hasOverdue}" flag is set to true, and its "{@link Task#completionDate completionDate}" is set to the current date and time.<br>
-     * The method runs every 10 minutes.<br><br>
+     * The method runs every 1 minutes.<br><br>
      * <p>
      * You can change the scheduling time according to your needs using the following pattern:<br>
      * {{ second, minute, hour, day, month, weekday }}.<br>
@@ -53,7 +53,7 @@ public class ProjectTaskScheduler {
      * Use the appropriate scheduling pattern to suit your needs.<br>
      */
     @SuppressWarnings("JavadocReference")
-    @Scheduled(fixedRateString = "PT10M")
+    @Scheduled(fixedRateString = "PT1M")
     public void markTaskOverDue() {
         taskReactiveRepository.findAll()
                 // TODO: SEND NOTIFICATION OF OVERDUE TASK

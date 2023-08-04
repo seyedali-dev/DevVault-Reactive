@@ -1,5 +1,9 @@
 package com.dev.vault.controller.task;
 
+import com.dev.vault.helper.exception.NotLeaderOfProjectException;
+import com.dev.vault.helper.exception.NotMemberOfProjectException;
+import com.dev.vault.helper.exception.ResourceAlreadyExistsException;
+import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.request.task.TaskRequest;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
 import com.dev.vault.model.enums.TaskPriority;
@@ -7,6 +11,7 @@ import com.dev.vault.model.enums.TaskStatus;
 import com.dev.vault.service.interfaces.task.TaskManagementService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -35,7 +40,8 @@ public class TaskManagementController {
      * @return a Mono of ResponseEntity containing a TaskResponse object and an HTTP status code
      */
     @PostMapping("/newTask")
-    public Mono<ResponseEntity<TaskResponse>> newTask(@Valid @RequestParam String projectId, @RequestBody TaskRequest taskRequest) {
+    public Mono<ResponseEntity<TaskResponse>> newTask(@RequestParam String projectId, @Valid @RequestBody TaskRequest taskRequest)
+            throws ResourceNotFoundException, ResourceAlreadyExistsException, NotMemberOfProjectException, NotLeaderOfProjectException {
         return taskService.createNewTask(projectId, taskRequest)
                 .map(createdTask -> new ResponseEntity<>(createdTask, CREATED));
     }
@@ -44,9 +50,9 @@ public class TaskManagementController {
     /**
      * Searches for tasks based on different criteria.
      *
-     * @param status           the status of the tasks to search for
-     * @param priority         the priority of the tasks to search for
-     * @param projectId        the ID of the project to search for tasks in
+     * @param status            the status of the tasks to search for
+     * @param priority          the priority of the tasks to search for
+     * @param projectId         the ID of the project to search for tasks in
      * @param assignedTo_UserId the ID of the user the tasks are assigned to
      * @return a Mono of ResponseEntity containing a Flux of TaskResponse objects and an HTTP status code
      */
@@ -62,24 +68,20 @@ public class TaskManagementController {
         );
     }
 
-//
-//    /**
-//     * Updates the details of an existing task.
-//     *
-//     * @param taskId      the ID of the task to update
-//     * @param taskRequest the request object containing the updated details of the task
-//     * @return a ResponseEntity containing a TaskResponse object and an HTTP status code
-//     */
-//    @SuppressWarnings("CommentedOutCode")
-//    @PutMapping("/updateTask/{taskId}") //TODO
-//    public ResponseEntity<TaskResponse> updateTask(
-//            @PathVariable Long taskId,
-//            @RequestBody TaskRequest taskRequest
-//    ) {
-////        TaskResponse taskResponse = taskService.updateTask(taskId, taskRequest);
-////        return ResponseEntity.ok(taskResponse);
-//        return null;
-//    }
+
+    /**
+     * Updates the details of an existing task.
+     *
+     * @param taskId      the ID of the task to update.
+     * @param taskRequest the request object containing the updated details of the task.
+     * @return a <code>Mono&lt;ResponseEntity&gt;</code> containing a {@link TaskResponse} object and an <code>OK</code> {@link HttpStatus} code.
+     */
+    @PutMapping("/updateTask")
+    public Mono<ResponseEntity<TaskResponse>> updateTask(@RequestParam String taskId, @Valid @RequestBody TaskRequest taskRequest)
+            throws ResourceNotFoundException {
+        return taskService.updateTaskDetails(taskId, taskRequest)
+                .map(ResponseEntity::ok);
+    }
 //
 //
 //    /**
