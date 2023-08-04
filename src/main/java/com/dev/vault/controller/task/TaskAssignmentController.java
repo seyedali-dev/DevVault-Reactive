@@ -63,76 +63,76 @@ public class TaskAssignmentController {
     }
 
 
-/**
- * Unassigns a task from a specific user.
- *
- * @param taskId    the ID of the task to unassign
- * @param projectId the ID of the project the task belongs to
- * @param userId    the ID of the user to unassign the task from
- * @return a ResponseEntity with an OK HTTP status code
- * <p>
- * Unassigns a task from a list of users.
- * @param taskId    the ID of the task to unassign
- * @param projectId the ID of the project the task belongs to
- * @param userIdList    the IDs of the users to unassign the task from
- * @return a ResponseEntity with an OK HTTP status code
- * <p>
- * Unassigns a task from a all users in a project.
- * @param taskId    the ID of the task to unassign
- * @param projectId the ID of the project the task belongs to
- * @return a ResponseEntity with an OK HTTP status code
- *//*
-
-    @DeleteMapping("/unassignTask") //TODO
-    public ResponseEntity<Void> unassignTaskFromUser(
-            @RequestParam("taskId") Long taskId,
-            @RequestParam("projectId") Long projectId,
-            @RequestParam("userId") Long userId
-    ) {
-//        taskService.unassignTaskFromUser(taskId, projectId, userId);
-//        return ResponseEntity.ok().build();
-        return null;
-    }
-
-    */
-/**
- * Unassigns a task from a list of users.
- *
- * @param taskId    the ID of the task to unassign
- * @param projectId the ID of the project the task belongs to
- * @param userIdList    the IDs of the users to unassign the task from
- * @return a ResponseEntity with an OK HTTP status code
- *//*
-
-    @DeleteMapping("/unassignTask/multiple/users") //TODO
-    public ResponseEntity<Void> unassignTaskFromUsers(
-            @RequestParam("taskId") Long taskId,
-            @RequestParam("projectId") Long projectId,
-            @RequestBody List<Long> userIdList
-    ) {
-//        taskService.unassignTaskFromUser(taskId, projectId, userId);
-//        return ResponseEntity.ok().build();
-        return null;
-    }
-
-    */
-/**
- * Unassigns a task from a all users in a project.
- *
- * @param taskId    the ID of the task to unassign
- * @param projectId the ID of the project the task belongs to
- * @return a ResponseEntity with an OK HTTP status code
- *//*
-
-    @DeleteMapping("/unassignTask/all") //TODO
-    public ResponseEntity<Void> unassignTaskFromAllUsersInProject(
-            @RequestParam("taskId") Long taskId,
-            @RequestParam("projectId") Long projectId
-    ) {
-//        taskService.unassignTaskFromUser(taskId, projectId, userId);
-//        return ResponseEntity.ok().build();
-        return null;
-    }
-}
-*/
+///**
+// * Unassigns a task from a specific user.
+// *
+// * @param taskId    the ID of the task to unassign
+// * @param projectId the ID of the project the task belongs to
+// * @param userId    the ID of the user to unassign the task from
+// * @return a ResponseEntity with an OK HTTP status code
+// * <p>
+// * Unassigns a task from a list of users.
+// * @param taskId    the ID of the task to unassign
+// * @param projectId the ID of the project the task belongs to
+// * @param userIdList    the IDs of the users to unassign the task from
+// * @return a ResponseEntity with an OK HTTP status code
+// * <p>
+// * Unassigns a task from a all users in a project.
+// * @param taskId    the ID of the task to unassign
+// * @param projectId the ID of the project the task belongs to
+// * @return a ResponseEntity with an OK HTTP status code
+// *//*
+//
+//    @DeleteMapping("/unassignTask") //TODO
+//    public ResponseEntity<Void> unassignTaskFromUser(
+//            @RequestParam("taskId") Long taskId,
+//            @RequestParam("projectId") Long projectId,
+//            @RequestParam("userId") Long userId
+//    ) {
+////        taskService.unassignTaskFromUser(taskId, projectId, userId);
+////        return ResponseEntity.ok().build();
+//        return null;
+//    }
+//
+//    */
+///**
+// * Unassigns a task from a list of users.
+// *
+// * @param taskId    the ID of the task to unassign
+// * @param projectId the ID of the project the task belongs to
+// * @param userIdList    the IDs of the users to unassign the task from
+// * @return a ResponseEntity with an OK HTTP status code
+// *//*
+//
+//    @DeleteMapping("/unassignTask/multiple/users") //TODO
+//    public ResponseEntity<Void> unassignTaskFromUsers(
+//            @RequestParam("taskId") Long taskId,
+//            @RequestParam("projectId") Long projectId,
+//            @RequestBody List<Long> userIdList
+//    ) {
+////        taskService.unassignTaskFromUser(taskId, projectId, userId);
+////        return ResponseEntity.ok().build();
+//        return null;
+//    }
+//
+//    */
+///**
+// * Unassigns a task from a all users in a project.
+// *
+// * @param taskId    the ID of the task to unassign
+// * @param projectId the ID of the project the task belongs to
+// * @return a ResponseEntity with an OK HTTP status code
+// *//*
+//
+//    @DeleteMapping("/unassignTask/all") //TODO
+//    public ResponseEntity<Void> unassignTaskFromAllUsersInProject(
+//            @RequestParam("taskId") Long taskId,
+//            @RequestParam("projectId") Long projectId
+//    ) {
+////        taskService.unassignTaskFromUser(taskId, projectId, userId);
+////        return ResponseEntity.ok().build();
+//        return null;
+//    }
+//}
+//*/
 }

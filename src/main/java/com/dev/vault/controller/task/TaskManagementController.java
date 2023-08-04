@@ -26,6 +26,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RestController
 @RequestMapping("/api/v1/task/management")
 @RequiredArgsConstructor
+@SuppressWarnings("CommentedOutCode")
 //@PreAuthorize("hasAnyRole('PROJECT_LEADER','PROJECT_ADMIN')")
 public class TaskManagementController {
 

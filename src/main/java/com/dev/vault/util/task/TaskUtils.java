@@ -315,6 +315,7 @@ public class TaskUtils {
      * @throws NotMemberOfProjectException if the user is not a member of the project
      * @throws NotLeaderOfProjectException if the user is not the leader or admin of the project
      */
+    @SuppressWarnings("ConstantValue")
     public Mono<Void> validateTaskAndProject(Task task, Project project, User user) {
         // Check if the task belongs to the project or throw a DevVaultException if it doesn't
         return projectTaskReactiveRepository.findByTask_TaskId(task.getTaskId()).flatMap(projectTask ->
