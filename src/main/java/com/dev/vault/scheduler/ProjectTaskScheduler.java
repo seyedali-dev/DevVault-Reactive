@@ -1,5 +1,7 @@
 package com.dev.vault.scheduler;
 
+import com.dev.vault.model.domain.task.Task;
+import com.dev.vault.model.enums.TaskStatus;
 import com.dev.vault.repository.task.TaskReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,13 +37,13 @@ public class ProjectTaskScheduler {
     private final TaskReactiveRepository taskReactiveRepository;
 
     /**
-     * This method marks overdue tasks as "overdue" and saves them to the database.<br>
-     * It iterates over all tasks in the database with a status of "IN_PROGRESS" and checks if their due date is before the current date and time.<br>
-     * If a task is overdue, its status is updated to "OVERDUE", its "hasOverdue" flag is set to true, and its "completionDate" is set to the current date and time.<br>
+     * This method marks overdue tasks as {@link TaskStatus#OVERDUE OVERDUE} and saves them to the database.<br>
+     * It iterates over all tasks in the database with a status of {@link TaskStatus#IN_PROGRESS IN_PROGRESS} and checks if their due date is before the current date and time.<br>
+     * If a task is overdue, its status is updated to {@link TaskStatus#OVERDUE OVERDUE}, its "{@link Task#hasOverdue hasOverdue}" flag is set to true, and its "{@link Task#completionDate completionDate}" is set to the current date and time.<br>
      * The method runs every 10 minutes.<br><br>
      * <p>
      * You can change the scheduling time according to your needs using the following pattern:<br>
-     * second, minute, hour, day, month, weekday.<br>
+     * {{ second, minute, hour, day, month, weekday }}.<br>
      * Examples of different scheduling patterns include:<br>
      * <p>
      * 1. "@Scheduled(cron = '0 0 18,21,0 * * *')": runs every day at 6:00 PM, 9:00 PM, and 12:00 AM.<br>
@@ -50,35 +52,7 @@ public class ProjectTaskScheduler {
      * <p>
      * Use the appropriate scheduling pattern to suit your needs.<br>
      */
-    /*@Scheduled(fixedRateString = "PT10S")
-    public void markTaskOverDue() {
-        log.info("------------------");
-        log.info("Scheduling task...");
-        taskReactiveRepository.findAll()
-                // TODO: SEND NOTIFICATION OF OVERDUE TASK
-                // Check if the task is already marked as overdue
-                .filter(task -> task.getTaskStatus().equals(OVERDUE)).doOnNext(task -> log.info("task overdue: {{}}", task.getTaskName()))
-
-                // Check if the task is in progress
-                .filter(task -> !task.getTaskStatus().equals(IN_PROGRESS)).doOnNext(task -> log.info("task in_progress: {{}}", task.getTaskName()))
-
-                // Check if the task is overdue
-                .filter(task -> task.getDueDate().isBefore(LocalDateTime.now())).doOnNext(task -> log.info("task due_date: {{}}", task.getTaskName()))
-                .flatMap(task -> {
-                    log.warn("⌚⌚⌚Scheduler::: Task: {}, is overdue!⌚⌚⌚", task.getTaskName());
-
-                    // Update the task status, hasOverdue flag, and completionDate and save to db
-                    task.setTaskStatus(OVERDUE);
-                    task.setHasOverdue(true);
-                    task.setCompletionDate(LocalDateTime.now());
-
-                    // Return a Mono that saves the updated task to the database
-                    return Mono.fromCallable(() -> taskReactiveRepository.save(task));
-                }).flatMap(mono -> mono, 10) // execute up to 10 updates concurrently
-                .subscribe(); // subscribe to trigger the execution of the reactive pipeline
-        log.info("------------------");
-    }*/
-    @Scheduled(fixedRateString = "PT10S")
+    @Scheduled(fixedRateString = "PT10M")
     public void markTaskOverDue() {
         taskReactiveRepository.findAll()
                 // TODO: SEND NOTIFICATION OF OVERDUE TASK
