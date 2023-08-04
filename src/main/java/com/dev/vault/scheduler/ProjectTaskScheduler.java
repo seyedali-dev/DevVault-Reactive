@@ -52,6 +52,7 @@ public class ProjectTaskScheduler {
      * <p>
      * Use the appropriate scheduling pattern to suit your needs.<br>
      */
+    @SuppressWarnings("JavadocReference")
     @Scheduled(fixedRateString = "PT10M")
     public void markTaskOverDue() {
         taskReactiveRepository.findAll()
