@@ -3,7 +3,14 @@ package com.dev.vault.scheduler;
 import com.dev.vault.repository.task.TaskReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+
+import java.time.LocalDateTime;
+
+import static com.dev.vault.model.enums.TaskStatus.IN_PROGRESS;
+import static com.dev.vault.model.enums.TaskStatus.OVERDUE;
 
 /**
  * This class schedules the marking of overdue tasks and sends notifications.<br>
@@ -24,6 +31,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 public class ProjectTaskScheduler {
+
     private final TaskReactiveRepository taskReactiveRepository;
 
     /**
@@ -42,32 +50,67 @@ public class ProjectTaskScheduler {
      * <p>
      * Use the appropriate scheduling pattern to suit your needs.<br>
      */
-    /*@Scheduled(fixedRateString = "PT10M")
+    /*@Scheduled(fixedRateString = "PT10S")
     public void markTaskOverDue() {
-        List<Task> tasks = taskReactiveRepository.findAll();
-        for (Task task : tasks) {
-            // TODO: SEND NOTIFICATION OF OVERDUE TASK
-            // Check if the task is already marked as overdue
-            if (task.getTaskStatus().equals(OVERDUE))
-                continue;
+        log.info("------------------");
+        log.info("Scheduling task...");
+        taskReactiveRepository.findAll()
+                // TODO: SEND NOTIFICATION OF OVERDUE TASK
+                // Check if the task is already marked as overdue
+                .filter(task -> task.getTaskStatus().equals(OVERDUE)).doOnNext(task -> log.info("task overdue: {{}}", task.getTaskName()))
 
-            // Check if the task is in progress
-            if (!task.getTaskStatus().equals(IN_PROGRESS))
-                continue;
+                // Check if the task is in progress
+                .filter(task -> !task.getTaskStatus().equals(IN_PROGRESS)).doOnNext(task -> log.info("task in_progress: {{}}", task.getTaskName()))
 
-            // Check if the task is overdue
-            if (task.getDueDate().isBefore(LocalDateTime.now())) {
-                log.info("⌚⌚⌚Scheduler::: Task: {}, is overdue!⌚⌚⌚", task.getTaskName());
+                // Check if the task is overdue
+                .filter(task -> task.getDueDate().isBefore(LocalDateTime.now())).doOnNext(task -> log.info("task due_date: {{}}", task.getTaskName()))
+                .flatMap(task -> {
+                    log.warn("⌚⌚⌚Scheduler::: Task: {}, is overdue!⌚⌚⌚", task.getTaskName());
 
-                // Update the task status, hasOverdue flag, and completionDate and save to db
-                task.setTaskStatus(TaskStatus.OVERDUE);
-                task.setHasOverdue(true);
-                task.setCompletionDate(LocalDateTime.now());
+                    // Update the task status, hasOverdue flag, and completionDate and save to db
+                    task.setTaskStatus(OVERDUE);
+                    task.setHasOverdue(true);
+                    task.setCompletionDate(LocalDateTime.now());
 
-                taskReactiveRepository.save(task);
-            }
-        }
+                    // Return a Mono that saves the updated task to the database
+                    return Mono.fromCallable(() -> taskReactiveRepository.save(task));
+                }).flatMap(mono -> mono, 10) // execute up to 10 updates concurrently
+                .subscribe(); // subscribe to trigger the execution of the reactive pipeline
+        log.info("------------------");
     }*/
+    @Scheduled(fixedRateString = "PT10S")
+    public void markTaskOverDue() {
+        taskReactiveRepository.findAll()
+                // TODO: SEND NOTIFICATION OF OVERDUE TASK
+                .flatMap(task -> {
 
-    //TODO: REMINDER SYSTEM FOR TASKS THAT ARE APPROACHING THERE DUE DATE.
+                    // Check if the task is already marked as overdue -> do nothing if it is
+                    if (task.getTaskStatus().equals(OVERDUE))
+                        return Flux.empty();
+
+                    // Check if the task is in progress -> do nothing if it is (since there's no need to check OVERDUE & COMPLETED tasks)
+                    if (!task.getTaskStatus().equals(IN_PROGRESS))
+                        return Flux.empty();
+
+                    // Check if the task is overdue -> the real check of overdue tasks
+                    if (task.getDueDate().isBefore(LocalDateTime.now())) {
+                        log.info("------------------");
+                        log.info("Scheduling task...");
+                        log.warn("⌚⌚⌚Scheduler::: Task: {{}}, is overdue!⌚⌚⌚", task.getTaskName());
+
+                        // Update the task status, hasOverdue flag, and completionDate and save to db
+                        task.setTaskStatus(OVERDUE);
+                        task.setHasOverdue(true);
+                        task.setCompletionDate(LocalDateTime.now());
+
+                        log.info("------------------");
+
+                        // Return a Mono that saves the updated task to the database
+                        return taskReactiveRepository.save(task);
+                    }
+                    return Flux.empty();
+                }).subscribe();
+    }
 }
+
+//TODO: REMINDER SYSTEM FOR TASKS THAT ARE APPROACHING THERE DUE DATE.
