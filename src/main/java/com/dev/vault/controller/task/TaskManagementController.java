@@ -93,7 +93,7 @@ public class TaskManagementController {
      */
     @DeleteMapping("/deleteTask")
     public Mono<ResponseEntity<Void>> deleteTask(@RequestParam String taskId)
-            throws ResourceNotFoundException {
+            throws ResourceNotFoundException, NotMemberOfProjectException, NotLeaderOfProjectException {
         return taskService.deleteTask(taskId)
                 .then(Mono.just(ResponseEntity.ok().build()));
     }

@@ -63,5 +63,5 @@ public interface TaskManagementService {
      * @throws ResourceNotFoundException if the task with the given ID is not found.
      */
     Mono<Void> deleteTask(String taskId)
-            throws ResourceNotFoundException;
+            throws ResourceNotFoundException, NotMemberOfProjectException, NotLeaderOfProjectException;
 }

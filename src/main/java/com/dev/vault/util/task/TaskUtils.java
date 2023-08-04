@@ -16,7 +16,6 @@ import com.dev.vault.repository.mappings.TaskUserReactiveRepository;
 import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.task.TaskReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
-import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.service.module.task.TaskAssignmentServiceImpl;
 import com.dev.vault.service.module.task.TaskManagementServiceImpl;
 import com.dev.vault.util.project.ProjectUtilsImpl;
@@ -70,7 +69,6 @@ public class TaskUtils {
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
     private final ProjectUtilsImpl projectUtils;
     private final UserReactiveRepository userReactiveRepository;
-    private final AuthenticationService authenticationService;
 
 
     /**
@@ -442,36 +440,7 @@ public class TaskUtils {
     }
 
 
-    /**
-     * Updates the details of a task with the given task ID and returns a Mono<TaskResponse> object representing the updated task.
-     *
-     * @param task        the task to update
-     * @param taskRequest the updated task request object
-     * @return a Mono<TaskResponse> object representing the updated task
-     * @throws ResourceNotFoundException if the task or project is not found
-     */
-    public Mono<TaskResponse> updateTask(Task task, TaskRequest taskRequest) {
-        Map<String, String> assignedUserMap = new HashMap<>();
-
-        // find the project associated with the task
-        return reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(task.getProjectId())
-                .flatMap(project -> authenticationService.getCurrentUserMono()
-
-                        // put the new details of task into the found task
-                        .flatMap(user -> buildTaskObject_ForUpdateTask(task, taskRequest)
-
-                                //save the task
-                                .flatMap(builtTaskObject -> saveTask(task, assignedUserMap)
-
-                                        // build the task response
-                                        .flatMap(savedTask -> buildTaskResponse_ForAssignTaskToUsers(builtTaskObject, project, assignedUserMap))
-                                )
-                        )
-                );
-    }
-
-
-    private Mono<Task> saveTask(Task task, Map<String, String> assignedUserMap) {
+    public Mono<Task> saveTask(Task task, Map<String, String> assignedUserMap) {
         task.getAssignedTaskUser().forEach(taskUser -> {
             String userId = taskUser.getUser().getUserId();
             String username = taskUser.getUser().getUsername();
@@ -480,4 +449,22 @@ public class TaskUtils {
         return taskReactiveRepository.save(task);
     }
 
+
+    /**
+     * This method deletes the associations of a given Task object. It uses the {@link ReactiveRepositoryUtils} to find the {@link TaskUser} and {@link ProjectTask}
+     * associated with the task, and then deletes them using the delete method of their repositories respectively.
+     *
+     * @param task the Task object whose associations need to be deleted
+     * @return a Mono of void
+     * @throws ResourceNotFoundException if the task users or project task associated with the task cannot be found
+     */
+    public Mono<Void> deleteTaskAssociations(Task task) {
+        return reactiveRepositoryUtils.find_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId()).flatMap(taskUserReactiveRepository::delete)
+                .then(reactiveRepositoryUtils.find_ProjectTaskByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId()).flatMap(projectTaskReactiveRepository::delete));
+    }
+
+
+    public Mono<Void> updateTaskAssociations(Task task) {
+        return Mono.empty(); //TODO
+    }
 }

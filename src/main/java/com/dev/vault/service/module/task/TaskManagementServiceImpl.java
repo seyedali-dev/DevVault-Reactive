@@ -10,10 +10,8 @@ import com.dev.vault.model.domain.relationship.TaskUser;
 import com.dev.vault.model.domain.task.Task;
 import com.dev.vault.model.enums.TaskPriority;
 import com.dev.vault.model.enums.TaskStatus;
-import com.dev.vault.repository.mappings.ProjectTaskReactiveRepository;
 import com.dev.vault.repository.mappings.TaskUserReactiveRepository;
 import com.dev.vault.repository.task.TaskReactiveRepository;
-import com.dev.vault.repository.user.RolesReactiveRepository;
 import com.dev.vault.service.interfaces.task.TaskManagementService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.util.project.ProjectUtils;
@@ -21,11 +19,13 @@ import com.dev.vault.util.repository.ReactiveRepositoryUtils;
 import com.dev.vault.util.task.TaskUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Service implementation for task management.
@@ -34,16 +34,13 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Slf4j
 public class TaskManagementServiceImpl implements TaskManagementService {
-    private final RolesReactiveRepository rolesReactiveRepository;
 
-    private final ProjectTaskReactiveRepository projectTaskReactiveRepository;
     private final TaskUserReactiveRepository taskUserReactiveRepository;
     private final TaskReactiveRepository taskReactiveRepository;
     private final AuthenticationService authenticationService;
     private final ProjectUtils projectUtils;
     private final TaskUtils taskUtils;
     private final ReactiveRepositoryUtils reactiveRepositoryUtils;
-    private final ModelMapper modelMapper;
 
 
     /**
@@ -128,9 +125,30 @@ public class TaskManagementServiceImpl implements TaskManagementService {
      */
     @Override
     public Mono<TaskResponse> updateTaskDetails(String taskId, TaskRequest taskRequest) {
+        Map<String, String> assignedUserMap = new HashMap<>();
+
         // find the task with the given ID
         return reactiveRepositoryUtils.find_TaskById_OrElseThrow_ResourceNotFoundException(taskId)
-                .flatMap(task -> taskUtils.updateTask(task, taskRequest));
+
+                // find the project associated with the task
+                .flatMap(task -> reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(task.getProjectId())
+                        .flatMap(project -> authenticationService.getCurrentUserMono()
+
+                                // put the new details of task into the found task
+                                .flatMap(user -> taskUtils.buildTaskObject_ForUpdateTask(task, taskRequest)
+
+                                        //save the task
+                                        .flatMap(builtTaskObject -> taskUtils.saveTask(task, assignedUserMap)
+
+                                                // build the task response
+                                                .flatMap(savedTask -> taskUtils.buildTaskResponse_ForAssignTaskToUsers(builtTaskObject, project, assignedUserMap))
+
+                                                // delete the associations of the task
+                                                .flatMap(response -> taskUtils.updateTaskAssociations(task).thenReturn(response))
+                                        )
+                                )
+                        )
+                );
     }
 
 
@@ -156,8 +174,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                                         .flatMap(isMemberOfProject -> projectUtils.isLeaderOrAdminOfProject(project, user))
                                         .flatMap(isLeaderOrAdminOfProject -> taskUtils.handleUserLeadership(isLeaderOrAdminOfProject, project, user))
                                         .flatMap(isLeaderOrAdminOfProject -> taskReactiveRepository.deleteById(taskId))
-                                        .then(reactiveRepositoryUtils.find_TaskUserByTaskId_OrElseThrow_ResourceNotFoundException(taskId).flatMap(taskUserReactiveRepository::delete))
-                                        .then(reactiveRepositoryUtils.find_ProjectTaskByTaskId_OrElseThrow_ResourceNotFoundException(taskId).flatMap(projectTaskReactiveRepository::delete))
+                                        .then(taskUtils.deleteTaskAssociations(task))
                         )
                 )
         );
