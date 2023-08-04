@@ -53,4 +53,15 @@ public interface TaskManagementService {
      */
     Mono<TaskResponse> updateTaskDetails(String taskId, TaskRequest taskRequest)
             throws ResourceNotFoundException;
+
+
+    /**
+     * Deletes a task by its ID.
+     *
+     * @param taskId the ID of the task to delete
+     * @return a Mono of ResponseEntity with an OK HTTP status code
+     * @throws ResourceNotFoundException if the task with the given ID is not found.
+     */
+    Mono<Void> deleteTask(String taskId)
+            throws ResourceNotFoundException;
 }

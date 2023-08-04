@@ -13,6 +13,7 @@ import com.dev.vault.model.enums.TaskStatus;
 import com.dev.vault.repository.mappings.ProjectTaskReactiveRepository;
 import com.dev.vault.repository.mappings.TaskUserReactiveRepository;
 import com.dev.vault.repository.task.TaskReactiveRepository;
+import com.dev.vault.repository.user.RolesReactiveRepository;
 import com.dev.vault.service.interfaces.task.TaskManagementService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.util.project.ProjectUtils;
@@ -26,9 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Service implementation for task management.
  */
@@ -36,6 +34,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class TaskManagementServiceImpl implements TaskManagementService {
+    private final RolesReactiveRepository rolesReactiveRepository;
 
     private final ProjectTaskReactiveRepository projectTaskReactiveRepository;
     private final TaskUserReactiveRepository taskUserReactiveRepository;
@@ -132,6 +131,36 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         // find the task with the given ID
         return reactiveRepositoryUtils.find_TaskById_OrElseThrow_ResourceNotFoundException(taskId)
                 .flatMap(task -> taskUtils.updateTask(task, taskRequest));
+    }
+
+
+    /**
+     * Deletes a task by its ID.
+     *
+     * @param taskId the ID of the task to delete
+     * @return a Mono of ResponseEntity with an OK HTTP status code
+     * @throws ResourceNotFoundException   if the task with the given ID is not found.<br>
+     *                                     if the project is not found.<br>
+     *                                     if the taskUser is not found.<br>
+     *                                     if the projectTask is not found.
+     * @throws NotMemberOfProjectException if the current user is not a member of the project.
+     * @throws NotLeaderOfProjectException if the current user is not the leader or admin of the project.
+     */
+    @Override
+    public Mono<Void> deleteTask(String taskId) {
+        return reactiveRepositoryUtils.find_TaskById_OrElseThrow_ResourceNotFoundException(taskId).flatMap(task ->
+                reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(task.getProjectId()).flatMap(project ->
+                        authenticationService.getCurrentUserMono().flatMap(user ->
+                                projectUtils.isMemberOfProject(project, user)
+                                        .flatMap(isMemberOfProject -> taskUtils.handleUserMembership(isMemberOfProject, project, user))
+                                        .flatMap(isMemberOfProject -> projectUtils.isLeaderOrAdminOfProject(project, user))
+                                        .flatMap(isLeaderOrAdminOfProject -> taskUtils.handleUserLeadership(isLeaderOrAdminOfProject, project, user))
+                                        .flatMap(isLeaderOrAdminOfProject -> taskReactiveRepository.deleteById(taskId))
+                                        .then(reactiveRepositoryUtils.find_TaskUserByTaskId_OrElseThrow_ResourceNotFoundException(taskId).flatMap(taskUserReactiveRepository::delete))
+                                        .then(reactiveRepositoryUtils.find_ProjectTaskByTaskId_OrElseThrow_ResourceNotFoundException(taskId).flatMap(projectTaskReactiveRepository::delete))
+                        )
+                )
+        );
     }
 
 }

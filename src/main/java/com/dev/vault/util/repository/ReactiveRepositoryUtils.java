@@ -1,15 +1,17 @@
 package com.dev.vault.util.repository;
 
 import com.dev.vault.helper.exception.ResourceNotFoundException;
-import com.dev.vault.model.domain.relationship.TaskUser;
-import com.dev.vault.model.domain.relationship.UserRole;
 import com.dev.vault.model.domain.project.JoinCoupon;
 import com.dev.vault.model.domain.project.JoinProjectRequest;
 import com.dev.vault.model.domain.project.Project;
+import com.dev.vault.model.domain.relationship.ProjectTask;
+import com.dev.vault.model.domain.relationship.TaskUser;
+import com.dev.vault.model.domain.relationship.UserRole;
 import com.dev.vault.model.domain.task.Task;
 import com.dev.vault.model.domain.user.Roles;
 import com.dev.vault.model.domain.user.User;
 import com.dev.vault.model.enums.Role;
+import com.dev.vault.repository.mappings.ProjectTaskReactiveRepository;
 import com.dev.vault.repository.mappings.TaskUserReactiveRepository;
 import com.dev.vault.repository.mappings.UserRoleReactiveRepository;
 import com.dev.vault.repository.project.JoinCouponReactiveRepository;
@@ -28,8 +30,9 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Slf4j
 public class ReactiveRepositoryUtils {
-    private final TaskUserReactiveRepository taskUserReactiveRepository;
 
+    private final ProjectTaskReactiveRepository projectTaskReactiveRepository;
+    private final TaskUserReactiveRepository taskUserReactiveRepository;
     private final JoinProjectRequestReactiveRepository joinProjectRequestReactiveRepository;
     private final UserRoleReactiveRepository userRoleReactiveRepository;
     private final TaskReactiveRepository taskReactiveRepository;
@@ -96,6 +99,18 @@ public class ReactiveRepositoryUtils {
 
     public Flux<TaskUser> find_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(String taskId) {
         return taskUserReactiveRepository.findByTask_TaskId(taskId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("TaskUser", "taskId", taskId)))
+                .doOnError(error -> log.error("Error occurred while finding taskUser by taskId: {}", error.getMessage()));
+    }
+
+    public Mono<TaskUser> find_TaskUserByTaskId_OrElseThrow_ResourceNotFoundException(String taskId) {
+        return taskUserReactiveRepository.findTaskUserByTask_TaskId(taskId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("TaskUser", "taskId", taskId)))
+                .doOnError(error -> log.error("Error occurred while finding taskUser by taskId: {}", error.getMessage()));
+    }
+
+    public Mono<ProjectTask> find_ProjectTaskByTaskId_OrElseThrow_ResourceNotFoundException(String taskId) {
+        return projectTaskReactiveRepository.findProjectTaskByTask_TaskId(taskId)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("TaskUser", "taskId", taskId)))
                 .doOnError(error -> log.error("Error occurred while finding taskUser by taskId: {}", error.getMessage()));
     }

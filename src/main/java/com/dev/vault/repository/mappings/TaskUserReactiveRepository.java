@@ -11,4 +11,5 @@ public interface TaskUserReactiveRepository extends ReactiveMongoRepository<Task
     Mono<Boolean> existsByTaskAndUser(Task task, User user);
     Flux<TaskUser> findByUser_UserId(String userId);
     Flux<TaskUser> findByTask_TaskId(String taskId);
+    Mono<TaskUser> findTaskUserByTask_TaskId(String taskId);
 }

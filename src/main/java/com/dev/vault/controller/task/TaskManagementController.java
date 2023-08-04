@@ -82,37 +82,21 @@ public class TaskManagementController {
         return taskService.updateTaskDetails(taskId, taskRequest)
                 .map(ResponseEntity::ok);
     }
-//
-//
-//    /**
-//     * Retrieves the details of a specific task.
-//     *
-//     * @param taskId the ID of the task to retrieve
-//     * @return a ResponseEntity containing a TaskResponse object and an HTTP status code
-//     */
-//
-//    @SuppressWarnings("CommentedOutCode")
-//    @GetMapping("/task/{taskId}") //TODO
-//    public ResponseEntity<TaskResponse> getTaskDetails(@PathVariable Long taskId) {
-////        TaskResponse taskResponse = taskService.getTaskDetails(taskId);
-////        return ResponseEntity.ok(taskResponse);
-//        return null;
-//    }
-//
-//
-//    /**
-//     * Deletes a task by its ID.
-//     *
-//     * @param taskId the ID of the task to delete
-//     * @return a ResponseEntity with an OK HTTP status code
-//     */
-//    @SuppressWarnings("CommentedOutCode")
-//    @DeleteMapping("/deleteTask/{taskId}") //TODO
-//    public ResponseEntity<Void> deleteTask(@PathVariable Long taskId) {
-////        taskService.deleteTask(taskId);
-////        return ResponseEntity.ok().build();
-//        return null;
-//    }
+
+
+    /**
+     * Deletes a task by its ID.
+     *
+     * @param taskId the ID of the task to delete.
+     * @return a Mono of ResponseEntity with an OK HTTP status code.
+     * @throws ResourceNotFoundException if the task with the given ID is not found.
+     */
+    @DeleteMapping("/deleteTask")
+    public Mono<ResponseEntity<Void>> deleteTask(@RequestParam String taskId)
+            throws ResourceNotFoundException {
+        return taskService.deleteTask(taskId)
+                .then(Mono.just(ResponseEntity.ok().build()));
+    }
 //
 //
 //
