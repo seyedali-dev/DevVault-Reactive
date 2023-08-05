@@ -124,6 +124,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
      * @throws ResourceNotFoundException if the task or associated project is not found
      */
     @Override
+    @Transactional
     public Mono<TaskResponse> updateTaskDetails(String taskId, TaskRequest taskRequest) {
         Map<String, String> assignedUserMap = new HashMap<>();
 
@@ -135,16 +136,21 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                         .flatMap(project -> authenticationService.getCurrentUserMono()
 
                                 // put the new details of task into the found task
-                                .flatMap(user -> taskUtils.buildTaskObject_ForUpdateTask(task, taskRequest)
+                                .flatMap(user -> projectUtils.isMemberOfProject(project, user)
+                                        .flatMap(isMemberOfProject -> taskUtils.handleUserMembership(isMemberOfProject, project, user))
+                                        .flatMap(isMemberOfProject -> projectUtils.isLeaderOrAdminOfProject(project, user))
+                                        .flatMap(isLeaderOrAdminOfProject -> taskUtils.handleUserLeadership(isLeaderOrAdminOfProject, project, user))
+                                        .flatMap(isLeaderOrAdminOfProject -> taskUtils.buildTaskObject_ForUpdateTask(task, taskRequest)
 
-                                        //save the task
-                                        .flatMap(builtTaskObject -> taskUtils.saveTask(task, assignedUserMap)
+                                                //save the task
+                                                .flatMap(builtTaskObject -> taskUtils.saveTask(task, assignedUserMap)
 
-                                                // build the task response
-                                                .flatMap(savedTask -> taskUtils.buildTaskResponse_ForAssignTaskToUsers(builtTaskObject, project, assignedUserMap))
+                                                        // build the task response
+                                                        .flatMap(savedTask -> taskUtils.buildTaskResponse_ForAssignTaskToUsers(builtTaskObject, project, assignedUserMap))
 
-                                                // delete the associations of the task
-                                                .flatMap(response -> taskUtils.updateTaskAssociations(task).thenReturn(response))
+                                                        // update the associations of the task
+                                                        .flatMap(response -> taskUtils.updateTaskAssociations(task, taskRequest).thenReturn(response))
+                                                )
                                         )
                                 )
                         )
@@ -165,6 +171,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
      * @throws NotLeaderOfProjectException if the current user is not the leader or admin of the project.
      */
     @Override
+    @Transactional
     public Mono<Void> deleteTask(String taskId) {
         return reactiveRepositoryUtils.find_TaskById_OrElseThrow_ResourceNotFoundException(taskId).flatMap(task ->
                 reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(task.getProjectId()).flatMap(project ->

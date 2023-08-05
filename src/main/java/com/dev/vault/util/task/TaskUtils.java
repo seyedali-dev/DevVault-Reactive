@@ -389,7 +389,7 @@ public class TaskUtils {
     public Mono<Boolean> handleUserLeadership(boolean isLeaderOrAdminOfProject, Project project, User currentUser) {
         if (!isLeaderOrAdminOfProject) {
             log.error("👮🏻only leader and admin can create task!👮🏻: {{}} - user: {{}}", project.getProjectName(), currentUser.getUsername());
-            return Mono.error(new NotLeaderOfProjectException("👮🏻Only Leader and Admin can create task!👮🏻"));
+            return Mono.error(new NotLeaderOfProjectException("👮🏻Only Leader and Admin can access this resource!👮🏻"));
         }
         return Mono.just(true);
     }
@@ -432,11 +432,21 @@ public class TaskUtils {
      * @return a Mono<Task> object representing the updated task
      */
     public Mono<Task> buildTaskObject_ForUpdateTask(Task task, TaskRequest taskRequest) {
-        task.setTaskStatus(taskRequest.getTaskStatus());
-        task.setTaskName(taskRequest.getTaskName());
-        task.setTaskPriority(taskRequest.getTaskPriority());
-        task.setDescription(taskRequest.getDescription());
-        task.setDueDate(taskRequest.getDueDate());
+        if (taskRequest.getTaskStatus() != null)
+            task.setTaskStatus(taskRequest.getTaskStatus());
+
+        if (taskRequest.getTaskName() != null && !taskRequest.getTaskName().isEmpty())
+            task.setTaskName(taskRequest.getTaskName());
+
+        if (taskRequest.getTaskPriority() != null)
+            task.setTaskPriority(taskRequest.getTaskPriority());
+
+        if (taskRequest.getDescription() != null && !taskRequest.getDescription().isEmpty())
+            task.setDescription(taskRequest.getDescription());
+
+        if (taskRequest.getDueDate() != null)
+            task.setDueDate(taskRequest.getDueDate());
+
         return Mono.just(task);
     }
 
@@ -465,7 +475,80 @@ public class TaskUtils {
     }
 
 
-    public Mono<Void> updateTaskAssociations(Task task) {
-        return Mono.empty(); //TODO
+    /**
+     * Updates the associations of a given task, including the assigned users in TaskUser and the project in ProjectTask.
+     *
+     * @param task        The task to be updated.
+     * @param taskRequest The TaskRequest object containing the updated task details and associated user IDs and project ID.
+     * @return A Mono representing the completion of the update operation.
+     */
+    public Mono<Void> updateTaskAssociations(Task task, TaskRequest taskRequest) {
+        // Update the assigned users in TaskUser
+        return update_TaskUser_Association(task, taskRequest)
+
+                // Update the project in ProjectTask
+                .then(update_ProjectTask_Association(task, taskRequest));
     }
+
+    /**
+     * Updates the associations of a given task in TaskUser.
+     *
+     * @param task        The task for which the associations need to be updated.
+     * @param taskRequest The TaskRequest object containing the updated task details and associated user IDs.
+     * @return A Mono representing the completion of the update operation.
+     * @throws ResourceNotFoundException if the {@link TaskUser} cannot be found.
+     */
+    private Mono<Void> update_TaskUser_Association(Task task, TaskRequest taskRequest) {
+        // Find the TaskUser associated with the task by taskId
+        return reactiveRepositoryUtils.find_TaskUserByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId())
+
+                // Perform the update operation within the context of the found TaskUser
+                .flatMap(taskUser ->
+                        // Build the updated Task object based on the TaskRequest
+                        buildTaskObject_ForUpdateTask(taskUser.getTask(), taskRequest)
+
+                                // Save the TaskUser after updating its associations
+                                .then(taskUserReactiveRepository.save(taskUser))
+
+                                // Since we only want to complete the Mono and return Void,
+                                // we use 'thenReturn' to convert the TaskUser to an empty Mono.
+                                .thenReturn(Mono.empty())
+                )
+
+                // We use 'then' to ensure that the update operation completes when the
+                // previous 'flatMap' completes successfully.
+                .then();
+    }
+
+    /**
+     * Updates the associations of a given task in ProjectTask.
+     *
+     * @param task        The task for which the associations need to be updated.
+     * @param taskRequest The TaskRequest object containing the updated task details and associated project ID.
+     * @return A Mono representing the completion of the update operation.
+     * @throws ResourceNotFoundException if the {@link ProjectTask} cannot be found.
+     */
+    private Mono<Void> update_ProjectTask_Association(Task task, TaskRequest taskRequest) {
+        // Find the ProjectTask associated with the task by taskId
+        return reactiveRepositoryUtils.find_ProjectTaskByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId())
+
+                // Perform the update operation within the context of the found ProjectTask
+                .flatMap(projectTask ->
+                        // Build the updated Task object based on the TaskRequest
+                        buildTaskObject_ForUpdateTask(projectTask.getTask(), taskRequest)
+
+                                // Save the ProjectTask after updating its associations
+                                .then(projectTaskReactiveRepository.save(projectTask))
+
+                                // Since we only want to complete the Mono and return Void,
+                                // we use 'thenReturn' to convert the ProjectTask to an empty Mono.
+                                .thenReturn(Mono.empty())
+                )
+
+                // We use 'then' to ensure that the update operation completes when the
+                // previous 'flatMap' completes successfully.
+                .then();
+    }
+
+
 }
