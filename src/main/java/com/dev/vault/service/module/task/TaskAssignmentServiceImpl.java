@@ -137,8 +137,6 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
         // to unassign a task from the user, we need to remove the taskUser object from db
         return reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectId)
                 .flatMap(project -> authenticationService.getCurrentUserMono()
-
-                        // put the new details of task into the found task
                         .flatMap(user -> projectUtils.isMemberOfProject(project, user)
                                 .flatMap(isMemberOfProject -> taskUtils.handleUserMembership(isMemberOfProject, project, user))
                                 .flatMap(isMemberOfProject -> projectUtils.isLeaderOrAdminOfProject(project, user))
@@ -149,18 +147,49 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
                         )
                 );
 
-    }
+    } //TODO:: the owner of the task should not get unassigned
 
 
+    /**
+     * Unassigns a task from a list of users in a given project.
+     *
+     * @param taskId     the ID of the task to unassign.
+     * @param projectId  the ID of the project containing the task.
+     * @param userIdList a List of user IDs to unassign the task from.
+     * @return a {@code Mono<Void>} that completes when the task has been unassigned from all users.
+     * @throws ResourceNotFoundException   if the task, project or users are not found.
+     * @throws NotLeaderOfProjectException if the user is not a leader of the project.
+     * @throws NotMemberOfProjectException if the user is not a member of the project.
+     */
     @Override
-    public void unAssignTaskFromUsers(Long taskId, Long projectId, List<Long> userIdList) {
-        //TODO
-    }
+    public Mono<Void> unAssignTaskFromUsersList(String taskId, String projectId, List<String> userIdList) {
+        // 1. first of all check if the current user is leader, admin and member of project
+        // 2. find the project, users and taskUsers
+        // 3. delete the taskUsers for the corresponding users
+        return reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectId)
+                .flatMap(project -> authenticationService.getCurrentUserMono()
+                        .flatMap(user -> projectUtils.isMemberOfProject(project, user)
+                                .flatMap(isMemberOfProject -> taskUtils.handleUserMembership(isMemberOfProject, project, user))
+                                .flatMap(isMemberOfProject -> projectUtils.isLeaderOrAdminOfProject(project, user))
+                                .flatMap(isLeaderOrAdminOfProject -> taskUtils.handleUserLeadership(isLeaderOrAdminOfProject, project, user))
+                                .flatMap(isLeaderOrAdminOfProject ->
+                                        taskUtils.unassignTaskFromUsersList(taskId, project, userIdList)
+                                                .collectList().flatMap(ignored -> Mono.empty())
+                                )
+                        )
+                );
+    } //TODO:: if a user is not member, iterate the response
 
 
+    /**
+     * Unassigns a task from all users in a project.
+     *
+     * @param taskId    The ID of the task to unassign.
+     * @param projectId The ID of the project to which the task belongs.
+     */
     @Override
-    public void unassignTaskFromAllUsersInProject(Long taskId, Long projectId) {
-        //TODO
+    public Mono<Void> unassignTaskFromAllUsersInProject(String taskId, String projectId) {
+        return null;
     }
 
 }

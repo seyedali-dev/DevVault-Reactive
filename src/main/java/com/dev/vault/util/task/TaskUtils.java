@@ -551,4 +551,16 @@ public class TaskUtils {
     }
 
 
+    public Flux<Void> unassignTaskFromUsersList(String taskId, Project project, List<String> userIdList) {
+        // 1. find the users through `userIdList`
+        // 2. find the `taskUser` for each of them
+        // 3. delete those `taskUsers`
+        return Flux.fromIterable(userIdList)
+                .flatMap(userId -> reactiveRepositoryUtils.find_UserById_OrElseThrow_ResourceNotFoundException(userId)
+                        .flatMap(foundUser -> reactiveRepositoryUtils.find_TaskUserByTaskAndUserId_OrElseThrow_ResourceNotFoundException(taskId, foundUser.getUserId())
+                                .flatMap(taskUserReactiveRepository::delete)
+                        )
+                );
+    }
+
 }

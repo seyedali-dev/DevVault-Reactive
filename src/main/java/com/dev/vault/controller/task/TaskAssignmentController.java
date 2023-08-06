@@ -85,29 +85,31 @@ public class TaskAssignmentController {
         return taskAssignmentService.unAssignTaskFromUser(taskId, projectId, userId)
                 .then(Mono.just(ResponseEntity.ok(new ApiResponse("Task unassigned successfully.", true))));
     }
+
+
+    /**
+     * Unassigns a task from multiple users in a given project.
+     *
+     * @param taskId     the ID of the task to unassign.
+     * @param projectId  the ID of the project containing the task.
+     * @param userIdList a List of user IDs to unassign the task from.
+     * @return a {@code Mono<ResponseEntity<ApiResponse>>} that completes when the task has been unassigned from all users.
+     * @throws ResourceNotFoundException   if the task, project or users are not found.
+     * @throws NotLeaderOfProjectException if the user is not a leader of the project.
+     * @throws NotMemberOfProjectException if the user is not a member of the project.
+     */
+    @DeleteMapping("/unassignTask/multipleUsers")
+    public Mono<ResponseEntity<ApiResponse>> unassignTaskFromUsers(
+            @RequestParam("taskId") String taskId,
+            @RequestParam("projectId") String projectId,
+            @RequestBody List<String> userIdList
+    ) throws ResourceNotFoundException, NotLeaderOfProjectException, NotMemberOfProjectException {
+        return taskAssignmentService.unAssignTaskFromUsersList(taskId, projectId, userIdList)
+                .then(Mono.just(ResponseEntity.ok(new ApiResponse("Task unassigned from users successfully.", true))));
+    }
+
+
 //
-//    */
-///**
-// * Unassigns a task from a list of users.
-// *
-// * @param taskId    the ID of the task to unassign
-// * @param projectId the ID of the project the task belongs to
-// * @param userIdList    the IDs of the users to unassign the task from
-// * @return a ResponseEntity with an OK HTTP status code
-// *//*
-//
-//    @DeleteMapping("/unassignTask/multiple/users") //TODO
-//    public ResponseEntity<Void> unassignTaskFromUsers(
-//            @RequestParam("taskId") Long taskId,
-//            @RequestParam("projectId") Long projectId,
-//            @RequestBody List<Long> userIdList
-//    ) {
-////        taskService.unassignTaskFromUser(taskId, projectId, userId);
-////        return ResponseEntity.ok().build();
-//        return null;
-//    }
-//
-//    */
 ///**
 // * Unassigns a task from a all users in a project.
 // *
