@@ -26,7 +26,6 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RestController
 @RequestMapping("/api/v1/task/management")
 @RequiredArgsConstructor
-@SuppressWarnings("CommentedOutCode")
 //@PreAuthorize("hasAnyRole('PROJECT_LEADER','PROJECT_ADMIN')")
 public class TaskManagementController {
 
@@ -76,10 +75,13 @@ public class TaskManagementController {
      * @param taskId      the ID of the task to update.
      * @param taskRequest the request object containing the updated details of the task.
      * @return a <code>Mono&lt;ResponseEntity&gt;</code> containing a {@link TaskResponse} object and an <code>OK</code> {@link HttpStatus} code.
+     * @throws ResourceNotFoundException   if the task or associated project is not found.
+     * @throws NotMemberOfProjectException if the current user is not a member of the project.
+     * @throws NotLeaderOfProjectException if the current user is not the leader or admin of the project.
      */
     @PutMapping("/updateTask")
     public Mono<ResponseEntity<TaskResponse>> updateTask(@RequestParam String taskId, @Valid @RequestBody TaskRequest taskRequest)
-            throws ResourceNotFoundException {
+            throws ResourceNotFoundException, NotLeaderOfProjectException, NotMemberOfProjectException {
         return taskService.updateTaskDetails(taskId, taskRequest)
                 .map(ResponseEntity::ok);
     }
@@ -98,29 +100,17 @@ public class TaskManagementController {
         return taskService.deleteTask(taskId)
                 .then(Mono.just(ResponseEntity.ok().build()));
     }
-//
-//
-//
-//
-//    /**
-//     * Exports tasks to a specified format.
-//     *
-//     * @param format     the format to export the tasks to (CSV, Excel, PDF, etc.)
-//     * @param status     the status of the tasks to export
-//     * @param priority   the priority of the tasks to export
-//     * @param projectId  the ID of the project to export tasks for
-//     * @param assignedTo the ID of the user the tasks are assigned to
-//     * @return a ResponseEntity containing the exported file and an HTTP status code
-//     */
-//    @GetMapping("/exportTasks") //TODO
-//    public ResponseEntity<?> exportTasks(
-//            @RequestParam(value = "format") String format,
-//            @RequestParam(value = "status", required = false) TaskStatus status,
-//            @RequestParam(value = "priority", required = false) TaskPriority priority,
-//            @RequestParam(value = "projectId", required = false) Long projectId,
-//            @RequestParam(value = "assignedTo", required = false) Long assignedTo
-//    ) {
-//        return null;
-//    }
+
+
+    @GetMapping("/exportTasks")
+    public Mono<ResponseEntity<?>> exportTasks(
+            @RequestParam(value = "format") String format,
+            @RequestParam(value = "status", required = false) TaskStatus status,
+            @RequestParam(value = "priority", required = false) TaskPriority priority,
+            @RequestParam(value = "projectId", required = false) Long projectId,
+            @RequestParam(value = "assignedTo", required = false) Long assignedTo
+    ) {
+        return null; // TODO
+    }
 
 }

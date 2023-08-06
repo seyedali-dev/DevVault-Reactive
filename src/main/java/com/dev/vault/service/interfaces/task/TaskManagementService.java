@@ -49,10 +49,12 @@ public interface TaskManagementService {
      * @param taskId      the id of the task that is being updated.
      * @param taskRequest the new details of the task to update.
      * @return a Mono of TaskResponse object containing the details of updated task.
-     * @throws ResourceNotFoundException if the task with the given ID is not found.
+     * @throws ResourceNotFoundException   if the task or associated project is not found.
+     * @throws NotMemberOfProjectException if the current user is not a member of the project.
+     * @throws NotLeaderOfProjectException if the current user is not the leader or admin of the project.
      */
     Mono<TaskResponse> updateTaskDetails(String taskId, TaskRequest taskRequest)
-            throws ResourceNotFoundException;
+            throws ResourceNotFoundException, NotLeaderOfProjectException, NotMemberOfProjectException;
 
 
     /**

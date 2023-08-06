@@ -114,4 +114,11 @@ public class ReactiveRepositoryUtils {
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("TaskUser", "taskId", taskId)))
                 .doOnError(error -> log.error("Error occurred while finding taskUser by taskId: {}", error.getMessage()));
     }
+
+    public Mono<TaskUser> find_TaskUserByTaskAndUserId_OrElseThrow_ResourceNotFoundException(String taskId, String userId) {
+        return taskUserReactiveRepository.findByTask_TaskIdAndUser_UserId(taskId, userId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("This User is not assigned to this task!")))
+                .doOnError(error -> log.error("Error occurred while finding taskUser by {taskId, userId}: {}", error.getMessage()));
+    }
+
 }

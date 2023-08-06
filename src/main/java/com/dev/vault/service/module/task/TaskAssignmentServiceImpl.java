@@ -2,8 +2,10 @@ package com.dev.vault.service.module.task;
 
 import com.dev.vault.helper.exception.DevVaultException;
 import com.dev.vault.helper.exception.NotLeaderOfProjectException;
+import com.dev.vault.helper.exception.NotMemberOfProjectException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
+import com.dev.vault.repository.mappings.TaskUserReactiveRepository;
 import com.dev.vault.service.interfaces.task.TaskAssignmentService;
 import com.dev.vault.service.interfaces.user.AuthenticationService;
 import com.dev.vault.util.project.ProjectUtils;
@@ -27,6 +29,7 @@ import java.util.Map;
 @Slf4j
 public class TaskAssignmentServiceImpl implements TaskAssignmentService {
 
+    private final TaskUserReactiveRepository taskUserReactiveRepository;
     private final AuthenticationService authenticationService;
     private final ProjectUtils projectUtils;
     private final TaskUtils taskUtils;
@@ -117,9 +120,35 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
     }
 
 
+    /**
+     * Unassigns a task from a user in a given project.
+     *
+     * @param taskId    the ID of the task to unassign.
+     * @param projectId the ID of the project containing the task.
+     * @param userId    the ID of the user to unassign the task from.
+     * @return a {@code Mono<Void>} that completes when the task has been unassigned.
+     * @throws ResourceNotFoundException   if the task, project or the user with the given ID is not found.
+     * @throws NotMemberOfProjectException if the current user is not a member of the project.
+     * @throws NotLeaderOfProjectException if the current user is not the leader or admin of the project.
+     */
     @Override
-    public void unAssignTaskFromUser(Long taskId, Long projectId, Long userId) {
-        //TODO
+    @Transactional
+    public Mono<Void> unAssignTaskFromUser(String taskId, String projectId, String userId) {
+        // to unassign a task from the user, we need to remove the taskUser object from db
+        return reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectId)
+                .flatMap(project -> authenticationService.getCurrentUserMono()
+
+                        // put the new details of task into the found task
+                        .flatMap(user -> projectUtils.isMemberOfProject(project, user)
+                                .flatMap(isMemberOfProject -> taskUtils.handleUserMembership(isMemberOfProject, project, user))
+                                .flatMap(isMemberOfProject -> projectUtils.isLeaderOrAdminOfProject(project, user))
+                                .flatMap(isLeaderOrAdminOfProject -> taskUtils.handleUserLeadership(isLeaderOrAdminOfProject, project, user))
+                                .flatMap(isLeaderOrAdminOfProject -> reactiveRepositoryUtils.find_TaskUserByTaskAndUserId_OrElseThrow_ResourceNotFoundException(taskId, userId)
+                                        .flatMap(taskUserReactiveRepository::delete)
+                                )
+                        )
+                );
+
     }
 
 

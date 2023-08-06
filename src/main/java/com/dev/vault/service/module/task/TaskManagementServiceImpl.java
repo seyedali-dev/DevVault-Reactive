@@ -118,10 +118,12 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     /**
      * Updates the details of a task.
      *
-     * @param taskId      the ID of the task to update
-     * @param taskRequest the new task details
-     * @return a Mono emitting the updated TaskResponse object
-     * @throws ResourceNotFoundException if the task or associated project is not found
+     * @param taskId      the ID of the task to update.
+     * @param taskRequest the new task details.
+     * @return a Mono emitting the updated TaskResponse object.
+     * @throws ResourceNotFoundException   if the task or associated project is not found.
+     * @throws NotMemberOfProjectException if the current user is not a member of the project.
+     * @throws NotLeaderOfProjectException if the current user is not the leader or admin of the project.
      */
     @Override
     @Transactional

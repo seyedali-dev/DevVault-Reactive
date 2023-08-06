@@ -2,7 +2,9 @@ package com.dev.vault.controller.task;
 
 import com.dev.vault.helper.exception.DevVaultException;
 import com.dev.vault.helper.exception.NotLeaderOfProjectException;
+import com.dev.vault.helper.exception.NotMemberOfProjectException;
 import com.dev.vault.helper.exception.ResourceNotFoundException;
+import com.dev.vault.helper.payload.response.ApiResponse;
 import com.dev.vault.helper.payload.response.task.TaskResponse;
 import com.dev.vault.service.interfaces.task.TaskAssignmentService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +23,7 @@ import java.util.List;
 // @PreAuthorize("hasAnyRole('PROJECT_LEADER','PROJECT_ADMIN')")
 public class TaskAssignmentController {
 
-    private final TaskAssignmentService taskService;
+    private final TaskAssignmentService taskAssignmentService;
 
 
     /**
@@ -41,7 +43,7 @@ public class TaskAssignmentController {
             @RequestParam("projectId") String projectId,
             @RequestBody List<String> userIdList
     ) throws ResourceNotFoundException, NotLeaderOfProjectException, DevVaultException {
-        return taskService.assignTaskToUsers(taskId, projectId, userIdList)
+        return taskAssignmentService.assignTaskToUsers(taskId, projectId, userIdList)
                 .map(ResponseEntity::ok);
     }
 
@@ -58,41 +60,31 @@ public class TaskAssignmentController {
             @RequestParam("taskId") String taskId,
             @RequestParam("projectId") String projectId
     ) {
-        return taskService.assignTaskToAllUsersInProject(taskId, projectId)
+        return taskAssignmentService.assignTaskToAllUsersInProject(taskId, projectId)
                 .map(ResponseEntity::ok);
     }
 
 
-///**
-// * Unassigns a task from a specific user.
-// *
-// * @param taskId    the ID of the task to unassign
-// * @param projectId the ID of the project the task belongs to
-// * @param userId    the ID of the user to unassign the task from
-// * @return a ResponseEntity with an OK HTTP status code
-// * <p>
-// * Unassigns a task from a list of users.
-// * @param taskId    the ID of the task to unassign
-// * @param projectId the ID of the project the task belongs to
-// * @param userIdList    the IDs of the users to unassign the task from
-// * @return a ResponseEntity with an OK HTTP status code
-// * <p>
-// * Unassigns a task from a all users in a project.
-// * @param taskId    the ID of the task to unassign
-// * @param projectId the ID of the project the task belongs to
-// * @return a ResponseEntity with an OK HTTP status code
-// *//*
-//
-//    @DeleteMapping("/unassignTask") //TODO
-//    public ResponseEntity<Void> unassignTaskFromUser(
-//            @RequestParam("taskId") Long taskId,
-//            @RequestParam("projectId") Long projectId,
-//            @RequestParam("userId") Long userId
-//    ) {
-////        taskService.unassignTaskFromUser(taskId, projectId, userId);
-////        return ResponseEntity.ok().build();
-//        return null;
-//    }
+    /**
+     * Unassigns a task from a user in a given project.
+     *
+     * @param taskId    the ID of the task to unassign
+     * @param projectId the ID of the project containing the task
+     * @param userId    the ID of the user to unassign the task from
+     * @return a {@code Mono<ResponseEntity<ApiResponse>>} that completes when the task has been unassigned
+     * @throws ResourceNotFoundException   if the task, project or the user with the given ID is not found.
+     * @throws NotMemberOfProjectException if the current user is not a member of the project.
+     * @throws NotLeaderOfProjectException if the current user is not the leader or admin of the project.
+     */
+    @DeleteMapping("/unassignTask")
+    public Mono<ResponseEntity<ApiResponse>> unassignTaskFromUser(
+            @RequestParam("taskId") String taskId,
+            @RequestParam("projectId") String projectId,
+            @RequestParam("userId") String userId
+    ) throws ResourceNotFoundException, NotLeaderOfProjectException, NotMemberOfProjectException {
+        return taskAssignmentService.unAssignTaskFromUser(taskId, projectId, userId)
+                .then(Mono.just(ResponseEntity.ok(new ApiResponse("Task unassigned successfully.", true))));
+    }
 //
 //    */
 ///**
