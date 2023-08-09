@@ -11,8 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableAsync
 // TODO: Refactor the services. the codes are way too chunky and long.
-// TODO: There are a few places that have been using wrong exception signatures, refactor them and use proper exceptions
-//  (DevVaultException -> NotMemberOfProjectException)
 @EnableScheduling
 @EnableReactiveMongoAuditing // for enabling @CreatedDate
 public class DevVaultReactiveApplication {

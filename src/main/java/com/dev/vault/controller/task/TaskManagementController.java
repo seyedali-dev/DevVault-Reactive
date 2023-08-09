@@ -26,6 +26,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RestController
 @RequestMapping("/api/v1/task/management")
 @RequiredArgsConstructor
+@SuppressWarnings("CommentedOutCode")
 //@PreAuthorize("hasAnyRole('PROJECT_LEADER','PROJECT_ADMIN')")
 public class TaskManagementController {
 
@@ -102,6 +103,7 @@ public class TaskManagementController {
     }
 
 
+/*
     @GetMapping("/exportTasks")
     public Mono<ResponseEntity<?>> exportTasks(
             @RequestParam(value = "format") String format,
@@ -112,5 +114,5 @@ public class TaskManagementController {
     ) {
         return null; // TODO
     }
-
+*/
 }

@@ -15,10 +15,12 @@ import java.util.Map;
 @Builder
 public class TaskResponse {
 
+    private String taskId;
     private String taskName;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime dueDate;
     private String projectName;
+    private String projectId;
     private TaskStatus taskStatus;
     private Map<String, String> assignedUsers;
     private TaskPriority taskPriority;

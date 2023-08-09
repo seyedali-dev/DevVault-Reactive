@@ -75,9 +75,14 @@ public interface TaskAssignmentService {
     /**
      * Unassigns a task from all users in a project.
      *
-     * @param taskId    The ID of the task to unassign.
-     * @param projectId The ID of the project to which the task belongs.
+     * @param taskId    the ID of the task to unassign
+     * @param projectId the ID of the project from which to unassign the task
+     * @return a Mono of Void representing the completion of the unassign process
+     * @throws ResourceNotFoundException   if the task or project is not found
+     * @throws NotLeaderOfProjectException if the user is not a leader of the project
+     * @throws NotMemberOfProjectException if the user is not a member of the project
      */
-    Mono<Void> unassignTaskFromAllUsersInProject(String taskId, String projectId);
+    Mono<Void> unassignTaskFromAllUsersInProject(String taskId, String projectId)
+            throws ResourceNotFoundException, NotLeaderOfProjectException, NotMemberOfProjectException;
 
 }

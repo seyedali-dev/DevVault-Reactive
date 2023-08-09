@@ -160,7 +160,7 @@ public class TaskUtils {
                                 return taskUserReactiveRepository.existsByTaskAndUser(task, user).flatMapMany(taskExists -> {
                                     if (taskExists) {
                                         statusResponseMap.put(user.getUsername(), "Fail: Task already assigned to user {" + user.getUsername() + "}");
-                                        return taskUserReactiveRepository.findByTask_TaskId(task.getTaskId());
+                                        return taskUserReactiveRepository.findAllByTask_TaskId(task.getTaskId());
                                     } else {
 
                                         // if no task was assigned to user, Assign the task and user to taskUser :: since this class has the responsibility of managing the relationships
@@ -197,7 +197,7 @@ public class TaskUtils {
      * @return a {@link TaskResponse} object with information about the newly created task
      */
     public Mono<TaskResponse> buildTaskResponse_ForCreatingTask(Task task, Project project) {
-        return reactiveRepositoryUtils.find_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId())
+        return reactiveRepositoryUtils.findAll_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId())
                 .collectList().map(taskUsers -> {
                     Map<String, String> assignedUsersMap = new HashMap<>();
                     for (TaskUser taskUser : taskUsers) {
@@ -227,7 +227,7 @@ public class TaskUtils {
      * @return Mono of created {@link Task}.
      */
     public Mono<TaskResponse> buildTaskResponse_ForSearchTask(Task task) {
-        return reactiveRepositoryUtils.find_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId())
+        return reactiveRepositoryUtils.findAll_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId())
                 .collectList().flatMap(taskUsers -> {
                     Map<String, String> assignedUsersMap = new HashMap<>();
 
@@ -241,8 +241,10 @@ public class TaskUtils {
                     return reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(task.getProjectId())
                             .flatMap(project ->
                                     Mono.just(TaskResponse.builder()
+                                            .taskId(task.getTaskId())
                                             .taskName(task.getTaskName())
                                             .projectName(project.getProjectName())
+                                            .projectId(task.getProjectId())
                                             .taskStatus(task.getTaskStatus())
                                             .dueDate(task.getDueDate())
                                             .taskPriority(task.getTaskPriority())
@@ -267,7 +269,7 @@ public class TaskUtils {
      * @throws ResourceNotFoundException if the task or task users are not found in the database.
      */
     public Mono<TaskResponse> buildTaskResponse_ForAssignTaskToUsers(Task task, Project project, Map<String, String> responseMap) {
-        return reactiveRepositoryUtils.find_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId())
+        return reactiveRepositoryUtils.findAll_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId())
                 .collectList().flatMap(taskUsers -> Mono.just(
                                 TaskResponse.builder()
                                         .taskName(task.getTaskName())
@@ -470,7 +472,7 @@ public class TaskUtils {
      * @throws ResourceNotFoundException if the task users or project task associated with the task cannot be found
      */
     public Mono<Void> deleteTaskAssociations(Task task) {
-        return reactiveRepositoryUtils.find_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId()).flatMap(taskUserReactiveRepository::delete)
+        return reactiveRepositoryUtils.findAll_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId()).flatMap(taskUserReactiveRepository::delete)
                 .then(reactiveRepositoryUtils.find_ProjectTaskByTaskId_OrElseThrow_ResourceNotFoundException(task.getTaskId()).flatMap(projectTaskReactiveRepository::delete));
     }
 

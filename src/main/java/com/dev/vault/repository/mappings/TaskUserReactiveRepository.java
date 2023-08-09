@@ -12,11 +12,9 @@ public interface TaskUserReactiveRepository extends ReactiveMongoRepository<Task
 
     Flux<TaskUser> findByUser_UserId(String userId);
 
-    Flux<TaskUser> findByTask_TaskId(String taskId);
+    Flux<TaskUser> findAllByTask_TaskId(String taskId);
 
     Mono<TaskUser> findTaskUserByTask_TaskId(String taskId);
 
     Mono<TaskUser> findByTask_TaskIdAndUser_UserId(String taskId, String userId);
-
-    Flux<TaskUser> findByUser_UserIdAndTask_TaskId(String userId, String taskId);
 }

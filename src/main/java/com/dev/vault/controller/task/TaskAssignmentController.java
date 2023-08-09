@@ -99,7 +99,7 @@ public class TaskAssignmentController {
      * @throws NotMemberOfProjectException if the user is not a member of the project.
      */
     @DeleteMapping("/unassignTask/multipleUsers")
-    public Mono<ResponseEntity<ApiResponse>> unassignTaskFromUsers(
+    public Mono<ResponseEntity<ApiResponse>> unassignTaskFromUserList(
             @RequestParam("taskId") String taskId,
             @RequestParam("projectId") String projectId,
             @RequestBody List<String> userIdList
@@ -109,24 +109,23 @@ public class TaskAssignmentController {
     }
 
 
-//
-///**
-// * Unassigns a task from a all users in a project.
-// *
-// * @param taskId    the ID of the task to unassign
-// * @param projectId the ID of the project the task belongs to
-// * @return a ResponseEntity with an OK HTTP status code
-// *//*
-//
-//    @DeleteMapping("/unassignTask/all") //TODO
-//    public ResponseEntity<Void> unassignTaskFromAllUsersInProject(
-//            @RequestParam("taskId") Long taskId,
-//            @RequestParam("projectId") Long projectId
-//    ) {
-////        taskService.unassignTaskFromUser(taskId, projectId, userId);
-////        return ResponseEntity.ok().build();
-//        return null;
-//    }
-//}
-//*/
+    /**
+     * Unassigns a task from all users in a project.
+     *
+     * @param taskId    the ID of the task to unassign
+     * @param projectId the ID of the project from which to unassign the task
+     * @return a Mono of ResponseEntity containing an ApiResponse with a success message if the task was unassigned successfully
+     * @throws ResourceNotFoundException   if the task or project is not found
+     * @throws NotLeaderOfProjectException if the user is not a leader of the project
+     * @throws NotMemberOfProjectException if the user is not a member of the project
+     */
+    @DeleteMapping("/unassignTask/all")
+    public Mono<ResponseEntity<ApiResponse>> unassignTaskFromAllUsersInProject(
+            @RequestParam("taskId") String taskId,
+            @RequestParam("projectId") String projectId
+    ) throws ResourceNotFoundException, NotLeaderOfProjectException, NotMemberOfProjectException {
+        return taskAssignmentService.unassignTaskFromAllUsersInProject(taskId, projectId)
+                .then(Mono.just(ResponseEntity.ok(new ApiResponse("Unassigned from all users.", true))));
+    }
+
 }

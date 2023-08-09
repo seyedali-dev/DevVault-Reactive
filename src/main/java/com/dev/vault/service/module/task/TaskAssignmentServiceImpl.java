@@ -184,12 +184,31 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
     /**
      * Unassigns a task from all users in a project.
      *
-     * @param taskId    The ID of the task to unassign.
-     * @param projectId The ID of the project to which the task belongs.
+     * @param taskId    the ID of the task to unassign
+     * @param projectId the ID of the project from which to unassign the task
+     * @return a Mono of Void representing the completion of the unassign process
+     * @throws ResourceNotFoundException   if the task or project is not found
+     * @throws NotLeaderOfProjectException if the user is not a leader of the project
+     * @throws NotMemberOfProjectException if the user is not a member of the project
      */
     @Override
     public Mono<Void> unassignTaskFromAllUsersInProject(String taskId, String projectId) {
-        return null;
+        // 1. find the project and check if the user is leader or admin
+        // 2. find the task.
+        // 3. delete all the users i.e. `taskUser` object of each of them.
+        return reactiveRepositoryUtils.find_ProjectById_OrElseThrow_ResourceNotFoundException(projectId)
+                .flatMap(project -> authenticationService.getCurrentUserMono()
+                        .flatMap(user -> projectUtils.isMemberOfProject(project, user)
+                                .flatMap(isMemberOfProject -> taskUtils.handleUserMembership(isMemberOfProject, project, user))
+                                .flatMap(isMemberOfProject -> projectUtils.isLeaderOrAdminOfProject(project, user))
+                                .flatMap(isLeaderOrAdminOfProject -> taskUtils.handleUserLeadership(isLeaderOrAdminOfProject, project, user))
+                                .flatMap(isLeaderOrAdminOfProject ->
+                                        reactiveRepositoryUtils.findAll_TaskUsersByTaskId_OrElseThrow_ResourceNotFoundException(taskId)
+                                                .flatMap(taskUserReactiveRepository::delete)
+                                                .collectList().then()
+                                )
+                        )
+                );
     }
 
 }
