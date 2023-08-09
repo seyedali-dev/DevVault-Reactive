@@ -7,13 +7,13 @@ import com.dev.vault.model.domain.project.JoinProjectRequest;
 import com.dev.vault.model.domain.project.Project;
 import com.dev.vault.model.domain.relationship.ProjectMembers;
 import com.dev.vault.model.domain.relationship.UserProjectRole;
+import com.dev.vault.model.domain.relationship.UserRole;
 import com.dev.vault.model.domain.user.Roles;
 import com.dev.vault.model.domain.user.User;
-import com.dev.vault.model.domain.relationship.UserRole;
 import com.dev.vault.model.enums.Role;
 import com.dev.vault.repository.mappings.ProjectMembersReactiveRepository;
-import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.mappings.UserProjectRoleReactiveRepository;
+import com.dev.vault.repository.project.ProjectReactiveRepository;
 import com.dev.vault.repository.user.RolesReactiveRepository;
 import com.dev.vault.repository.user.UserReactiveRepository;
 import com.dev.vault.util.repository.ReactiveRepositoryUtils;
@@ -151,4 +151,3 @@ public class ProjectUtilsImpl implements ProjectUtils {
     }
 
 }
-

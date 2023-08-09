@@ -553,7 +553,7 @@ public class TaskUtils {
     }
 
 
-    public Flux<Void> unassignTaskFromUsersList(String taskId, Project project, List<String> userIdList) {
+    public Flux<Void> unassignTaskFromUsersList(String taskId, List<String> userIdList) {
         // 1. find the users through `userIdList`
         // 2. find the `taskUser` for each of them
         // 3. delete those `taskUsers`

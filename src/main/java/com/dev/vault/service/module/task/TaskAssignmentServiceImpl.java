@@ -173,7 +173,7 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
                                 .flatMap(isMemberOfProject -> projectUtils.isLeaderOrAdminOfProject(project, user))
                                 .flatMap(isLeaderOrAdminOfProject -> taskUtils.handleUserLeadership(isLeaderOrAdminOfProject, project, user))
                                 .flatMap(isLeaderOrAdminOfProject ->
-                                        taskUtils.unassignTaskFromUsersList(taskId, project, userIdList)
+                                        taskUtils.unassignTaskFromUsersList(taskId, userIdList)
                                                 .collectList().flatMap(ignored -> Mono.empty())
                                 )
                         )

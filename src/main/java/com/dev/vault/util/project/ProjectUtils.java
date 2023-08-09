@@ -9,9 +9,9 @@ import com.dev.vault.model.domain.project.JoinProjectRequest;
 import com.dev.vault.model.domain.project.Project;
 import com.dev.vault.model.domain.relationship.ProjectMembers;
 import com.dev.vault.model.domain.relationship.UserProjectRole;
+import com.dev.vault.model.domain.relationship.UserRole;
 import com.dev.vault.model.domain.user.Roles;
 import com.dev.vault.model.domain.user.User;
-import com.dev.vault.model.domain.relationship.UserRole;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

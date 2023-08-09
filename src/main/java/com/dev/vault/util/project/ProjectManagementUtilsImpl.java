@@ -169,6 +169,7 @@ public class ProjectManagementUtilsImpl implements ProjectUtils {
                 }));
     }
 
+
     /**
      * Returns a list of UserDto objects for a given project.
      *
